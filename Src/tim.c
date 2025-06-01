@@ -1,5 +1,6 @@
 #include "tim.h"
 
+#ifdef HAL_TIM_MODULE_ENABLED
 TIM_HandleTypeDef *pTim2;
 TIM_HandleTypeDef *pTim3;
 TIM_HandleTypeDef *pTim4;
@@ -72,3 +73,4 @@ void plt_StopPWM(TimModule_t timer, uint32_t Channel)
     /* Stop PWM on the channel */
     return HAL_TIM_PWM_Stop(pTim, Channel);
 }
+#endif

@@ -1,6 +1,7 @@
 
 #include "uart.h"
 
+#ifdef HAL_UART_MODULE_ENABLED
 // UART Driver: Implementation for UART communication using DMA for transmission only
 
 /* =============================== Global Variables =============================== */
@@ -179,3 +180,4 @@ Queue_t* plt_GetUartRxQueue()
 {
     return &uartRxQueue;
 }
+#endif

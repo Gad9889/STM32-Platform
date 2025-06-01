@@ -1,6 +1,6 @@
 #include "can.h"
 
-
+#ifdef HAL_CAN_MODULE_ENABLED
 // CAN Driver: Implementation for CAN message handling and processing using DMA
 
 /* =============================== Global Variables =============================== */
@@ -242,3 +242,5 @@ Queue_t* plt_GetCanRxQueue()
 {
     return &canRxQueue;
 }
+
+#endif

@@ -10,6 +10,11 @@ void plt_CanFilterInit(CAN_HandleTypeDef* pCan);
 HAL_StatusTypeDef plt_CanSendMsg(CanChanel_t chanel, can_message_t* pData);
 void plt_CanProcessRxMsgs();
 Queue_t* plt_GetCanRxQueue();
+/** @defgroup CAN_Error_Code CAN Error Code
+  * @{
+  */
+
+
 #endif
 
 #endif	// CAN_H

@@ -2,6 +2,7 @@
 
 /* =============================== Global Variables =============================== */
 static database_t* pMainDB = NULL;
+static Queue_t* pUartTxQueue = NULL;
 uint8_t FSM_stage = Stage1;
 uint8_t KL_Nodes[3] = {0};
 plt_callbacks_t pcallbacks;
@@ -20,6 +21,7 @@ plt_callbacks_t pcallbacks;
     // Initialize the platform layer with the provided handlers and RxQueueSize
     
     pMainDB = db_Init();
+    pUartTxQueue = plt_GetUartTxQueue(); // Get the UART transmission queue pointer
     plt_SetHandlers(handlers);
     SetCallbacks();
     plt_SetCallbacks(&pcallbacks);
@@ -58,6 +60,12 @@ void CanRxCallback(can_message_t *msg)
   {
   case PEDAL_ID:
     setPedalParameters(msg->data);
+    if (pUartTxQueue != NULL) {
+        uart_message_t uartMsg = (uart_message_t)(*msg);
+        Queue_Push(pUartTxQueue,&uartMsg); 
+    }
+
+
     break;
   
   default:

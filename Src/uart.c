@@ -1,6 +1,6 @@
 
 #include "uart.h"
-
+#define HAL_UART_MODULE_ENABLED
 #ifdef HAL_UART_MODULE_ENABLED
 // UART Driver: Implementation for UART communication using DMA for transmission only
 
@@ -14,8 +14,15 @@ uart_message_t Uart_TxData = {0};  // UART message structure for transmission
 debug_message_t Debug_TxData = {0};  // Debug message structure for transmission
 uint8_t Uart_RxData[2][sizeof(uart_message_t)] = {0};  // DMA buffer for SPI reception
 void (*Uart_RxCallback)(uart_message_t *) = NULL;  // Callback function for UART reception
+
 static Queue_t uartRxQueue = {0};
 static QueueItem_t uartRxMessage = {
+    .data = NULL,
+    .sizeof_data = sizeof(uart_message_t)
+};
+
+static Queue_t uartTxQueue = {0};
+static QueueItem_t uartTxMessage = {
     .data = NULL,
     .sizeof_data = sizeof(uart_message_t)
 };
@@ -44,6 +51,8 @@ void plt_UartInit(size_t tx_queue_size)
     pCallbacks = plt_GetCallbacksPointer();  // Get the callback function pointer
     Uart_RxCallback = pCallbacks->UART_RxCallback; // Set the UART RX callback function pointer
     Queue_Init(&uartRxQueue,&uartRxMessage,tx_queue_size);  // Initialize the RX queue for UART1 reception
+
+    Queue_Init(&uartTxQueue,&uartTxMessage,tx_queue_size);  // Initialize the TX queue for UART1 transmission
 
     if(pHandlers->huart1 != NULL)
     {
@@ -108,6 +117,21 @@ void plt_UartProcessRxMsgs(void)
     }
 }
 
+
+void plt_UartSyncMCUs(void)
+{
+    uart_message_t data = {0};
+    HAL_StatusTypeDef status = HAL_OK;
+    while (uartTxQueue.status != QUEUE_EMPTY)
+    {
+        if (status == HAL_OK)
+        {
+            Queue_Pop(&uartTxQueue, &data);  // Pop the data from the queue
+        }
+        status = plt_UartSendMsg(UART_Between_MCUs, &data);  // Send the data via UART1
+    }
+}
+
 /**
  * @brief Sends a standard UART message through the UART DMA.
  * @param pData Pointer to the data buffer to be sent
@@ -115,12 +139,19 @@ void plt_UartProcessRxMsgs(void)
  * 
  * @note This function pushes the data for transmission and starts the DMA transfer.
 */ 
-void plt_UartSendMsg(UartChanel_t chanel, uart_message_t* pData)
+HAL_StatusTypeDef plt_UartSendMsg(UartChanel_t chanel, uart_message_t* pData)
 {  
+    
     #ifdef HAL_UART_MODULE_ENABLED
+    HAL_StatusTypeDef status;
     UART_HandleTypeDef* pUart = (chanel == Uart1) ? pUart1:pUart3;
-    HAL_UART_Transmit_DMA(pUart,(uint8_t*)pData,(uint16_t)sizeof(uart_message_t));
+    if(pUart->gState == HAL_UART_STATE_READY )
+    {
+    status = HAL_UART_Transmit_DMA(pUart,(uint8_t*)pData,(uint16_t)sizeof(uart_message_t));
+    }
+    return status;
     #endif
+
 }
 /**
  * @brief Sends a debug message through the USART2 DMA.
@@ -179,5 +210,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 Queue_t* plt_GetUartRxQueue()
 {
     return &uartRxQueue;
+}
+Queue_t* plt_GetUartTxQueue()
+{
+    return &uartTxQueue;
 }
 #endif

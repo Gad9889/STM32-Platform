@@ -241,95 +241,102 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
     strset(CAN_ErrorMsg, 0, sizeof(CAN_ErrorMsg)); // Clear the error message buffer
 
     /* Protocol / bus errors ------------------------------------------------ */
+    // Initialize the buffer to an empty string before building the message.
+    CAN_ErrorMsg[0] = '\0';
+
+    /* Protocol / bus errors ------------------------------------------------ */
     if (errorCode & HAL_CAN_ERROR_ACK) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: ACK Error\r\n
-              - No node on the bus acknowledged the frame\r\n
-             - Remote filters rejected this identifier\r\n
-              - Cable open or disconnected\r\n");
+        // Use strcat to append messages
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: ACK Error\r\n"
+               " - No node on the bus acknowledged the frame\r\n"
+               " - Remote filters rejected this identifier\r\n"
+               " - Cable open or disconnected\r\n");
     }
 
     if (errorCode & HAL_CAN_ERROR_BOF) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Bus-Off (BOF)\r\n
-              - Persistent wiring/termination faults\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Bus-Off (BOF)\r\n"
+               " - Persistent wiring/termination faults\r\n");
     }
 
     if (errorCode & HAL_CAN_ERROR_STF) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Stuff Error\r\n
-              - Six identical bits detected (bit-stuffing violation)\r\n
-              - Clock mismatch or heavy noise\r\n
-              - Bad transceiver\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Stuff Error\r\n"
+               " - Six identical bits detected (bit-stuffing violation)\r\n"
+               " - Clock mismatch or heavy noise\r\n"
+               " - Bad transceiver\r\n");
     }
 
     if (errorCode & HAL_CAN_ERROR_FOR) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Form Error\r\n
-              - Timing disturbance on the line\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Form Error\r\n"
+               " - Timing disturbance on the line\r\n");
     }
 
     /* RX FIFO overruns ----------------------------------------------------- */
     if (errorCode & HAL_CAN_ERROR_RX_FOV0) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: RX FIFO0 Overrun\r\n
-             - Application did not empty FIFO fast enough\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: RX FIFO0 Overrun\r\n"
+               " - Application did not empty FIFO fast enough\r\n");
     }
 
     if (errorCode & HAL_CAN_ERROR_RX_FOV1) {
-        strcpy(CAN_ErrorMsg,
-            "CAN Error: RX FIFO1 Overrun\r\n
-            - Application did not empty FIFO fast enough\r\n");
+        strcat(CAN_ErrorMsg,
+               "CAN Error: RX FIFO1 Overrun\r\n"
+               " - Application did not empty FIFO fast enough\r\n");
     }
 
     /* Transmit mailbox problems -------------------------------------------- */
     if (errorCode & (HAL_CAN_ERROR_TX_ALST0 |
                      HAL_CAN_ERROR_TX_ALST1 |
                      HAL_CAN_ERROR_TX_ALST2)) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Arbitration Lost (TX)\r\n
-              - Another node won arbitration with lower ID\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Arbitration Lost (TX)\r\n"
+               " - Another node won arbitration with lower ID\r\n");
     }
 
     if (errorCode & (HAL_CAN_ERROR_TX_TERR0 |
                      HAL_CAN_ERROR_TX_TERR1 |
                      HAL_CAN_ERROR_TX_TERR2)) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Transmit Error (TXERR)\r\n
-              - Error flag raised during transmission\r\n
-              - Check wiring/termination/bit-timing\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Transmit Error (TXERR)\r\n"
+               " - Error flag raised during transmission\r\n"
+               " - Check wiring/termination/bit-timing\r\n");
     }
 
     /* HAL / driver-level errors ------------------------------------------- */
     if (errorCode & HAL_CAN_ERROR_TIMEOUT) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Timeout\r\n
-              - HAL call exceeded timeout value\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Timeout\r\n"
+               " - HAL call exceeded timeout value\r\n");
     }
 
     if (errorCode & HAL_CAN_ERROR_NOT_INITIALIZED) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Not Initialized\r\n
-              - HAL_CAN_Init not called or failed\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Not Initialized\r\n"
+               " - HAL_CAN_Init not called or failed\r\n");
     }
 
     if (errorCode & HAL_CAN_ERROR_NOT_READY) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Not Ready\r\n
-              - Handle state is not HAL_CAN_STATE_READY\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Not Ready\r\n"
+               " - Handle state is not HAL_CAN_STATE_READY\r\n");
     }
 
     if (errorCode & HAL_CAN_ERROR_NOT_STARTED) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Not Started\r\n
-              - HAL_CAN_Start missing or failed\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Not Started\r\n"
+               " - HAL_CAN_Start missing or failed\r\n");
     }
 
     if (errorCode & HAL_CAN_ERROR_PARAM) {
-        strcpy(CAN_ErrorMsg ,
-            "CAN Error: Parameter Error\r\n
-              - Invalid argument supplied to HAL function\r\n");
+        strcat(CAN_ErrorMsg ,
+               "CAN Error: Parameter Error\r\n"
+               " - Invalid argument supplied to HAL function\r\n");
     }
+
+
     HAL_CAN_ResetError(hcan); // Clear the error flags
 }
 /**

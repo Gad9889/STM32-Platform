@@ -20,7 +20,7 @@ Set_Function_t pSet_Function;
     // Initialize the platform layer with the provided handlers and RxQueueSize
     
     pMainDB = db_Init();
-    pUartTxQueue = plt_GetUartTxQueue(); // Get the UART transmission queue pointer
+    //pUartTxQueue = plt_GetUartTxQueue(); // Get the UART transmission queue pointer
     plt_SetHandlers(handlers);
     SetCallbacks();
     plt_SetCallbacks(&pcallbacks);

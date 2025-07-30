@@ -58,7 +58,7 @@ void plt_CanInit(size_t rx_queue_size)
         pCan2 = pHandlers->hcan2;
         plt_CanFilterInit(pCan2);
         HAL_CAN_Start(pCan2);
-        if(HAL_CAN_ActivateNotification(pCan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+        if(HAL_CAN_ActivateNotification(pCan2, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
         {
             Error_Handler();
         }
@@ -70,7 +70,7 @@ void plt_CanInit(size_t rx_queue_size)
         pCan3 = pHandlers->hcan3;
         plt_CanFilterInit(pCan3);
         HAL_CAN_Start(pCan3);
-        if(HAL_CAN_ActivateNotification(pCan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+        if(HAL_CAN_ActivateNotification(pCan3, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
         {
             Error_Handler();
         }
@@ -106,7 +106,7 @@ void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
 
     filter0.FilterBank = 0;
 
-    if (HAL_CAN_ConfigFilter(pCan, &filter0)) {
+    if (HAL_CAN_ConfigFilter(pCan, &filter0) != HAL_OK) {
         Error_Handler();
     }
 
@@ -127,7 +127,7 @@ void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
 
     filter1.FilterBank = 1;
 
-    if (HAL_CAN_ConfigFilter(pCan, &filter1)) {
+    if (HAL_CAN_ConfigFilter(pCan, &filter1) != HAL_OK) {
         Error_Handler();
     }
 
@@ -238,7 +238,7 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
     if (errorCode == HAL_CAN_ERROR_NONE)
         return;
 
-    strset(CAN_ErrorMsg, 0, sizeof(CAN_ErrorMsg)); // Clear the error message buffer
+    memset(CAN_ErrorMsg, 0, sizeof(CAN_ErrorMsg)); // Clear the error message buffer
 
     /* Protocol / bus errors ------------------------------------------------ */
     // Initialize the buffer to an empty string before building the message.

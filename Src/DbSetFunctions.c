@@ -36,6 +36,7 @@ void setSubParameters(uint8_t* data)
 void setDBParameters(uint8_t* data)
 {
     pMainDB->vcu_node->keep_alive[DBNODE] = 1; // Set the database node alive
+    memcpy(&pMainDB->dashboard_node->R2D,&data[2], sizeof(uint16_t));
 }
 void setInv1Av1Parameters(uint8_t* data)
 {

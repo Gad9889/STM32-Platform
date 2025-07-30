@@ -1,6 +1,6 @@
 
 #include "uart.h"
-#define HAL_UART_MODULE_ENABLED
+
 #ifdef HAL_UART_MODULE_ENABLED
 // UART Driver: Implementation for UART communication using DMA for transmission only
 

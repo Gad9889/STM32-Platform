@@ -6,7 +6,8 @@
 #include "uart.h"
 #include "spi.h"
 #include "can.h"
-
+#include "adc.h"
+#include "tim.h"
 //TODO: check if you can move this two verables to database.h
 extern uint8_t KL_Nodes[3];
 extern uint8_t FSM_stage;

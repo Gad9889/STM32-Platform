@@ -1,136 +1,169 @@
-#include "../Inc/hashtable.h"
-#include <inttypes.h>
+#include "hashtable.h"
 
-#define TABLE_SIZE 50
+hash_member_t HashTable[TABLE_SIZE];
 
-hash_member_t ** pHashTable;
-
-
-//Map name to location in the hash table
-uint8_t hash_MapFunction(uint32_t id) 
+static void clear_table(void)
 {
-	// Need to fix to hash function that give different inxd to the true_ can ids
+	for (int i = 0; i < TABLE_SIZE; ++i) {
+		HashTable[i].id          = HASH_EMPTY_ID;
+		HashTable[i].Set_Function = NULL;
+	}
+}
 
-	id ^= id >> 16;
-	id *= 0x45d9f3b;
-	id ^= id >> 16;
-	id *= 0x45d9f3b;
-	id ^= id >> 16;
+/* hashtable.c ----------------------------------------------------------- */
+uint8_t hash_MapFunction(uint32_t id)
+{
+	/* ---- perfect hash for the two blocks we care about --------------- */
+	if (id >= 0x180 && id <= 0x19E)                 /* 0x180-0x19E → 0-30 */
+		return (uint8_t)(id - 0x180);
 
-	// Return index in hash table
+	if (id >= 0x280 && id <= 0x29E)                 /* 0x280-0x29E → 31-61 */
+		return (uint8_t)(31 + (id - 0x280));
+
+	/* ---- fallback for everything else -------------------------------- */
+	id ^= id >> 16;  id *= 0x45d9f3b;  id ^= id >> 16;
+	id *= 0x45d9f3b; id ^= id >> 16;
 	return id % TABLE_SIZE;
 }
 
-
-//init hash table in heap
-HashStatus_t hash_AllocateMemory()
+HashStatus_t hash_InsertMember(const hash_member_t *member)
 {
-    hash_member_t **new_table = (hash_member_t **)calloc(TABLE_SIZE, sizeof(hash_member_t *));
-    if (new_table == NULL) {
-        return HASH_ERROR; // Allocation failed
-    }
+	if (!member) return HASH_ERROR;
 
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        new_table[i] = (hash_member_t*)calloc(1,sizeof(hash_member_t));
-        if(new_table[i] == NULL){return HASH_ERROR;}
-    }
-    
-    pHashTable = new_table;
-    return HASH_OK;
-}
+	int start = hash_MapFunction(member->id);
+	for (int i = 0; i < TABLE_SIZE; ++i) {
+		int idx = (start + i) % TABLE_SIZE;
 
-//TODO -- need to be fixed to work with stm32 mayby by UART
-void hash_PrintTable() {
-	printf("Start\n");
-	for (int i=0; i<TABLE_SIZE; i++) {
-		if (pHashTable[i] == NULL) {
-			printf("\t%i\t---\n",i);
-		}
-		else {
-			printf("\t%i\t0x%" PRIx32 "\n",i, pHashTable[i]->id);
+		if (HashTable[idx].id == HASH_EMPTY_ID) {   /* free slot */
+			HashTable[idx] = *member;               /* structure copy */
+			return HASH_OK;
 		}
 	}
-	printf("End\n");
+	return HASH_FULL;
 }
-
-//hash table insert
-uint8_t hash_InsertMember(hash_member_t * hmember) {
-	if (hmember == NULL) return 0;
-	int index = hash_MapFunction(hmember->id);
-	for (int i=0; i<TABLE_SIZE; i++) {
-		int try = (i+index) % TABLE_SIZE;
-
-		if (pHashTable[try] == NULL) {
-			pHashTable[try] = hmember;
-			return 1;
-		}
-	}
-    return 0;
-}
-
-//hash lookup function
-FunctionPointer hash_Lookup(uint32_t id) {
-	uint8_t index = hash_MapFunction(id);
-	for (int i=0; i<TABLE_SIZE; i++) {
-		int try = (i+index) % TABLE_SIZE;
-		if (pHashTable[try] != NULL && pHashTable[try]->id == id) {
-			
-            return pHashTable[try]->func;
-		}
-	}
-		return NULL;
-}
-
-void hash_DeleteMember(uint32_t id) {
-
-	uint8_t index = hash_MapFunction(id);
-
-	for (int i=0; i<TABLE_SIZE; i++) {
-		int try = (i+index) % TABLE_SIZE;
-		if (pHashTable[try] != NULL && pHashTable[try]->id == id) {
-			
-			free(pHashTable[try]);
-		}
-	}
-}
-
-void hash_FreeTable()
+Set_Function_t hash_Lookup(uint32_t id)
 {
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        free(pHashTable[i]);
-    }
-    free(pHashTable);
+	int start = hash_MapFunction(id);
+	for (int i = 0; i < TABLE_SIZE; ++i) {
+		int idx = (start + i) % TABLE_SIZE;
+		if (HashTable[idx].id == id)
+			return HashTable[idx].Set_Function;
+	}
+	return NULL;
 }
-HashStatus_t hash_SetTable()
+
+void hash_DeleteMember(uint32_t id)
 {
-    //pedal member
-    hash_member_t pedal_member = {.id = PEDAL_ID ,.func = &setPedalParameters};
-    if(!(hash_InsertMember(&pedal_member))){return HASH_ERROR;}
-
-
-    //add more members
+	int start = hash_MapFunction(id);
+	for (int i = 0; i < TABLE_SIZE; ++i) {
+		int idx = (start + i) % TABLE_SIZE;
+		if (HashTable[idx].id == id) {
+			HashTable[idx].id = HASH_EMPTY_ID;
+			HashTable[idx].Set_Function = NULL;
+			return;
+		}
+	}
 }
 
-
-HashStatus_t hash_Init()
-{   
-    HashStatus_t hash_status = HASH_OK;
-    hash_status = hash_AllocateMemory();
-
-    if(hash_status == HASH_ERROR){return hash_status;}//dont continue to insert memebers
-
-    hash_status = hash_SetTable();
-    return hash_status;
-}
 /*
-
-void Can_RxCallback(can_message_t * can_massage)
+void hash_PrintTable(void)
 {
-	FunctionPointer set_function = hash_Lookup(can_massage->id);
-	set_function(can_massage->data);
+	puts("Start");
+	for (int i = 0; i < TABLE_SIZE; ++i) {
+		if (HashTable[i].id == HASH_EMPTY_ID)
+			printf("\t%2d\t---\n", i);
+		else
+			printf("\t%2d\t0x%" PRIx32 "\n", i, HashTable[i].id);
+	}
+	puts("End");
+}
+*/
+
+HashStatus_t hash_SetTable(void)
+{
+	hash_member_t member;
+
+	/* ---- set the table with the functions we care about ---------------- */
+	member.id = INV1_AV1_ID;
+	member.Set_Function = setInv1Av1Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = INV1_AV2_ID;
+	member.Set_Function = setInv1Av2Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+
+	member.id = INV2_AV1_ID;
+	member.Set_Function = setInv2Av1Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = INV2_AV2_ID;
+	member.Set_Function = setInv2Av2Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+
+
+	member.id = INV3_AV1_ID;
+	member.Set_Function = setInv3Av1Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = INV3_AV2_ID;
+	member.Set_Function = setInv3Av2Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+
+	member.id = INV4_AV1_ID;
+	member.Set_Function = setInv4Av1Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = INV4_AV2_ID;
+	member.Set_Function = setInv4Av2Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+
+	member.id = STAGE_0_ID;
+	member.Set_Function = setStage0Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = STAGE_1_ID;
+	member.Set_Function = setStage1Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = STAGE_2_ID;
+	member.Set_Function = setStage2Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = STAGE_3_ID;
+	member.Set_Function = setStage3Parameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = SUB_ID;
+	member.Set_Function = setSubParameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = BMS_ID;
+	member.Set_Function = setBmsParameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = RES_ID;
+	member.Set_Function = setResParameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = PEDAL_ID;
+	member.Set_Function = setPedalParameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	member.id = DB_ID;
+	member.Set_Function = setDBParameters;
+	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
+	return HASH_OK;
 
 }
 
+HashStatus_t hash_Init(void)
+{
+	clear_table();             /* replaces malloc/calloc/free path */
+	return hash_SetTable();
+}
 
-
-*/

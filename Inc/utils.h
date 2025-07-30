@@ -2,7 +2,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 /* =============================== Includes ======================================= */
-#include "DbSetFunctions.h"
+#include "hashtable.h"
 /*========================= Queue related definitions =========================*/
 
 /**

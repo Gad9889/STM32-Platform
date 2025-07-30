@@ -3,9 +3,8 @@
 /* =============================== Global Variables =============================== */
 static database_t* pMainDB = NULL;
 static Queue_t* pUartTxQueue = NULL;
-uint8_t FSM_stage = Stage1;
-uint8_t KL_Nodes[3] = {0};
 plt_callbacks_t pcallbacks;
+Set_Function_t pSet_Function;
 
 
 /* ========================== Function Definitions ============================ */
@@ -25,25 +24,32 @@ plt_callbacks_t pcallbacks;
     plt_SetHandlers(handlers);
     SetCallbacks();
     plt_SetCallbacks(&pcallbacks);
+    hash_Init(); // Initialize the hash table for storing set functions
 
-    #ifdef HAL_CAN_MODULE_ENABLED
+     #ifdef HAL_CAN_MODULE_ENABLED
     plt_CanInit(RxQueueSize);
+    printf("CAN Initialized \r\n");
     #endif
 
     #ifdef HAL_UART_MODULE_ENABLED
     plt_UartInit(RxQueueSize);
+    pUartTxQueue = plt_GetUartTxQueue(); // Get the UART transmission queue pointer
+    printf("UART Initialized \r\n");
     #endif
 
     #ifdef HAL_SPI_MODULE_ENABLED
     plt_SpiInit(RxQueueSize);
+    printf("SPI Initialized \r\n");
     #endif
 
     #ifdef HAL_ADC_MODULE_ENABLED
-      plt_AdcInit();
+    plt_AdcInit();
+    printf("ADC Initialized \r\n");
     #endif
 
     #ifdef HAL_TIM_MODULE_ENABLED
-      plt_TimInit();
+    plt_TimInit();
+    printf("Advanced TIM Initialized \r\n");
     #endif
  }
 
@@ -56,20 +62,11 @@ plt_callbacks_t pcallbacks;
  */
 void CanRxCallback(can_message_t *msg) 
 {
-  switch (msg->id) // Replace with actual condition
+  //printf("Received CAN message with ID: %lu\r\n", msg->id);
+  pSet_Function = hash_Lookup(msg->id);
+  if(pSet_Function != NULL)
   {
-  case PEDAL_ID:
-    setPedalParameters(msg->data);
-    if (pUartTxQueue != NULL) {
-        uart_message_t uartMsg = (uart_message_t)(*msg);
-        Queue_Push(pUartTxQueue,&uartMsg); 
-    }
-
-
-    break;
-  
-  default:
-    break;
+    pSet_Function(msg->data); // Call the set function for the received message
   }
 }
 

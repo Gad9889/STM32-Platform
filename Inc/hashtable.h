@@ -4,7 +4,7 @@
 #include <inttypes.h>
 
 /* ---- configuration ---------------------------------------------------- */
-#define TABLE_SIZE     62
+#define TABLE_SIZE     128
 #define HASH_EMPTY_ID  0xFFFFFFFF   /* sentinel that marks a free slot     */
 
 /* ---- types ------------------------------------------------------------ */

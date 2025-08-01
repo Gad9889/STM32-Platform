@@ -137,9 +137,7 @@ HashStatus_t hash_SetTable(void)
 	member.Set_Function = setStage3Parameters;
 	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
 
-	member.id = SUB_ID;
-	member.Set_Function = setSubParameters;
-	if (hash_InsertMember(&member) != HASH_OK) return HASH_ERROR;
+
 
 	member.id = BMS_ID;
 	member.Set_Function = setBmsParameters;
@@ -164,6 +162,6 @@ HashStatus_t hash_SetTable(void)
 HashStatus_t hash_Init(void)
 {
 	clear_table();             /* replaces malloc/calloc/free path */
-	return hash_SetTable();
+	//return hash_SetTable();
 }
 

@@ -8,7 +8,8 @@
 /* ========================== Function Declarations =============================== */
 void DbSetFunctionsInit();
 void setPedalParameters(uint8_t* data);
-void setSubParameters(uint8_t* data);
+
+
 void setVCUParameters(uint8_t* data);
 void setDBParameters(uint8_t* data);
 void setInv1Av1Parameters(uint8_t* data);

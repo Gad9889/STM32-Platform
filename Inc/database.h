@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <math.h>
 
 /* =============================== Structs ======================================= */
 typedef struct {
@@ -120,7 +121,7 @@ typedef struct{
 
     uint16_t gas_value;
     uint16_t brake_value;
-    uint16_t steering_wheel_angle;
+    int16_t steering_wheel_angle;
     uint16_t BIOPS;
 
 }pedal_node_t;
@@ -238,7 +239,7 @@ typedef struct {
 #define Stage2 2 
 #define StageError 3   
 
-#define BRAKE_PEDAL_THRESHOLD 20 // Threshold for brake pedal pressed state
+#define BRAKE_PEDAL_THRESHOLD 5 // Threshold for brake pedal pressed state
 #define UC_GAS_VALUE 0xFFFF
 #define UC_BRAKE_VALUE 0xFFFF
 #define UC_SW_VALUE 0xFFFF

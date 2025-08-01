@@ -24,9 +24,9 @@ Set_Function_t pSet_Function;
     plt_SetHandlers(handlers);
     SetCallbacks();
     plt_SetCallbacks(&pcallbacks);
-    hash_Init(); // Initialize the hash table for storing set functions
+    //hash_Init(); // Initialize the hash table for storing set functions
 
-     #ifdef HAL_CAN_MODULE_ENABLED
+    #ifdef HAL_CAN_MODULE_ENABLED
     plt_CanInit(RxQueueSize);
     printf("CAN Initialized \r\n");
     #endif
@@ -63,10 +63,55 @@ Set_Function_t pSet_Function;
 void CanRxCallback(can_message_t *msg) 
 {
   //printf("Received CAN message with ID: %lu\r\n", msg->id);
-  pSet_Function = hash_Lookup(msg->id);
+ /* pSet_Function = hash_Lookup(msg->id);
   if(pSet_Function != NULL)
   {
     pSet_Function(msg->data); // Call the set function for the received message
+  }
+    */
+  switch (msg->id) // Replace with actual condition
+  {
+    case PEDAL_ID:
+      setPedalParameters(msg->data);
+      break;
+    case DB_ID:
+      setDBParameters(msg->data);
+      break;\
+    case INV1_AV1_ID:
+      msg->data[0] = 1; // Inverter number change before calling this function
+      setInv1Av1Parameters(msg->data);
+      break;
+    case INV2_AV1_ID:
+      msg->data[0] = 2; // Inverter number change before calling this function
+      setInv2Av1Parameters(msg->data);
+      break;
+    case INV3_AV1_ID:
+      msg->data[0] = 3; // Inverter number change before calling this function
+      setInv3Av1Parameters(msg->data);
+      break;
+    case INV4_AV1_ID:
+      msg->data[0] = 4; // Inverter number change before calling this function
+      setInv4Av1Parameters(msg->data);
+      break;
+    case INV1_AV2_ID:
+      msg->data[6] = 1; // Inverter number change before calling this function
+      setInv1Av2Parameters(msg->data);
+      break;
+    case INV2_AV2_ID:
+      msg->data[6] = 2; // Inverter number change before calling this function
+      setInv2Av2Parameters(msg->data);
+      break;
+    case INV3_AV2_ID:
+      msg->data[6] = 3; // Inverter number change before calling this function
+      setInv3Av2Parameters(msg->data);
+      break;
+    case INV4_AV2_ID:
+      msg->data[6] = 4; // Inverter number change before calling this function
+      setInv4Av1Parameters(msg->data);
+      break;
+    
+    default:
+      break;
   }
 }
 

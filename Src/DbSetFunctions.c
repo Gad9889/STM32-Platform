@@ -23,10 +23,15 @@ void DbSetFunctionsInit()
 void setPedalParameters(uint8_t* data)
 {
     pMainDB->vcu_node->keep_alive[PEDALNODE] = 1; // Set the pedal node alive
-    memcpy(&pMainDB->pedal_node->gas_value,&data[0], sizeof(uint16_t));
-    memcpy(&pMainDB->pedal_node->brake_value,&data[2], sizeof(uint16_t));
-    memcpy(&pMainDB->pedal_node->steering_wheel_angle,&data[4], sizeof(int16_t));
-    memcpy(&pMainDB->pedal_node->BIOPS,&data[6], sizeof(uint16_t));
+    uint16_t gas_value = ((int16_t)((data[0] << 8) | data[1]) > MAX_VALUE_APPS) ? MAX_VALUE_APPS : ((int16_t)((data[0] << 8) | data[1]) < MIN_VALUE_APPS) ? MIN_VALUE_APPS : (int16_t)((data[0] << 8) | data[1]);
+    uint16_t brake_value = ((int16_t)((data[2] << 8) | data[3] > MAX_VALUE_BPPS) ? MAX_VALUE_BPPS : ((int16_t)((data[2] << 8) | data[3]) < MIN_VALUE_BPPS) ? MIN_VALUE_BPPS : (int16_t)((data[2] << 8) | data[3]));
+    int16_t steering_wheel_angle = ((int16_t)((data[4] << 8) | data[5])> MAX_VALUE_SW) ? MAX_VALUE_SW : ((int16_t)((data[4] << 8) | data[5]) < MIN_VALUE_SW) ? MIN_VALUE_SW : (int16_t)((data[4] << 8) | data[5]);
+    uint16_t BIOPS = ((int16_t)((data[6] << 8) | data[7]) > MAX_VALUE_BIOPS) ? MAX_VALUE_BIOPS : ((int16_t)((data[6] << 8) | data[7]) < MIN_VALUE_BIOPS) ? MIN_VALUE_BIOPS : (int16_t)((data[6] << 8) | data[7]);
+
+    memcpy(&pMainDB->pedal_node->gas_value,&gas_value, sizeof(uint16_t));
+    memcpy(&pMainDB->pedal_node->brake_value,&brake_value, sizeof(uint16_t));
+    memcpy(&pMainDB->pedal_node->steering_wheel_angle,&steering_wheel_angle, sizeof(int16_t));
+    memcpy(&pMainDB->pedal_node->BIOPS,&BIOPS, sizeof(uint16_t));
 }
 
 

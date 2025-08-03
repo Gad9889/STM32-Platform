@@ -26,4 +26,15 @@ void setStage2Parameters(uint8_t* data);
 void setStage3Parameters(uint8_t* data);
 void setBmsParameters(uint8_t* data);
 void setResParameters(uint8_t* data);
+
+/* ==========================  Defines =============================== */
+#define MAX_VALUE_APPS 100
+#define MIN_VALUE_APPS  0
+#define MAX_VALUE_BPPS 100
+#define MIN_VALUE_BPPS 0
+#define MAX_VALUE_SW 100
+#define MIN_VALUE_SW -100
+#define MAX_VALUE_BIOPS 100
+#define MIN_VALUE_BIOPS 0
+
 #endif // DBSETFUNCTIONS_H

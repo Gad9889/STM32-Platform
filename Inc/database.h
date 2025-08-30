@@ -21,8 +21,8 @@ uint8_t AMK_bDcOn;
 uint8_t AMK_bQuitInverterOn;
 uint8_t AMK_bInverterOn;
 uint8_t AMK_bDerating;
-} AMK_Status_t;
 
+} AMK_Status_t;
 /**
  * @brief Inverter struct.
  * @note This struct is used to store the inverter paramets for the database layer
@@ -163,6 +163,7 @@ typedef struct{
     uint8_t keep_alive[6];
     counters_t counters;
     Stage_t fsm_stage ;
+    uint8_t error_reset_flag;
 
 }vcu_node_t;
 
@@ -233,6 +234,9 @@ typedef struct {
 #define SCS_SHORT_TO_GND_ERROR 5
 #define SCS_SHORT_TO_VCC_ERROR 6
 #define SENSORS_NOT_CALIBRATED_ERROR 7
+#define INVERTER_COMMUNICATION_ERROR 8
+#define HV_ERROR 9
+
 
 /* =============================== Global Defines =============================== */
 #define Stage1 1 

@@ -93,8 +93,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
             COMMAND ${CMAKE_COMMAND} -E make_directory coverage
             COMMAND ${LCOV} --directory . --zerocounters
             COMMAND ${CMAKE_CTEST_COMMAND} --verbose
-            COMMAND ${LCOV} --directory . --capture --output-file coverage/coverage.info
-            COMMAND ${LCOV} --remove coverage/coverage.info '/usr/*' '*/tests/*' '*/unity/*' --output-file coverage/coverage.info
+            COMMAND ${LCOV} --directory . --capture --output-file coverage/coverage.info --ignore-errors unused
+            COMMAND ${LCOV} --remove coverage/coverage.info '/usr/*' '*/tests/*' '*/unity/*' '*/CMakeFiles/*' --output-file coverage/coverage.info --ignore-errors unused
             COMMAND ${GENHTML} coverage/coverage.info --output-directory coverage
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMENT "Generating code coverage report"

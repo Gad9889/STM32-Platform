@@ -4,6 +4,7 @@
   "description": "Seamlessly integrate BGU Racing STM32 Platform into your STM32 CMake projects",
   "version": "0.1.0",
   "publisher": "ben-gurion-racing",
+  "icon": "LOGO.png",
   "engines": {
     "vscode": "^1.85.0"
   },

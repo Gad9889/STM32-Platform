@@ -42,13 +42,14 @@ jobs:
           name: vscode-extension
           path: vscode-extension/*.vsix
 
+      - name: Get VSIX filename
+        id: vsix
+        working-directory: ./vscode-extension
+        run: echo "filename=$(ls *.vsix)" >> $GITHUB_OUTPUT
+
       - name: Attach to release
         if: github.event_name == 'release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: vscode-extension/stm32-platform-integration-${{ steps.version.outputs.version }}.vsix
-          asset_name: stm32-platform-integration-${{ steps.version.outputs.version }}.vsix
-          asset_content_type: application/octet-stream
+          files: vscode-extension/${{ steps.vsix.outputs.filename }}
+          token: ${{ secrets.GITHUB_TOKEN }}

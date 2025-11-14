@@ -11,7 +11,7 @@ spi_message_t dummy ; // Dummy message for SPI transmission
 static handler_set_t* pHandlers = NULL; // Pointer to the handler set form the platform layer
 static plt_callbacks_t* pCallbacks = NULL; // Pointer to the callback function pointers from the platform layer
 
-uint8_t Spi_RxData[sizeof(spi_message_t)] = {0};  // DMA buffer for SPI reception
+__attribute__((aligned(4))) uint8_t Spi_RxData[sizeof(spi_message_t)] = {0};  // DMA buffer for SPI reception - DMA aligned
 void (*Spi_RxCallback)(spi_message_t *msg) = NULL;  // Callback function for SPI reception
 
 static Queue_t spiRxQueue = {0}; // Queue for SPI received messages
@@ -46,7 +46,7 @@ void plt_SpiInit(size_t rx_queue_size)
     }
     
     // Bounds check for queue size
-    if (rx_queue_size == 0 || rx_queue_size > 256) {
+    if (rx_queue_size == 0 || rx_queue_size > PLT_MAX_QUEUE_SIZE) {
         Error_Handler();
         return;
     }
@@ -72,12 +72,18 @@ void plt_SpiInit(size_t rx_queue_size)
   
    if(pSpi->Init.Mode == SPI_MODE_MASTER)
    {
-    HAL_SPI_TransmitReceive_DMA(pSpi,(uint8_t*)&dummy,Spi_RxData,(uint16_t)sizeof(spi_message_t)); // Start SPI transmission
+    if (HAL_SPI_TransmitReceive_DMA(pSpi,(uint8_t*)&dummy,Spi_RxData,(uint16_t)sizeof(spi_message_t)) != HAL_OK) {
+        Error_Handler();
+        return;
+    }
    }
 
    if(pSpi->Init.Mode == SPI_MODE_SLAVE)
    {
-    HAL_SPI_Receive_DMA(pSpi, Spi_RxData, sizeof(spi_message_t));  // Start SPI reception
+    if (HAL_SPI_Receive_DMA(pSpi, Spi_RxData, sizeof(spi_message_t)) != HAL_OK) {
+        Error_Handler();
+        return;
+    }
     }
 }
 
@@ -90,13 +96,17 @@ void plt_SpiInit(size_t rx_queue_size)
 void plt_SpiProcessRxMsgs(void)
 {
     spi_message_t data = {0};
-    while (spiRxQueue.status != QUEUE_EMPTY)
+    uint16_t iterations = 0;
+    const uint16_t MAX_ITERATIONS = PLT_MAX_QUEUE_SIZE + 1;  // Safety limit
+    
+    while (spiRxQueue.status != QUEUE_EMPTY && iterations < MAX_ITERATIONS)
     {
         Queue_Pop(&spiRxQueue, &data);
         if (Spi_RxCallback)
         {
             Spi_RxCallback(&data);
         }
+        iterations++;
     }
 
 }
@@ -145,18 +155,22 @@ void plt_SpiSendMsg(spi_message_t* pData)
      }
      
      // Push the received data to the queue
-     Queue_Push(&spiRxQueue, Spi_RxData);
+     if (Queue_Push(&spiRxQueue, Spi_RxData) != QUEUE_OK) {
+         // Queue full - data lost
+         // TODO: Add error logging or counter
+     }
      memset(Spi_RxData, 0, sizeof(Spi_RxData));
      // Start the next reception in interrupt mode
      HAL_SPI_Receive_DMA(pSpi, Spi_RxData, sizeof(spi_message_t));
-     hspi->State = HAL_SPI_STATE_READY;
      
  }
  void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
  {
      // Push the received data to the queue
-     Queue_Push(&spiRxQueue, Spi_RxData);
+     if (Queue_Push(&spiRxQueue, Spi_RxData) != QUEUE_OK) {
+         // Queue full - data lost
+         // TODO: Add error logging or counter
+     }
      memset(Spi_RxData, 0, sizeof(Spi_RxData));
-     hspi->State = HAL_SPI_STATE_READY; 
  }
  #endif

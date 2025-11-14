@@ -12,7 +12,7 @@ static handler_set_t* pHandlers = NULL;    // Pointer to the handler set from th
 static plt_callbacks_t* pCallbacks = NULL; // Pointer to the callback function pointers from the platform layer
 uart_message_t Uart_TxData = {0};  // UART message structure for transmission
 debug_message_t Debug_TxData = {0};  // Debug message structure for transmission
-uint8_t Uart_RxData[2][sizeof(uart_message_t)] = {0};  // DMA buffer for SPI reception
+__attribute__((aligned(4))) uint8_t Uart_RxData[2][sizeof(uart_message_t)] = {0};  // DMA buffer for UART reception - DMA aligned
 void (*Uart_RxCallback)(uart_message_t *) = NULL;  // Callback function for UART reception
 
 static Queue_t uartRxQueue = {0};
@@ -61,7 +61,7 @@ void plt_UartInit(size_t tx_queue_size)
     }
     
     // Bounds check for queue size
-    if (tx_queue_size == 0 || tx_queue_size > 256) {
+    if (tx_queue_size == 0 || tx_queue_size > PLT_MAX_QUEUE_SIZE) {
         Error_Handler();
         return;
     }
@@ -75,7 +75,10 @@ void plt_UartInit(size_t tx_queue_size)
     {
         pUart1 = pHandlers->huart1;  // Set the UART handle pointer
         
-        HAL_UART_Receive_DMA(pUart1,Uart_RxData,(uint16_t)sizeof(uart_message_t));
+        if (HAL_UART_Receive_DMA(pUart1,Uart_RxData,(uint16_t)sizeof(uart_message_t)) != HAL_OK) {
+            Error_Handler();
+            return;
+        }
     }
 
 
@@ -88,7 +91,10 @@ void plt_UartInit(size_t tx_queue_size)
     if(pHandlers->huart3 != NULL)
     {
         pUart3 = pHandlers->huart3;  // Set the UART handle pointer
-        HAL_UART_Receive_DMA(pUart3,Uart_RxData,(uint16_t)sizeof(uart_message_t));
+        if (HAL_UART_Receive_DMA(pUart3,Uart_RxData,(uint16_t)sizeof(uart_message_t)) != HAL_OK) {
+            Error_Handler();
+            return;
+        }
     }
 
 
@@ -124,13 +130,17 @@ void plt_UartInit(size_t tx_queue_size)
 void plt_UartProcessRxMsgs(void)
 {
     uart_message_t data = {0};
-    while (uartRxQueue.status != QUEUE_EMPTY)
+    uint16_t iterations = 0;
+    const uint16_t MAX_ITERATIONS = PLT_MAX_QUEUE_SIZE + 1;  // Safety limit
+    
+    while (uartRxQueue.status != QUEUE_EMPTY && iterations < MAX_ITERATIONS)
     {
         Queue_Pop(&uartRxQueue, &data);  // Pop the data from the queue
         if (Uart_RxCallback)  // Check if the callback function is set
         {
             Uart_RxCallback(&data);  // Call the RX processing callback
         }
+        iterations++;
     }
 }
 
@@ -139,13 +149,17 @@ void plt_UartSyncMCUs(void)
 {
     uart_message_t data = {0};
     HAL_StatusTypeDef status = HAL_OK;
-    while (uartTxQueue.status != QUEUE_EMPTY)
+    uint16_t iterations = 0;
+    const uint16_t MAX_ITERATIONS = PLT_MAX_QUEUE_SIZE + 1;  // Safety limit
+    
+    while (uartTxQueue.status != QUEUE_EMPTY && iterations < MAX_ITERATIONS)
     {
         if (status == HAL_OK)
         {
             Queue_Pop(&uartTxQueue, &data);  // Pop the data from the queue
         }
         status = plt_UartSendMsg(UART_Between_MCUs, &data);  // Send the data via UART1
+        iterations++;
     }
 }
 
@@ -218,13 +232,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
  {
     if (huart->Instance == USART1)
     {
-        Queue_Push(&uartRxQueue,Uart_RxData[1]) ;
+        if (Queue_Push(&uartRxQueue,Uart_RxData[1]) != QUEUE_OK) {
+            // Queue full - UART message lost
+            // TODO: Add error counter or logging
+        }
         memset(Uart_RxData[1],0,sizeof(uart_message_t));
         HAL_UART_Receive_DMA(huart,Uart_RxData[1],(uint16_t)sizeof(uart_message_t));
     }
     if (huart->Instance == USART3)
     {
-        Queue_Push(&uartRxQueue,Uart_RxData[2]) ;
+        if (Queue_Push(&uartRxQueue,Uart_RxData[2]) != QUEUE_OK) {
+            // Queue full - UART message lost
+            // TODO: Add error counter or logging
+        }
         memset(Uart_RxData[2],0,sizeof(uart_message_t));
         HAL_UART_Receive_DMA(huart,Uart_RxData[2],(uint16_t)sizeof(uart_message_t));
     }

@@ -28,28 +28,38 @@ Set_Function_t pSet_Function;
 
     #ifdef HAL_CAN_MODULE_ENABLED
     plt_CanInit(RxQueueSize);
+    #if PLT_ENABLE_INIT_PRINTS
     printf("CAN Initialized \r\n");
+    #endif
     #endif
 
     #ifdef HAL_UART_MODULE_ENABLED
     plt_UartInit(RxQueueSize);
     pUartTxQueue = plt_GetUartTxQueue(); // Get the UART transmission queue pointer
+    #if PLT_ENABLE_INIT_PRINTS
     printf("UART Initialized \r\n");
+    #endif
     #endif
 
     #ifdef HAL_SPI_MODULE_ENABLED
     plt_SpiInit(RxQueueSize);
+    #if PLT_ENABLE_INIT_PRINTS
     printf("SPI Initialized \r\n");
+    #endif
     #endif
 
     #ifdef HAL_ADC_MODULE_ENABLED
     plt_AdcInit();
+    #if PLT_ENABLE_INIT_PRINTS
     printf("ADC Initialized \r\n");
+    #endif
     #endif
 
     #ifdef HAL_TIM_MODULE_ENABLED
     plt_TimInit();
+    #if PLT_ENABLE_INIT_PRINTS
     printf("Advanced TIM Initialized \r\n");
+    #endif
     #endif
  }
 

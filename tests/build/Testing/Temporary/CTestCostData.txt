@@ -1,6 +1,4 @@
-test_utils 0 0
-test_database 1 0.0378234
-test_hashtable 0 0
+test_utils 3 0.00330903
+test_database 5 0.0021778
+test_hashtable 4 0.00437345
 ---
-test_utils
-test_hashtable

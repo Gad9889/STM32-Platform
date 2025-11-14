@@ -11,7 +11,7 @@ static handler_set_t* pHandlers = NULL; // Pointer to the handler set form the p
 static plt_callbacks_t* pCallbacks = NULL; // Pointer to the callback function pointers from the platform layer
 static char CAN_ErrorMsg[256];
 CAN_RxHeaderTypeDef RxHeader[2];          // Array for received CAN message headers 
-uint8_t Can_RxData[2][8];                 // Buffer for received CAN message data (2 FIFOs, 8 bytes each) 
+__attribute__((aligned(4))) uint8_t Can_RxData[2][8];  // Buffer for received CAN message data (2 FIFOs, 8 bytes each) - DMA aligned 
 uint32_t TxMailbox[3];                    // Array for managing CAN transmission mailboxes
 
 // Callback function for processing received CAN messages
@@ -50,7 +50,7 @@ void plt_CanInit(size_t rx_queue_size)
     }
     
     // Bounds check for queue size
-    if (rx_queue_size == 0 || rx_queue_size > 256) {
+    if (rx_queue_size == 0 || rx_queue_size > PLT_MAX_QUEUE_SIZE) {
         Error_Handler();
         return;
     }
@@ -128,11 +128,11 @@ void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
 
     if (pCan->Instance == CAN1)
     {
-        filter0.FilterBank = 0; // Use bank 0 for CAN1
+        filter0.FilterBank = CAN_FILTER_BANK_CAN1_FIFO0;
     }
     else if (pCan->Instance == CAN2)
     {
-        filter0.FilterBank = 14; // Use bank 14 for CAN2
+        filter0.FilterBank = CAN_FILTER_BANK_CAN2_FIFO0;
     }
 
 
@@ -157,11 +157,11 @@ void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
 
      if (pCan->Instance == CAN1)
     {
-        filter1.FilterBank = 13; // Use bank 0 for CAN1
+        filter1.FilterBank = CAN_FILTER_BANK_CAN1_FIFO1;
     }
     else if (pCan->Instance == CAN2)
     {
-        filter1.FilterBank = 27; // Use bank 14 for CAN2
+        filter1.FilterBank = CAN_FILTER_BANK_CAN2_FIFO1;
     }
 
     if (HAL_CAN_ConfigFilter(pCan, &filter1)) {
@@ -180,14 +180,17 @@ void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
 void plt_CanProcessRxMsgs()
 {
     can_message_t data = {0};
+    uint16_t iterations = 0;
+    const uint16_t MAX_ITERATIONS = PLT_MAX_QUEUE_SIZE + 1;  // Safety limit
 
-    while (canRxQueue.status != QUEUE_EMPTY)
+    while (canRxQueue.status != QUEUE_EMPTY && iterations < MAX_ITERATIONS)
     {
         Queue_Pop(&canRxQueue, &data);
         if (Can_RxCallback)
         {
             Can_RxCallback(&data);
         }
+        iterations++;
     }
 }
 
@@ -262,7 +265,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     can_message_t msg;
     msg.id = RxHeader[0].StdId;
     memcpy(msg.data, Can_RxData[0], 8); 
-    Queue_Push(&canRxQueue, &msg);
+    if (Queue_Push(&canRxQueue, &msg) != QUEUE_OK) {
+        // Queue full - CAN message lost
+        // TODO: Add error counter or logging
+    }
     return;
 }
 
@@ -280,7 +286,10 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
     can_message_t msg;
     msg.id = RxHeader[1].StdId;
     memcpy(msg.data, Can_RxData[1], 8);
-    Queue_Push(&canRxQueue, &msg);
+    if (Queue_Push(&canRxQueue, &msg) != QUEUE_OK) {
+        // Queue full - CAN message lost
+        // TODO: Add error counter or logging
+    }
     return;
 }
 

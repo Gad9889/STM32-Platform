@@ -4,6 +4,14 @@
 #include "platform.h"
 
 #ifdef HAL_CAN_MODULE_ENABLED
+
+/* ========================== Constants ============================ */
+#define CAN_FILTER_BANK_CAN1_FIFO0  0   /*!< CAN1 FIFO0 filter bank */
+#define CAN_FILTER_BANK_CAN1_FIFO1  13  /*!< CAN1 FIFO1 filter bank */
+#define CAN_FILTER_BANK_CAN2_FIFO0  14  /*!< CAN2 FIFO0 filter bank */
+#define CAN_FILTER_BANK_CAN2_FIFO1  27  /*!< CAN2 FIFO1 filter bank */
+#define PLT_MAX_QUEUE_SIZE          256 /*!< Maximum queue size for safety */
+
 /* ========================== Function Declarations ============================ */
 void plt_CanInit(size_t rx_queue_size);
 void plt_CanFilterInit(CAN_HandleTypeDef* pCan);

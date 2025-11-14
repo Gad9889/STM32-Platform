@@ -49,6 +49,14 @@
 #ifndef PLT_DEBUG_TX_QUEUE_SIZE
 #define PLT_DEBUG_TX_QUEUE_SIZE   64    /*!< Debug UART TX queue size */
 #endif
+
+/**
+ * @brief Enable debug print messages during initialization
+ * @note Set to 0 to disable printf calls for better performance
+ */
+#ifndef PLT_ENABLE_INIT_PRINTS
+#define PLT_ENABLE_INIT_PRINTS    0     /*!< 0=disabled, 1=enabled */
+#endif
 /** @} */
 
 /**

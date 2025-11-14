@@ -18,13 +18,13 @@ static can_message_t msg = {0};
 
 
 
-uint16_t ADC1_UF_Buffer[ADC1_TOTAL_BUFFER_SIZE];  // ADC Data Buffer
+__attribute__((aligned(4))) uint16_t ADC1_UF_Buffer[ADC1_TOTAL_BUFFER_SIZE];  // ADC Data Buffer - DMA aligned
 uint16_t ADC1_AVG_Samples[ADC1_NUM_SENSORS];  // Stores the averaged sensor values
 
-uint16_t ADC2_UF_Buffer[ADC2_TOTAL_BUFFER_SIZE];  // ADC Data Buffer
+__attribute__((aligned(4))) uint16_t ADC2_UF_Buffer[ADC2_TOTAL_BUFFER_SIZE];  // ADC Data Buffer - DMA aligned
 uint16_t ADC2_AVG_Samples[ADC2_NUM_SENSORS];  // Stores the averaged sensor values
 
-uint16_t ADC3_UF_Buffer[ADC3_TOTAL_BUFFER_SIZE];  // ADC Data Buffer
+__attribute__((aligned(4))) uint16_t ADC3_UF_Buffer[ADC3_TOTAL_BUFFER_SIZE];  // ADC Data Buffer - DMA aligned
 uint16_t ADC3_AVG_Samples[ADC3_NUM_SENSORS];  // Stores the averaged sensor values
 
 
@@ -55,7 +55,10 @@ void plt_AdcInit()
     {   
         
         pAdc1 = pHandlers->hadc1;
-        HAL_ADC_Start_DMA(pAdc1, (uint32_t*)ADC1_UF_Buffer, ADC1_TOTAL_BUFFER_SIZE);
+        if (HAL_ADC_Start_DMA(pAdc1, (uint32_t*)ADC1_UF_Buffer, ADC1_TOTAL_BUFFER_SIZE) != HAL_OK) {
+            Error_Handler();
+            return;
+        }
 
     }
     
@@ -63,14 +66,20 @@ void plt_AdcInit()
     if (pHandlers->hadc2 != NULL) 
     {
         pAdc2 = pHandlers->hadc2;
-        HAL_ADC_Start_DMA(pAdc2, (uint32_t*)ADC2_UF_Buffer, ADC2_TOTAL_BUFFER_SIZE);
+        if (HAL_ADC_Start_DMA(pAdc2, (uint32_t*)ADC2_UF_Buffer, ADC2_TOTAL_BUFFER_SIZE) != HAL_OK) {
+            Error_Handler();
+            return;
+        }
     }
 
     // Initialize the ADC3 peripheral
     if (pHandlers->hadc3 != NULL) 
     {
         pAdc3 = pHandlers->hadc3;
-        HAL_ADC_Start_DMA(pAdc3, (uint32_t*)ADC3_UF_Buffer, ADC3_TOTAL_BUFFER_SIZE);
+        if (HAL_ADC_Start_DMA(pAdc3, (uint32_t*)ADC3_UF_Buffer, ADC3_TOTAL_BUFFER_SIZE) != HAL_OK) {
+            Error_Handler();
+            return;
+        }
     }
 
     msg.id = Internal_ADC; // Set the message ID for the CAN message
@@ -140,56 +149,22 @@ memcpy(msg.data, avgSamples, numSensors * sizeof(uint16_t));
 Queue_Push(pCanRxQueue, &msg);
 }
 
-/*
-void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
-{
-    if (hadc->Instance == ADC1) {
-        HAL_ADC_Stop_DMA(pAdc1);
-        plt_AdcProcessData(ADC1_UF_Buffer,ADC1_TOTAL_BUFFER_SIZE / 2);
-        HAL_ADC_Start_DMA(pAdc1, (uint32_t*)ADC1_UF_Buffer, ADC1_TOTAL_BUFFER_SIZE);
-    }
-
-    if (hadc->Instance == ADC2) {
-        HAL_ADC_Stop_DMA(pAdc2);
-        plt_AdcProcessData(ADC2_UF_Buffer,ADC2_TOTAL_BUFFER_SIZE / 2);
-        HAL_ADC_Start_DMA(pAdc2, (uint32_t*)ADC2_UF_Buffer, ADC2_TOTAL_BUFFER_SIZE);
-    } 
-
-    if (hadc->Instance == ADC3) {
-        HAL_ADC_Stop_DMA(pAdc3);
-        plt_AdcProcessData(ADC3_UF_Buffer,ADC3_TOTAL_BUFFER_SIZE / 2);
-        HAL_ADC_Start_DMA(pAdc3, (uint32_t*)ADC3_UF_Buffer, ADC3_TOTAL_BUFFER_SIZE);
-    }
-}
-*/
-
-
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
+  // Note: DMA must be configured in CIRCULAR mode for this to work correctly
+  // Process data without stopping DMA - circular mode will continue filling buffer
+  
   if(hadc->Instance == ADC1)
   {
-    HAL_ADC_Stop_DMA(pAdc1);
-    // Process the ADC data for ADC1
     plt_AdcProcessData(ADC1_UF_Buffer, ADC1_TOTAL_BUFFER_SIZE);
-
-    HAL_ADC_Start_DMA(pAdc1, (uint32_t*)ADC1_UF_Buffer, ADC1_TOTAL_BUFFER_SIZE);
-
   }
   else if(hadc->Instance == ADC2)
   {
-    HAL_ADC_Stop_DMA(pAdc2);
-    // Process the ADC data for ADC2
     plt_AdcProcessData(ADC2_UF_Buffer, ADC2_TOTAL_BUFFER_SIZE);
-
-    HAL_ADC_Start_DMA(pAdc2, (uint32_t*)ADC2_UF_Buffer, ADC2_TOTAL_BUFFER_SIZE);
   }
   else if(hadc->Instance == ADC3)
   {
-    HAL_ADC_Stop_DMA(pAdc3);
-    // Process the ADC data for ADC3
     plt_AdcProcessData(ADC3_UF_Buffer, ADC3_TOTAL_BUFFER_SIZE);
-
-    HAL_ADC_Start_DMA(pAdc3, (uint32_t*)ADC3_UF_Buffer, ADC3_TOTAL_BUFFER_SIZE);
   }
 }
 

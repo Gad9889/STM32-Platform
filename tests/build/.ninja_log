@@ -16,3 +16,9 @@
 30	183	7848510600751913	test_utils.exe	1450a765d5c2276b
 118	217	7848510601629779	test_database.exe	dd2546c97e4a9b3d
 125	223	7848510601704998	test_hashtable.exe	7c8ba98a267862c5
+21	121	7848512099012075	CMakeFiles/test_utils.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/utils.c.obj	3a154b9b65e4a2b2
+27	129	7848512099059856	CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/hashtable.c.obj	60e3b5facc90c602
+122	217	7848512100018958	test_utils.exe	1450a765d5c2276b
+130	223	7848512100094433	test_hashtable.exe	7c8ba98a267862c5
+20	106	7848512418341696	CMakeFiles/test_utils.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/utils.c.obj	3a154b9b65e4a2b2
+106	195	7848512419203488	test_utils.exe	1450a765d5c2276b

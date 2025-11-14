@@ -19,12 +19,12 @@ void example1_hello_world(void) {
     STM32.begin(NULL, &huart2, NULL);
     
     // Print to UART
-    UART.println("Hello World!");
-    UART.printf("System clock: %d MHz\n", SystemCoreClock / 1000000);
+    P_UART.println("Hello World!");
+    P_UART.printf("System clock: %d MHz\n", SystemCoreClock / 1000000);
     
     while (1) {
         STM32.process();
-        UART.println("Heartbeat");
+        P_UART.println("Heartbeat");
         HAL_Delay(1000);
     }
 }
@@ -33,21 +33,21 @@ void example1_hello_world(void) {
 
 void onCANReceived(CANMessage_t* msg) {
     // Echo back what we received
-    UART.printf("Received CAN 0x%03X: ", msg->id);
+    P_UART.printf("Received CAN 0x%03X: ", msg->id);
     for (int i = 0; i < msg->length; i++) {
-        UART.printf("%02X ", msg->data[i]);
+        P_UART.printf("%02X ", msg->data[i]);
     }
-    UART.println("");
+    P_UART.println("");
     
     // Echo back on CAN
-    CAN.send(msg->id + 1, msg->data, msg->length);
+    P_CAN.send(msg->id + 1, msg->data, msg->length);
 }
 
 void example2_can_echo(void) {
     STM32.begin(&hcan1, &huart2, NULL)
          ->onCAN(onCANReceived);
     
-    UART.println("CAN Echo ready. Send message on 0x100, get echo on 0x101");
+    P_UART.println("CAN Echo ready. Send message on 0x100, get echo on 0x101");
     
     while (1) {
         STM32.process();  // Calls onCANReceived automatically
@@ -62,15 +62,15 @@ void example3_adc_to_can(void) {
     ADC.setResolution(12);
     ADC.calibrate();
     
-    UART.println("Sending ADC values via CAN");
+    P_UART.println("Sending ADC values via CAN");
     
     while (1) {
         STM32.process();
         
         // Read ADC channels
-        uint16_t ch1 = ADC.read(ADC_CHANNEL_1);
-        uint16_t ch2 = ADC.read(ADC_CHANNEL_2);
-        uint16_t ch3 = ADC.read(ADC_CHANNEL_3);
+        uint16_t ch1 = P_ADC.read(ADC_CHANNEL_1);
+        uint16_t ch2 = P_ADC.read(ADC_CHANNEL_2);
+        uint16_t ch3 = P_ADC.read(ADC_CHANNEL_3);
         
         // Pack into CAN message
         uint8_t data[8] = {
@@ -80,9 +80,9 @@ void example3_adc_to_can(void) {
             0x00, 0x00
         };
         
-        CAN.send(0x200, data, 8);
+        P_CAN.send(0x200, data, 8);
         
-        UART.printf("ADC: %d, %d, %d\n", ch1, ch2, ch3);
+        P_UART.printf("ADC: %d, %d, %d\n", ch1, ch2, ch3);
         
         HAL_Delay(100);
     }
@@ -93,10 +93,10 @@ void example3_adc_to_can(void) {
 void example4_pwm_breathing(void) {
     STM32.begin(NULL, &huart2, NULL, NULL, &htim2);
     
-    PWM.setFrequency(&htim2, 1000);  // 1 kHz PWM
+    P_PWM.setFrequency(&htim2, 1000);  // 1 kHz PWM
     PWM.start(&htim2, TIM_CHANNEL_1);
     
-    UART.println("PWM breathing effect on TIM2 CH1");
+    P_UART.println("PWM breathing effect on TIM2 CH1");
     
     float dutyCycle = 0.0;
     float direction = 1.0;
@@ -115,7 +115,7 @@ void example4_pwm_breathing(void) {
             direction = 1.0;
         }
         
-        PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, dutyCycle);
+        P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, dutyCycle);
         
         HAL_Delay(10);
     }
@@ -127,7 +127,7 @@ void onDashboardCAN(CANMessage_t* msg) {
     if (msg->id == 0x100) {
         // Speed message
         uint16_t speed = (msg->data[0] << 8) | msg->data[1];
-        UART.printf("Speed: %d km/h\n", speed);
+        P_UART.printf("Speed: %d km/h\n", speed);
     }
 }
 
@@ -138,8 +138,8 @@ void example5_dashboard(void) {
     // Configure CAN to only receive speed messages
     CAN.setFilter(0x100, 0x7FF);
     
-    UART.println("Dashboard ready");
-    UART.printf("Platform version: %s\n", STM32.version());
+    P_UART.println("Dashboard ready");
+    P_UART.printf("Platform version: %s\n", STM32.version());
     
     uint32_t lastUpdate = 0;
     
@@ -151,14 +151,14 @@ void example5_dashboard(void) {
             lastUpdate = HAL_GetTick();
             
             // Read sensors
-            float voltage = ADC.readVoltage(ADC_CHANNEL_1);
+            float voltage = P_ADC.readVoltage(ADC_CHANNEL_1);
             float temp = (voltage - 0.76) / 0.0025 + 25.0;  // Internal temp sensor
             
             // Control backlight based on time of day (example)
             static float brightness = 0.0;
             brightness += 0.5;
             if (brightness > 100.0) brightness = 0.0;
-            PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, brightness);
+            P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, brightness);
             
             // Send telemetry via CAN
             uint8_t telemetry[8] = {
@@ -166,7 +166,7 @@ void example5_dashboard(void) {
                 (uint8_t)brightness,
                 0, 0, 0, 0, 0, 0
             };
-            CAN.send(0x500, telemetry, 8);
+            P_CAN.send(0x500, telemetry, 8);
         }
     }
 }
@@ -176,25 +176,25 @@ void example5_dashboard(void) {
 void example6_error_handling(void) {
     STM32.begin(&hcan1, &huart2, NULL);
     
-    UART.println("Testing error handling");
+    P_UART.println("Testing error handling");
     
     // Try to send on uninitialized peripheral
-    if (!CAN.send(0x100, NULL, 8)) {
+    if (!P_CAN.send(0x100, NULL, 8)) {
         ErrorCode_t err = STM32.getLastError();
-        UART.printf("Expected error: %s\n", STM32.getErrorString(err));
+        P_UART.printf("Expected error: %s\n", STM32.getErrorString(err));
     }
     
     // Check system health
     if (!STM32.isHealthy()) {
-        UART.println("System not healthy");
-        UART.printf("CAN ready: %s\n", CAN.isReady() ? "yes" : "no");
-        UART.printf("UART ready: %s\n", UART.isReady() ? "yes" : "no");
+        P_UART.println("System not healthy");
+        P_UART.printf("CAN ready: %s\n", P_CAN.isReady() ? "yes" : "no");
+        P_UART.printf("UART ready: %s\n", P_UART.isReady() ? "yes" : "no");
     }
     
     // Valid send
     uint8_t data[] = {0x01, 0x02, 0x03};
-    if (CAN.send(0x100, data, 3)) {
-        UART.println("CAN send successful");
+    if (P_CAN.send(0x100, data, 3)) {
+        P_UART.println("CAN send successful");
     }
     
     while (1) {
@@ -224,7 +224,7 @@ void example7_configuration(void) {
     ADC.setResolution(12);
     ADC.setReference(3.3);
     
-    UART.println("System configured");
+    P_UART.println("System configured");
     
     while (1) {
         STM32.process();
@@ -250,8 +250,8 @@ void example8_database(void) {
     float speed = Database.get("vcu.speed");
     int throttle = Database.getInt("vcu.throttle");
     
-    UART.printf("Speed: %.1f km/h\n", speed);
-    UART.printf("Throttle: %d%%\n", throttle);
+    P_UART.printf("Speed: %.1f km/h\n", speed);
+    P_UART.printf("Throttle: %d%%\n", throttle);
     
     // Auto-sync to CAN
     Database.syncToCAN(0x400);  // Send database snapshot on CAN 0x400
@@ -266,31 +266,31 @@ void example8_database(void) {
 
 void commandHandler(char* cmd) {
     if (strcmp(cmd, "help") == 0) {
-        UART.println("Commands: status, reset, can, adc");
+        P_UART.println("Commands: status, reset, can, adc");
     }
     else if (strcmp(cmd, "status") == 0) {
-        UART.printf("Uptime: %d ms\n", HAL_GetTick());
-        UART.printf("CAN: %d msgs\n", CAN.getRxCount());
+        P_UART.printf("Uptime: %d ms\n", HAL_GetTick());
+        P_UART.printf("CAN: %d msgs\n", P_CAN.getRxCount());
     }
     else if (strcmp(cmd, "reset") == 0) {
-        UART.println("Resetting...");
+        P_UART.println("Resetting...");
         NVIC_SystemReset();
     }
     else if (strcmp(cmd, "can") == 0) {
         uint8_t test[] = {0xDE, 0xAD, 0xBE, 0xEF};
-        CAN.send(0x123, test, 4);
-        UART.println("CAN test message sent");
+        P_CAN.send(0x123, test, 4);
+        P_UART.println("CAN test message sent");
     }
     else {
-        UART.printf("Unknown command: %s\n", cmd);
+        P_UART.printf("Unknown command: %s\n", cmd);
     }
 }
 
 void example9_cli(void) {
     STM32.begin(&hcan1, &huart2, NULL);
     
-    UART.println("CLI Ready. Type 'help' for commands");
-    UART.print("> ");
+    P_UART.println("CLI Ready. Type 'help' for commands");
+    P_UART.print("> ");
     
     char buffer[64] = {0};
     uint8_t pos = 0;
@@ -303,18 +303,18 @@ void example9_cli(void) {
             
             if (c == '\n' || c == '\r') {
                 buffer[pos] = '\0';
-                UART.println("");
+                P_UART.println("");
                 
                 if (pos > 0) {
                     commandHandler(buffer);
                     pos = 0;
                 }
                 
-                UART.print("> ");
+                P_UART.print("> ");
             }
             else if (c == '\b' && pos > 0) {
                 pos--;
-                UART.print("\b \b");  // Erase character
+                P_UART.print("\b \b");  // Erase character
             }
             else if (pos < 63) {
                 buffer[pos++] = c;

@@ -20,7 +20,7 @@ int main(void) {
 
     Platform.begin(NULL, &huart2, NULL, NULL, NULL);
 
-    UART.println("Hello, STM32 Platform!");
+    P_UART.println("Hello, STM32 Platform!");
 
     while (1) {
         HAL_Delay(1000);
@@ -37,11 +37,11 @@ extern CAN_HandleTypeDef hcan1;
 extern UART_HandleTypeDef huart2;
 
 void can_handler(CANMessage_t* msg) {
-    UART.printf("CAN RX: ID=0x%03X, Data=", msg->id);
+    P_UART.printf("CAN RX: ID=0x%03X, Data=", msg->id);
     for (int i = 0; i < msg->length; i++) {
-        UART.printf("%02X ", msg->data[i]);
+        P_UART.printf("%02X ", msg->data[i]);
     }
-    UART.println("");
+    P_UART.println("");
 }
 
 int main(void) {
@@ -53,17 +53,17 @@ int main(void) {
     Platform.begin(&hcan1, &huart2, NULL, NULL, NULL)
             ->onCAN(can_handler);
 
-    UART.println("CAN example ready");
+    P_UART.println("CAN example ready");
 
     uint8_t counter = 0;
 
     while (1) {
         // Process incoming messages
-        CAN.handleRxMessages();
+        P_CAN.handleRxMessages();
 
         // Send periodic message
         uint8_t data[] = {counter++, 0x11, 0x22};
-        CAN.send(0x100, data, 3);
+        P_CAN.send(0x100, data, 3);
 
         HAL_Delay(1000);
     }
@@ -87,15 +87,15 @@ int main(void) {
     Platform.begin(NULL, &huart2, NULL, &hadc1, NULL);
 
     ADC.calibrate();
-    UART.println("ADC example ready");
+    P_UART.println("ADC example ready");
 
     while (1) {
         ADC.handleConversions();
 
-        uint16_t raw = ADC.readRaw(0);
-        float voltage = ADC.readVoltage(0);
+        uint16_t raw = P_ADC.readRaw(0);
+        float voltage = P_ADC.readVoltage(0);
 
-        UART.printf("ADC Ch0: %u (%.2fV)\\n", raw, voltage);
+        P_UART.printf("ADC Ch0: %u (%.2fV)\\n", raw, voltage);
 
         HAL_Delay(500);
     }
@@ -118,19 +118,19 @@ int main(void) {
 
     // Start PWM on channel 1
     PWM.start(&htim2, TIM_CHANNEL_1);
-    PWM.setFrequency(&htim2, 1000);  // 1 kHz
+    P_PWM.setFrequency(&htim2, 1000);  // 1 kHz
 
     // Fade in and out
     while (1) {
         // Fade in
         for (float duty = 0; duty <= 100; duty += 5) {
-            PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, duty);
+            P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, duty);
             HAL_Delay(50);
         }
 
         // Fade out
         for (float duty = 100; duty >= 0; duty -= 5) {
-            PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, duty);
+            P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, duty);
             HAL_Delay(50);
         }
     }
@@ -146,12 +146,12 @@ Route different CAN IDs to different handlers:
 ```c
 void motor_handler(CANMessage_t* msg) {
     uint16_t rpm = (msg->data[0] << 8) | msg->data[1];
-    UART.printf("Motor RPM: %u\\n", rpm);
+    P_UART.printf("Motor RPM: %u\\n", rpm);
 }
 
 void battery_handler(CANMessage_t* msg) {
     float voltage = (msg->data[0] << 8 | msg->data[1]) / 100.0f;
-    UART.printf("Battery: %.2fV\\n", voltage);
+    P_UART.printf("Battery: %.2fV\\n", voltage);
 }
 
 int main(void) {
@@ -164,7 +164,7 @@ int main(void) {
     CAN.route(0x301, battery_handler);
 
     while (1) {
-        CAN.handleRxMessages();  // Automatically calls correct handler
+        P_CAN.handleRxMessages();  // Automatically calls correct handler
         HAL_Delay(10);
     }
 }
@@ -184,8 +184,8 @@ extern UART_HandleTypeDef huart2;
 uint8_t read_sensor_register(uint8_t reg) {
     SPI.select(CS_PORT, CS_PIN);
 
-    SPI.transferByte(0x80 | reg);  // Read command
-    uint8_t value = SPI.transferByte(0x00);
+    P_SPI.transferByte(0x80 | reg);  // Read command
+    uint8_t value = P_SPI.transferByte(0x00);
 
     SPI.deselect(CS_PORT, CS_PIN);
 
@@ -204,7 +204,7 @@ int main(void) {
         uint8_t id = read_sensor_register(0x00);
         uint8_t temp = read_sensor_register(0x01);
 
-        UART.printf("Sensor ID: 0x%02X, Temp: %u°C\\n", id, temp);
+        P_UART.printf("Sensor ID: 0x%02X, Temp: %u°C\\n", id, temp);
 
         HAL_Delay(1000);
     }
@@ -241,13 +241,13 @@ void can_handler(CANMessage_t* msg) {
     if (msg->id == 0x201) {
         // Motor controller response
         vehicle.motor_rpm = (msg->data[0] << 8) | msg->data[1];
-        UART.printf("Motor: %u RPM\\n", vehicle.motor_rpm);
+        P_UART.printf("Motor: %u RPM\\n", vehicle.motor_rpm);
     }
 }
 
 void update_throttle(void) {
     // Read throttle pedal position
-    vehicle.throttle_raw = ADC.readRaw(0);
+    vehicle.throttle_raw = P_ADC.readRaw(0);
     vehicle.throttle_percent = (vehicle.throttle_raw / 4095.0f) * 100.0f;
 
     // Send motor command
@@ -255,19 +255,19 @@ void update_throttle(void) {
         (uint8_t)(vehicle.throttle_percent),
         0x00  // Reserved
     };
-    CAN.send(CAN_MOTOR_CMD, cmd, 2);
+    P_CAN.send(CAN_MOTOR_CMD, cmd, 2);
 }
 
 void update_cooling(void) {
     // Enable fan if motor RPM > 5000
     if (vehicle.motor_rpm > 5000 && !vehicle.fan_enabled) {
-        PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 100.0);
+        P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 100.0);
         vehicle.fan_enabled = true;
-        UART.println("Fan ON");
+        P_UART.println("Fan ON");
     } else if (vehicle.motor_rpm < 4000 && vehicle.fan_enabled) {
-        PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 0.0);
+        P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 0.0);
         vehicle.fan_enabled = false;
-        UART.println("Fan OFF");
+        P_UART.println("Fan OFF");
     }
 }
 
@@ -283,14 +283,14 @@ int main(void) {
             ->onCAN(can_handler);
 
     PWM.start(&htim2, TIM_CHANNEL_1);
-    PWM.setFrequency(&htim2, 25000);  // 25 kHz for fan
+    P_PWM.setFrequency(&htim2, 25000);  // 25 kHz for fan
 
-    UART.println("Vehicle Control Unit Ready");
-    UART.printf("Version: %s\\n", Platform.version());
+    P_UART.println("Vehicle Control Unit Ready");
+    P_UART.printf("Version: %s\\n", Platform.version());
 
     while (1) {
         // Process inputs
-        CAN.handleRxMessages();
+        P_CAN.handleRxMessages();
         ADC.handleConversions();
 
         // Update control logic
@@ -299,7 +299,7 @@ int main(void) {
 
         // Status reporting
         if (HAL_GetTick() % 1000 == 0) {
-            UART.printf("Throttle: %.1f%%, RPM: %u, Fan: %s\\n",
+            P_UART.printf("Throttle: %.1f%%, RPM: %u, Fan: %s\\n",
                 vehicle.throttle_percent,
                 vehicle.motor_rpm,
                 vehicle.fan_enabled ? "ON" : "OFF");
@@ -317,12 +317,12 @@ int main(void) {
 ```c
 // Log all CAN messages
 void debug_can_handler(CANMessage_t* msg) {
-    UART.printf("[%lu] CAN ID=0x%03X Len=%u Data=",
+    P_UART.printf("[%lu] CAN ID=0x%03X Len=%u Data=",
         HAL_GetTick(), msg->id, msg->length);
     for (int i = 0; i < msg->length; i++) {
-        UART.printf("%02X ", msg->data[i]);
+        P_UART.printf("%02X ", msg->data[i]);
     }
-    UART.println("");
+    P_UART.println("");
 }
 
 Platform.begin(&hcan1, &huart2, NULL, NULL, NULL)
@@ -334,16 +334,16 @@ Platform.begin(&hcan1, &huart2, NULL, NULL, NULL)
 ```c
 if (!Platform.isHealthy()) {
     plt_status_t err = Platform.getLastError();
-    UART.printf("Error: %s\\n", Platform.getErrorString(err));
+    P_UART.printf("Error: %s\\n", Platform.getErrorString(err));
 }
 ```
 
 ### Monitor Queue Status
 
 ```c
-uint16_t pending = CAN.availableMessages();
+uint16_t pending = P_CAN.availableMessages();
 if (pending > 30) {
-    UART.printf("Warning: %u messages in queue\\n", pending);
+    P_UART.printf("Warning: %u messages in queue\\n", pending);
 }
 ```
 

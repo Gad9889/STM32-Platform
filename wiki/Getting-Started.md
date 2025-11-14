@@ -77,17 +77,17 @@ int main(void) {
     Platform.begin(&hcan1, &huart2, NULL, NULL, NULL);
 
     // Say hello!
-    UART.println("STM32 Platform ready!");
-    UART.printf("Version: %s\\n", Platform.version());
+    P_UART.println("STM32 Platform ready!");
+    P_UART.printf("Version: %s\\n", Platform.version());
 
     // Main loop
     while (1) {
         // Process incoming CAN messages
-        CAN.handleRxMessages();
+        P_CAN.handleRxMessages();
 
         // Send periodic CAN message
         uint8_t data[] = {0x01, 0x02, 0x03};
-        CAN.send(0x100, data, 3);
+        P_CAN.send(0x100, data, 3);
 
         HAL_Delay(1000);
     }
@@ -119,7 +119,7 @@ Compile and flash to your STM32. Open a serial terminal at 115200 baud to see ou
 ### CAN not working
 
 - Enable CAN interrupts in CubeMX
-- Call `CAN.handleRxMessages()` in your main loop
+- Call `P_CAN.handleRxMessages()` in your main loop
 - Check CAN transceiver wiring
 
 ### UART output not visible

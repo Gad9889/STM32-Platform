@@ -109,7 +109,7 @@ Hardware → DMA → Averaging Buffer → readVoltage() → User Code
 Global peripheral objects provide single point of access:
 
 ```c
-CAN.send(0x123, data, 8);  // Direct access
+P_CAN.send(0x123, data, 8);  // Direct access
 ```
 
 ### Fluent Interface
@@ -133,7 +133,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 }
 
 // User consumes
-CAN.handleRxMessages();  // Process queue
+P_CAN.handleRxMessages();  // Process queue
 ```
 
 ## Memory Management
@@ -167,7 +167,7 @@ When using FreeRTOS:
 ```c
 // Protect queue access
 xSemaphoreTake(canMutex, portMAX_DELAY);
-CAN.handleRxMessages();
+P_CAN.handleRxMessages();
 xSemaphoreGive(canMutex);
 ```
 

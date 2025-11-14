@@ -7,7 +7,7 @@ Seamlessly integrate the BGU Racing STM32 Platform into your STM32 CMake project
 - **One-Click Integration**: Automatically detects STM32 CMake projects and integrates the platform
 - **Smart Detection**: Identifies CubeMX-generated projects and existing STM32 HAL setups
 - **Selective Peripherals**: Choose which peripherals to enable (CAN, UART, SPI, ADC, TIM)
-- **Modern API**: Option to use the new consumer-grade API (`CAN.send()`) or legacy API (`plt_CanSendMsg()`)
+- **Modern API**: Option to use the new consumer-grade API (`P_CAN.send()`) or legacy API (`plt_CanSendMsg()`)
 - **Example Generation**: Creates working example code tailored to your peripheral selection
 
 ## Usage

@@ -48,16 +48,25 @@ jobs:
           cd build_coverage
           make coverage || true
 
-      - name: Upload coverage to Codecov
+      - name: Display coverage summary
         if: success()
-        uses: codecov/codecov-action@v4
-        with:
-          files: tests/build_coverage/coverage/coverage.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-          disable_search: true
-          plugin: noop
+        run: |
+          if [ -f tests/build_coverage/coverage/coverage.info ]; then
+            echo "Coverage report generated successfully"
+            tail -20 tests/build_coverage/coverage/coverage.info
+          else
+            echo "Coverage report not found"
+          fi
+
+      # Codecov upload disabled temporarily due to file path processing issues
+      # - name: Upload coverage to Codecov
+      #   if: success()
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     files: tests/build_coverage/coverage/coverage.info
+      #     flags: unittests
+      #     name: codecov-umbrella
+      #     fail_ci_if_error: false
 
   lint:
     name: Code Quality Check

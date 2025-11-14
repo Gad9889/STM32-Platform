@@ -1,15 +1,15 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Copy platform Inc/ and Src/ directories into the extension
-const platformRoot = path.resolve(__dirname, '..', '..');
-const extensionRoot = path.resolve(__dirname, '..');
+const platformRoot = path.resolve(__dirname, "..", "..");
+const extensionRoot = path.resolve(__dirname, "..");
 
-const incSrc = path.join(platformRoot, 'Inc');
-const incDest = path.join(extensionRoot, 'platform', 'Inc');
+const incSrc = path.join(platformRoot, "Inc");
+const incDest = path.join(extensionRoot, "platform", "Inc");
 
-const srcSrc = path.join(platformRoot, 'Src');
-const srcDest = path.join(extensionRoot, 'platform', 'Src');
+const srcSrc = path.join(platformRoot, "Src");
+const srcDest = path.join(extensionRoot, "platform", "Src");
 
 function copyDir(src, dest) {
   if (!fs.existsSync(dest)) {
@@ -31,7 +31,7 @@ function copyDir(src, dest) {
   }
 }
 
-console.log('Copying platform files into extension...');
+console.log("Copying platform files into extension...");
 copyDir(incSrc, incDest);
 copyDir(srcSrc, srcDest);
-console.log('Platform files copied successfully!');
+console.log("Platform files copied successfully!");

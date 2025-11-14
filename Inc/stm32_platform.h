@@ -9,8 +9,8 @@
  * Platform.begin(&hcan1, &huart2, NULL)->onCAN(myHandler);
  * 
  * while(1) {
- *     CAN.handleRxMessages();
- *     UART.handleRxData();
+ *     P_CAN.handleRxMessages();
+ *     P_UART.handleRxData();
  * }
  */
 
@@ -452,11 +452,11 @@ struct Platform_t {
 
 /* ==================== Global Singleton Objects ==================== */
 
-extern CAN_t CAN;
-extern UART_t UART;
-extern SPI_t SPI;
-extern ADC_t ADC;
-extern PWM_t PWM;
+extern CAN_t P_CAN;
+extern UART_t P_UART;
+extern SPI_t P_SPI;
+extern ADC_t P_ADC;
+extern PWM_t P_PWM;
 extern Platform_t Platform;
 
 #endif /* STM32_PLATFORM_H */

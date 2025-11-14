@@ -1,0 +1,113 @@
+Capturing coverage data from .
+geninfo cmd: '/usr/bin/geninfo . --output-filename coverage/coverage.info --ignore-errors unused --memory 0'
+Found gcov version: 13.3.0
+Using intermediate gcov format
+Writing temporary data to /tmp/geninfo_datNkzy
+Scanning . for .gcda files ...
+Found 12 data files in .
+Processing ./CMakeFiles/test_hashtable.dir/test_hashtable.c.gcda
+Processing ./CMakeFiles/test_hashtable.dir/home/runner/work/STM32-Platform/STM32-Platform/Src/hashtable.c.gcda
+Processing ./CMakeFiles/test_hashtable.dir/home/runner/work/STM32-Platform/STM32-Platform/Src/DbSetFunctions.c.gcda
+Processing ./CMakeFiles/test_hashtable.dir/home/runner/work/STM32-Platform/STM32-Platform/Src/database.c.gcda
+Processing ./CMakeFiles/test_hashtable.dir/mocks/stm32_hal_mocks.c.gcda
+Processing ./CMakeFiles/test_database.dir/home/runner/work/STM32-Platform/STM32-Platform/Src/DbSetFunctions.c.gcda
+Processing ./CMakeFiles/test_database.dir/home/runner/work/STM32-Platform/STM32-Platform/Src/database.c.gcda
+Processing ./CMakeFiles/test_database.dir/mocks/stm32_hal_mocks.c.gcda
+Processing ./CMakeFiles/test_database.dir/test_database.c.gcda
+Processing ./CMakeFiles/test_utils.dir/test_utils.c.gcda
+Processing ./CMakeFiles/test_utils.dir/home/runner/work/STM32-Platform/STM32-Platform/Src/utils.c.gcda
+Processing ./CMakeFiles/test_utils.dir/mocks/stm32_hal_mocks.c.gcda
+Finished .info-file creation
+lcov: WARNING: ('unused') 'exclude' pattern '/usr/*' is unused.
+lcov: WARNING: ('unused') 'exclude' pattern '*/unity/*' is unused.
+	(use "lcov --ignore-errors unused,unused ..." to suppress this warning)
+lcov: WARNING: ('unused') 'exclude' pattern '*/CMakeFiles/*' is unused.
+	(use "lcov --ignore-errors unused,unused ..." to suppress this warning)
+Excluding /home/runner/work/STM32-Platform/STM32-Platform/tests/mocks/stm32_hal_mocks.c
+Excluding /home/runner/work/STM32-Platform/STM32-Platform/tests/test_database.c
+Excluding /home/runner/work/STM32-Platform/STM32-Platform/tests/test_hashtable.c
+Excluding /home/runner/work/STM32-Platform/STM32-Platform/tests/test_utils.c
+Removed 4 files
+Writing data to coverage/coverage.info
+Summary coverage rate:
+  lines......: 40.1% (126 of 314 lines)
+  functions..: 47.1% (16 of 34 functions)
+  branches...: no data found
+Found 4 entries.
+Found common filename prefix "/home/runner/work/STM32-Platform/STM32-Platform"
+Generating output.
+Processing file Src/hashtable.c
+  lines=96 hit=43 functions=7 hit=6
+Processing file Src/utils.c
+  lines=67 hit=55 functions=5 hit=5
+Processing file Src/DbSetFunctions.c
+  lines=125 hit=3 functions=18 hit=1
+Processing file Src/database.c
+  lines=26 hit=25 functions=4 hit=4
+Overall coverage rate:
+  lines......: 40.1% (126 of 314 lines)
+  functions......: 47.1% (16 of 34 functions)
+[100%] Built target coverage
+3s
+Run codecov/codecov-action@v4
+eventName: push
+==> linux OS detected
+https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+gpg: directory '/home/runner/.gnupg' created
+gpg: keybox '/home/runner/.gnupg/pubring.kbx' created
+gpg: /home/runner/.gnupg/trustdb.gpg: trustdb created
+gpg: key 806BB28AED779869: public key "Codecov Uploader (Codecov Uploader Verification Key) <security@codecov.io>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+gpg: Signature made Mon Nov 10 14:58:43 2025 UTC
+gpg:                using RSA key 27034E7FDB850E0BBC2C62FF806BB28AED779869
+gpg: Good signature from "Codecov Uploader (Codecov Uploader Verification Key) <security@codecov.io>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 2703 4E7F DB85 0E0B BC2C  62FF 806B B28A ED77 9869
+==> Uploader SHASUM verified (80b5e6f898d6080be523f53ff169702a008a1c91b20c63c49df1175ed794d822  codecov)
+==> Running version latest
+Could not pull latest version information: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+==> Running git config --global --add safe.directory /home/runner/work/STM32-Platform/STM32-Platform
+/usr/bin/git config --global --add safe.directory /home/runner/work/STM32-Platform/STM32-Platform
+==> Running command '/home/runner/work/_actions/codecov/codecov-action/v4/dist/codecov create-commit'
+/home/runner/work/_actions/codecov/codecov-action/v4/dist/codecov create-commit --git-service github
+info - 2025-11-14 20:12:24,685 -- ci service found: github-actions
+warning - 2025-11-14 20:12:24,694 -- No config file could be found. Ignoring config.
+warning - 2025-11-14 20:12:24,723 -- Branch `main` is protected but no token was provided
+warning - 2025-11-14 20:12:24,723 -- For information on Codecov upload tokens, see https://docs.codecov.com/docs/codecov-tokens
+info - 2025-11-14 20:12:25,029 -- Process Commit creating complete
+error - 2025-11-14 20:12:25,029 -- Commit creating failed: {"message":"Token required - not valid tokenless upload"}
+Sentry is attempting to send 3 pending events
+Waiting up to 2 seconds
+Press Ctrl-C to quit
+==> Running command '/home/runner/work/_actions/codecov/codecov-action/v4/dist/codecov create-report'
+/home/runner/work/_actions/codecov/codecov-action/v4/dist/codecov create-report --git-service github
+info - 2025-11-14 20:12:25,552 -- ci service found: github-actions
+warning - 2025-11-14 20:12:25,562 -- No config file could be found. Ignoring config.
+info - 2025-11-14 20:12:25,866 -- Process Report creating complete
+error - 2025-11-14 20:12:25,867 -- Report creating failed: {"message":"Token required - not valid tokenless upload"}
+==> Running command '/home/runner/work/_actions/codecov/codecov-action/v4/dist/codecov do-upload'
+/home/runner/work/_actions/codecov/codecov-action/v4/dist/codecov do-upload --disable-search -f tests/build_coverage/coverage/coverage.info -F unittests --git-service github -n codecov-umbrella --plugin noop
+info - 2025-11-14 20:12:26,345 -- ci service found: github-actions
+warning - 2025-11-14 20:12:26,354 -- No config file could be found. Ignoring config.
+info - 2025-11-14 20:12:26,411 -- Found 1 coverage files to report
+info - 2025-11-14 20:12:26,411 -- > /home/runner/work/STM32-Platform/STM32-Platform/tests/build_coverage/coverage/coverage.info
+Traceback (most recent call last):
+  File "codecov_cli/main.py", line 100, in <module>
+  File "codecov_cli/main.py", line 96, in run
+  File "click/core.py", line 1161, in __call__
+  File "click/core.py", line 1082, in main
+  File "click/core.py", line 1697, in invoke
+  File "click/core.py", line 1443, in invoke
+  File "click/core.py", line 788, in invoke
+  File "click/decorators.py", line 33, in new_func
+  File "codecov_cli/commands/upload.py", line 275, in do_upload
+  File "codecov_cli/services/upload/__init__.py", line 104, in do_upload_logic
+  File "codecov_cli/services/upload/upload_collector.py", line 194, in generate_upload_data
+  File "codecov_cli/services/upload/upload_collector.py", line 104, in _produce_file_fixes
+  File "codecov_cli/services/upload/upload_collector.py", line 118, in _get_file_fixes
+FileNotFoundError: [Errno 2] No such file or directory: 'tests/build/CMakeFiles/4.0.2/CompilerIdC/CMakeCCompilerId.c'
+[PYI-3934:ERROR] Failed to execute script 'main' due to unhandled exception!
+Warning: Codecov:
+                        Failed to properly upload report: The process '/home/runner/work/_actions/codecov/codecov-action/v4/dist/codecov' failed with exit code 1

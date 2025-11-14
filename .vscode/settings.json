@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "hashtable.h": "c",
+    "dbsetfunctions.h": "c",
+    "database.h": "c",
+    "platform_status.h": "c",
+    "platform.h": "c"
+  }
+}

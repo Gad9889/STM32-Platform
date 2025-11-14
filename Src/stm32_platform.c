@@ -373,9 +373,9 @@ static bool Platform_isHealthy_impl(void) {
     return platform_initialized && (lastError == PLT_OK || lastError == PLT_WARN);
 }
 
-/* ==================== Global Singleton Objects ==================== */
+/* ==================== Global Singleton Definitions ==================== */
 
-CAN_t CAN = {
+CAN_t P_CAN = {
     .send = CAN_send_impl,
     .sendMessage = CAN_sendMessage_impl,
     .handleRxMessages = CAN_handleRxMessages_impl,
@@ -387,10 +387,10 @@ CAN_t CAN = {
     .isReady = CAN_isReady_impl,
     .getTxCount = CAN_getTxCount_impl,
     .getRxCount = CAN_getRxCount_impl,
-    .getErrorCount = CAN_getErrorCount_impl
+    .getErrorCount = CAN_getErrorCount_impl,
 };
 
-UART_t UART = {
+UART_t P_UART = {
     .print = UART_print_impl,
     .println = UART_println_impl,
     .printf = UART_printf_impl,
@@ -401,10 +401,10 @@ UART_t UART = {
     .readBytes = UART_readBytes_impl,
     .setBaudrate = UART_setBaudrate_impl,
     .setTimeout = UART_setTimeout_impl,
-    .isReady = UART_isReady_impl
+    .isReady = UART_isReady_impl,
 };
 
-SPI_t SPI = {
+SPI_t P_SPI = {
     .transfer = SPI_transfer_impl,
     .transferByte = SPI_transferByte_impl,
     .handleRxData = SPI_handleRxData_impl,
@@ -412,19 +412,19 @@ SPI_t SPI = {
     .setClockSpeed = SPI_setClockSpeed_impl,
     .setMode = SPI_setMode_impl,
     .select = SPI_select_impl,
-    .deselect = SPI_deselect_impl
+    .deselect = SPI_deselect_impl,
 };
 
-ADC_t ADC = {
+ADC_t P_ADC = {
     .readRaw = ADC_readRaw_impl,
     .readVoltage = ADC_readVoltage_impl,
     .handleConversions = ADC_handleConversions_impl,
     .setResolution = ADC_setResolution_impl,
     .setReference = ADC_setReference_impl,
-    .calibrate = ADC_calibrate_impl
+    .calibrate = ADC_calibrate_impl,
 };
 
-PWM_t PWM = {
+PWM_t P_PWM = {
     .start = PWM_start_impl,
     .stop = PWM_stop_impl,
     .setFrequency = PWM_setFrequency_impl,

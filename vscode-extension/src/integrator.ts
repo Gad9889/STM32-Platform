@@ -252,27 +252,27 @@ void platform_example_init(void) {
                    ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
                    ${peripherals.includes("TIM") ? "&htim2" : "NULL"});
     
-    UART.println("STM32 Platform initialized!");
-    UART.printf("Version: %s\\n", Platform.version());
+    P_UART.println("STM32 Platform initialized!");
+    P_UART.printf("Version: %s\\n", Platform.version());
 }
 
 void platform_example_loop(void) {
 `;
     if (peripherals.includes("CAN")) {
       exampleCode += `    // Handle CAN messages\n`;
-      exampleCode += `    CAN.handleRxMessages();\n`;
-      exampleCode += `    if (CAN.availableMessages() > 0) {\n`;
-      exampleCode += `        UART.println("CAN message received");\n`;
+      exampleCode += `    P_CAN.handleRxMessages();\n`;
+      exampleCode += `    if (P_CAN.availableMessages() > 0) {\n`;
+      exampleCode += `        P_UART.println("CAN message received");\n`;
       exampleCode += `    }\n\n`;
     }
     if (peripherals.includes("UART")) {
       exampleCode += `    // Handle UART data\n`;
-      exampleCode += `    UART.handleRxData();\n\n`;
+      exampleCode += `    P_UART.handleRxData();\n\n`;
     }
     if (peripherals.includes("ADC")) {
       exampleCode += `    // Read ADC\n`;
-      exampleCode += `    uint16_t adc_val = ADC.readRaw(0);\n`;
-      exampleCode += `    UART.printf("ADC: %u\\n", adc_val);\n\n`;
+      exampleCode += `    uint16_t adc_val = P_ADC.readRaw(0);\n`;
+      exampleCode += `    P_UART.printf("ADC: %u\\n", adc_val);\n\n`;
     }
   } else {
     exampleCode += `

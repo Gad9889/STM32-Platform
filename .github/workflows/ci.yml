@@ -52,12 +52,11 @@ jobs:
         if: success()
         uses: codecov/codecov-action@v4
         with:
-          files: ./tests/build_coverage/coverage/coverage.info
+          files: tests/build_coverage/coverage/coverage.info
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
           disable_search: true
-          working-directory: ./tests/build_coverage
 
   lint:
     name: Code Quality Check

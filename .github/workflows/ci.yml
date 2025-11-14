@@ -22,13 +22,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake build-essential lcov
 
-      - name: Clone Unity Test Framework
-        working-directory: tests
-        run: |
-          if [ ! -d "unity" ]; then
-            git clone https://github.com/ThrowTheSwitch/Unity.git unity
-          fi
-
       - name: Configure CMake
         working-directory: tests
         run: cmake -B build -DCMAKE_BUILD_TYPE=Debug

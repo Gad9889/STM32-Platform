@@ -1,0 +1,3 @@
+[submodule "wiki-repo"]
+	path = wiki-repo
+	url = https://github.com/Gad9889/STM32-Platform.wiki.git

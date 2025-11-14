@@ -47,33 +47,29 @@ uint16_t ADC3_AVG_Samples[ADC3_NUM_SENSORS];  // Stores the averaged sensor valu
  *       Each ADC buffer contains [SENSORS × SAMPLES_PER_SENSOR] values.
  *       Data is interleaved: [CH0_S0, CH1_S0, CH2_S0, CH0_S1, CH1_S1, ...]
  * 
- * @warning Calls Error_Handler() on:
- *          - NULL handler pointers
- *          - DMA start failure
- *          - Invalid CAN queue (ADC results sent via CAN)
+ * @return plt_status_t PLT_OK on success, error code otherwise:
+ *         - PLT_NULL_POINTER: Handler, callback, or CAN queue pointers are NULL
+ *         - PLT_HAL_ERROR: HAL ADC DMA start failed
  * 
  * @see HAL_ADC_ConvCpltCallback() for automatic data processing
  * @see plt_AdcProcessData() for averaging and CAN message generation
  */
-void plt_AdcInit() 
+plt_status_t plt_AdcInit() 
 {
     // NULL pointer checks
     pHandlers = plt_GetHandlersPointer();
     if (pHandlers == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     pCallbacks = plt_GetCallbacksPointer();
     if (pCallbacks == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     pCanRxQueue = plt_GetCanRxQueue();
     if (pCanRxQueue == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     // Initialize the ADC1 peripheral
@@ -82,8 +78,7 @@ void plt_AdcInit()
         
         pAdc1 = pHandlers->hadc1;
         if (HAL_ADC_Start_DMA(pAdc1, (uint32_t*)ADC1_UF_Buffer, ADC1_TOTAL_BUFFER_SIZE) != HAL_OK) {
-            Error_Handler();
-            return;
+            return PLT_HAL_ERROR;
         }
 
     }
@@ -93,8 +88,7 @@ void plt_AdcInit()
     {
         pAdc2 = pHandlers->hadc2;
         if (HAL_ADC_Start_DMA(pAdc2, (uint32_t*)ADC2_UF_Buffer, ADC2_TOTAL_BUFFER_SIZE) != HAL_OK) {
-            Error_Handler();
-            return;
+            return PLT_HAL_ERROR;
         }
     }
 
@@ -103,12 +97,12 @@ void plt_AdcInit()
     {
         pAdc3 = pHandlers->hadc3;
         if (HAL_ADC_Start_DMA(pAdc3, (uint32_t*)ADC3_UF_Buffer, ADC3_TOTAL_BUFFER_SIZE) != HAL_OK) {
-            Error_Handler();
-            return;
+            return PLT_HAL_ERROR;
         }
     }
 
     msg.id = Internal_ADC; // Set the message ID for the CAN message
+    return PLT_OK;
 }
 
 

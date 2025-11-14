@@ -50,34 +50,31 @@ static QueueItem_t debugTxMessage = {
  *       - Word size: Byte (8-bit)
  *       - Priority: Medium or higher recommended
  * 
- * @warning This function calls Error_Handler() on failure:
- *          - NULL handler pointers
- *          - Invalid queue size (0 or >256)
- *          - DMA start failure
+ * @return plt_status_t PLT_OK on success, error code otherwise:
+ *         - PLT_NULL_POINTER: Handler or callback pointers are NULL
+ *         - PLT_INVALID_PARAM: tx_queue_size out of range (0 or >256)
+ *         - PLT_HAL_ERROR: HAL DMA start failed
  * 
  * @see plt_UartProcessRxMsgs() to process received UART messages
  * @see plt_UartSendMsg() to transmit messages
  * @see _write() for printf redirection to UART2
  */
-void plt_UartInit(size_t tx_queue_size)
+plt_status_t plt_UartInit(size_t tx_queue_size)
 {
     // NULL pointer checks
     pHandlers = plt_GetHandlersPointer();
     if (pHandlers == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     pCallbacks = plt_GetCallbacksPointer();
     if (pCallbacks == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     // Bounds check for queue size
     if (tx_queue_size == 0 || tx_queue_size > PLT_MAX_QUEUE_SIZE) {
-        Error_Handler();
-        return;
+        return PLT_INVALID_PARAM;
     }
     
     Uart_RxCallback = pCallbacks->UART_RxCallback;
@@ -90,8 +87,7 @@ void plt_UartInit(size_t tx_queue_size)
         pUart1 = pHandlers->huart1;  // Set the UART handle pointer
         
         if (HAL_UART_Receive_DMA(pUart1,Uart_RxData,(uint16_t)sizeof(uart_message_t)) != HAL_OK) {
-            Error_Handler();
-            return;
+            return PLT_HAL_ERROR;
         }
     }
 
@@ -106,14 +102,11 @@ void plt_UartInit(size_t tx_queue_size)
     {
         pUart3 = pHandlers->huart3;  // Set the UART handle pointer
         if (HAL_UART_Receive_DMA(pUart3,Uart_RxData,(uint16_t)sizeof(uart_message_t)) != HAL_OK) {
-            Error_Handler();
-            return;
+            return PLT_HAL_ERROR;
         }
     }
 
-
-
-    
+    return PLT_OK;
 }
 
 /**

@@ -41,33 +41,30 @@ static QueueItem_t spiRxMessage = {
  *       - Master: Uses TransmitReceive DMA (full duplex)
  *       - Slave: Uses Receive DMA only
  * 
- * @warning Calls Error_Handler() on:
- *          - NULL handler pointers
- *          - Invalid queue size (0 or >256)
- *          - DMA start failure
+ * @return plt_status_t PLT_OK on success, error code otherwise:
+ *         - PLT_NULL_POINTER: Handler or callback pointers are NULL
+ *         - PLT_INVALID_PARAM: rx_queue_size out of range (0 or >256)
+ *         - PLT_HAL_ERROR: HAL DMA start failed
  * 
  * @see plt_SpiProcessRxMsgs() to process received messages
  * @see plt_SpiSendMsg() to transmit messages (non-blocking)
  */
-void plt_SpiInit(size_t rx_queue_size)
+plt_status_t plt_SpiInit(size_t rx_queue_size)
 {
     // NULL pointer checks
     pHandlers = plt_GetHandlersPointer();
     if (pHandlers == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     pCallbacks = plt_GetCallbacksPointer();
     if (pCallbacks == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     // Bounds check for queue size
     if (rx_queue_size == 0 || rx_queue_size > PLT_MAX_QUEUE_SIZE) {
-        Error_Handler();
-        return;
+        return PLT_INVALID_PARAM;
     }
     
     if (pHandlers->hspi1 != NULL)
@@ -92,18 +89,18 @@ void plt_SpiInit(size_t rx_queue_size)
    if(pSpi->Init.Mode == SPI_MODE_MASTER)
    {
     if (HAL_SPI_TransmitReceive_DMA(pSpi,(uint8_t*)&dummy,Spi_RxData,(uint16_t)sizeof(spi_message_t)) != HAL_OK) {
-        Error_Handler();
-        return;
+        return PLT_HAL_ERROR;
     }
    }
 
    if(pSpi->Init.Mode == SPI_MODE_SLAVE)
    {
     if (HAL_SPI_Receive_DMA(pSpi, Spi_RxData, sizeof(spi_message_t)) != HAL_OK) {
-        Error_Handler();
-        return;
+        return PLT_HAL_ERROR;
     }
     }
+    
+    return PLT_OK;
 }
 
 

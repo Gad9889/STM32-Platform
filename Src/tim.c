@@ -9,19 +9,22 @@ TIM_HandleTypeDef *pTim4;
 static handler_set_t* pHandlers = NULL; // Pointer to the handler set form the platform layer
 static plt_callbacks_t* pCallbacks = NULL; // Pointer to the callback function pointers from the platform layer
 
-void plt_TimInit(void) 
+/**
+ * @brief Initialize timer peripherals
+ * 
+ * @return plt_status_t PLT_OK on success, PLT_NULL_POINTER if handler/callback pointers are NULL
+ */
+plt_status_t plt_TimInit(void) 
 {
     // NULL pointer checks
     pHandlers = plt_GetHandlersPointer();
     if (pHandlers == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     pCallbacks = plt_GetCallbacksPointer();
     if (pCallbacks == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
 
     // Initialize the TIM2 peripheral
@@ -42,6 +45,8 @@ void plt_TimInit(void)
     {
         pTim4 = pHandlers->htim4;
     }
+    
+    return PLT_OK;
 }
 
 /**

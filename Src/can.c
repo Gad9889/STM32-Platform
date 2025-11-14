@@ -41,31 +41,32 @@ static QueueItem_t canRxMessage = {      // Queue item for CAN received messages
  *       - RX FIFO0 interrupt enabled (CAN_IT_RX_FIFO0_MSG_PENDING)
  *       - DMA not required for CAN
  * 
- * @warning This function calls Error_Handler() on failure and does not return.
- *          For production use, consider returning error codes instead.
+ * @return plt_status_t PLT_OK on success, error code otherwise:
+ *         - PLT_NULL_POINTER: Handler or callback pointers are NULL
+ *         - PLT_INVALID_PARAM: rx_queue_size out of range (0 or >256)
+ *         - PLT_HAL_ERROR: HAL function failed
  * 
  * @see plt_CanProcessRxMsgs() to process received messages in main loop
  * @see plt_CanSendMsg() to transmit CAN messages
  */
-void plt_CanInit(size_t rx_queue_size)
+plt_status_t plt_CanInit(size_t rx_queue_size)
 {
+    plt_status_t status;
+    
     // NULL pointer checks
     pHandlers = plt_GetHandlersPointer();
     if (pHandlers == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     pCallbacks = plt_GetCallbacksPointer();
     if (pCallbacks == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     // Bounds check for queue size
     if (rx_queue_size == 0 || rx_queue_size > PLT_MAX_QUEUE_SIZE) {
-        Error_Handler();
-        return;
+        return PLT_INVALID_PARAM;
     }
     
     Can_RxCallback = pCallbacks->CAN_RxCallback;
@@ -74,11 +75,15 @@ void plt_CanInit(size_t rx_queue_size)
     if (pHandlers->hcan1 != NULL)
     {
         pCan1 = pHandlers->hcan1;
-        plt_CanFilterInit(pCan1);
-        HAL_CAN_Start(pCan1);
-        if(HAL_CAN_ActivateNotification(pCan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-        {
-            Error_Handler();
+        status = plt_CanFilterInit(pCan1);
+        if (status != PLT_OK) {
+            return status;
+        }
+        if (HAL_CAN_Start(pCan1) != HAL_OK) {
+            return PLT_HAL_ERROR;
+        }
+        if (HAL_CAN_ActivateNotification(pCan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
+            return PLT_HAL_ERROR;
         }
     }
 
@@ -86,11 +91,15 @@ void plt_CanInit(size_t rx_queue_size)
     if (pHandlers->hcan2 != NULL)
     {
         pCan2 = pHandlers->hcan2;
-        plt_CanFilterInit(pCan2);
-        HAL_CAN_Start(pCan2);
-        if(HAL_CAN_ActivateNotification(pCan2, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-        {
-            Error_Handler();
+        status = plt_CanFilterInit(pCan2);
+        if (status != PLT_OK) {
+            return status;
+        }
+        if (HAL_CAN_Start(pCan2) != HAL_OK) {
+            return PLT_HAL_ERROR;
+        }
+        if (HAL_CAN_ActivateNotification(pCan2, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
+            return PLT_HAL_ERROR;
         }
     }
 
@@ -98,30 +107,36 @@ void plt_CanInit(size_t rx_queue_size)
     if (pHandlers->hcan3 != NULL)
     {
         pCan3 = pHandlers->hcan3;
-        plt_CanFilterInit(pCan3);
-        HAL_CAN_Start(pCan3);
-        if(HAL_CAN_ActivateNotification(pCan3, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-        {
-            Error_Handler();
+        status = plt_CanFilterInit(pCan3);
+        if (status != PLT_OK) {
+            return status;
+        }
+        if (HAL_CAN_Start(pCan3) != HAL_OK) {
+            return PLT_HAL_ERROR;
+        }
+        if (HAL_CAN_ActivateNotification(pCan3, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
+            return PLT_HAL_ERROR;
         }
     }
 
     // Initialize the CAN received message queue
     Queue_Init(&canRxQueue, &canRxMessage, rx_queue_size);
+    return PLT_OK;
 }
 
 /**
  * @brief  Initializes the CAN filter for the specified CAN peripheral.
  * @param  pCan     Pointer to the CAN handle
- * @retval None
+ * @return plt_status_t PLT_OK on success, error code otherwise:
+ *         - PLT_NULL_POINTER: pCan or pCan->Instance is NULL
+ *         - PLT_HAL_ERROR: HAL_CAN_ConfigFilter failed
  * @note   This function initializes the CAN filter for the specified CAN peripheral.
  *      !  The filter is configured to accept any messages ID.
  */
-void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
+plt_status_t plt_CanFilterInit(CAN_HandleTypeDef* pCan)
 {
     if (pCan == NULL || pCan->Instance == NULL) {
-        Error_Handler();
-        return;
+        return PLT_NULL_POINTER;
     }
     
     // Initialize the filter structure of FIFO0
@@ -149,8 +164,8 @@ void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
     }
 
 
-    if (HAL_CAN_ConfigFilter(pCan, &filter0)) {
-        Error_Handler();
+    if (HAL_CAN_ConfigFilter(pCan, &filter0) != HAL_OK) {
+        return PLT_HAL_ERROR;
     }
 
     //Initialize the filter structure of FIFO1
@@ -177,10 +192,11 @@ void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
         filter1.FilterBank = CAN_FILTER_BANK_CAN2_FIFO1;
     }
 
-    if (HAL_CAN_ConfigFilter(pCan, &filter1)) {
-        Error_Handler();
+    if (HAL_CAN_ConfigFilter(pCan, &filter1) != HAL_OK) {
+        return PLT_HAL_ERROR;
     }
 
+    return PLT_OK;
 }
 
 

@@ -2,11 +2,12 @@
 #define ADC_H
 /* =============================== Includes ======================================= */
 #include "platform.h"
+#include "platform_status.h"
 
 #ifdef HAL_ADC_MODULE_ENABLED
 #ifdef HAL_CAN_MODULE_ENABLED //because we need the CAN message to send the ADC data
 /* ========================== Function Declarations ============================ */
-void plt_AdcInit();
+plt_status_t plt_AdcInit();
 void plt_AdcProcessData(uint16_t *UF_Buffer, uint16_t Size);
 
 /* =============================== Defines =============================== */

@@ -2,6 +2,7 @@
 #define CAN_H
 /* =============================== Includes ======================================= */
 #include "platform.h"
+#include "platform_status.h"
 
 #ifdef HAL_CAN_MODULE_ENABLED
 
@@ -13,8 +14,8 @@
 #define PLT_MAX_QUEUE_SIZE          256 /*!< Maximum queue size for safety */
 
 /* ========================== Function Declarations ============================ */
-void plt_CanInit(size_t rx_queue_size);
-void plt_CanFilterInit(CAN_HandleTypeDef* pCan);
+plt_status_t plt_CanInit(size_t rx_queue_size);
+plt_status_t plt_CanFilterInit(CAN_HandleTypeDef* pCan);
 HAL_StatusTypeDef plt_CanSendMsg(CanChanel_t chanel, can_message_t* pData);
 void plt_CanProcessRxMsgs();
 Queue_t* plt_GetCanRxQueue();

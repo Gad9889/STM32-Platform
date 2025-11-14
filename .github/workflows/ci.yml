@@ -42,6 +42,7 @@ jobs:
         if: success()
         working-directory: tests
         run: |
+          rm -rf build_coverage
           cmake -B build_coverage -DCMAKE_BUILD_TYPE=Coverage
           cmake --build build_coverage
           cd build_coverage
@@ -55,6 +56,9 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
+          exclude: |
+            tests/build_coverage/CMakeFiles/**
+            tests/build/**
 
   lint:
     name: Code Quality Check

@@ -2,7 +2,7 @@ name: Build Extension
 
 on:
   release:
-    types: [created]
+    types: [published, created, prereleased]
   workflow_dispatch:
 
 jobs:

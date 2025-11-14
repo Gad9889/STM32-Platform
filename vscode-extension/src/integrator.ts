@@ -41,9 +41,9 @@ export async function integratePlatform(
       fs.mkdirSync(srcDir, { recursive: true });
     }
 
-    // Platform directory (assuming extension is in STM32_Platform/vscode-extension)
+    // Platform directory (bundled in extension)
     const extensionDir = __dirname;
-    const platformRoot = path.resolve(extensionDir, "..", "..");
+    const platformRoot = path.resolve(extensionDir, "..", "platform");
     const platformIncDir = path.join(platformRoot, "Inc");
     const platformSrcDir = path.join(platformRoot, "Src");
 

@@ -32,8 +32,25 @@ static QueueItem_t spiRxMessage = {
   */
 void plt_SpiInit(size_t rx_queue_size)
 {
+    // NULL pointer checks
     pHandlers = plt_GetHandlersPointer();
+    if (pHandlers == NULL) {
+        Error_Handler();
+        return;
+    }
+    
     pCallbacks = plt_GetCallbacksPointer();
+    if (pCallbacks == NULL) {
+        Error_Handler();
+        return;
+    }
+    
+    // Bounds check for queue size
+    if (rx_queue_size == 0 || rx_queue_size > 256) {
+        Error_Handler();
+        return;
+    }
+    
     if (pHandlers->hspi1 != NULL)
     {
         pSpi = pHandlers->hspi1;
@@ -92,6 +109,10 @@ void plt_SpiProcessRxMsgs(void)
 */ 
 void plt_SpiSendMsg(spi_message_t* pData)
 {  
+    if (pData == NULL || pSpi == NULL) {
+        return;
+    }
+    
     if(pSpi->State != HAL_SPI_STATE_READY) return;
 
     if(pSpi->Init.Mode == SPI_MODE_MASTER)
@@ -119,6 +140,9 @@ void plt_SpiSendMsg(spi_message_t* pData)
   */
  void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
  {   
+     if (hspi == NULL || pSpi == NULL) {
+         return;
+     }
      
      // Push the received data to the queue
      Queue_Push(&spiRxQueue, Spi_RxData);

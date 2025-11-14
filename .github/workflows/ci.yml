@@ -1,0 +1,135 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential lcov
+
+      - name: Clone Unity Test Framework
+        working-directory: tests
+        run: |
+          if [ ! -d "unity" ]; then
+            git clone https://github.com/ThrowTheSwitch/Unity.git unity
+          fi
+
+      - name: Configure CMake
+        working-directory: tests
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build tests
+        working-directory: tests
+        run: cmake --build build
+
+      - name: Run tests
+        working-directory: tests/build
+        run: ctest --output-on-failure --verbose
+
+      - name: Generate coverage report
+        if: success()
+        working-directory: tests
+        run: |
+          cmake -B build_coverage -DCMAKE_BUILD_TYPE=Coverage
+          cmake --build build_coverage
+          cd build_coverage
+          make coverage || true
+
+      - name: Upload coverage to Codecov
+        if: success()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./tests/build_coverage/coverage/coverage.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  lint:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install cppcheck
+        run: sudo apt-get install -y cppcheck
+
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=all --inconclusive --std=c11 \
+            --suppress=missingIncludeSystem \
+            -I Inc/ \
+            Src/ 2> cppcheck-report.txt || true
+
+      - name: Display cppcheck results
+        run: cat cppcheck-report.txt
+
+      - name: Upload cppcheck report
+        uses: actions/upload-artifact@v3
+        with:
+          name: cppcheck-report
+          path: cppcheck-report.txt
+
+  build-example:
+    name: Build Example (ARM)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi
+
+      - name: Verify toolchain
+        run: arm-none-eabi-gcc --version
+
+      - name: Check compilation (syntax check)
+        run: |
+          echo "Checking platform source files compile..."
+          arm-none-eabi-gcc -c Src/utils.c -I Inc/ -I tests/mocks/ \
+            -mcpu=cortex-m4 -mthumb -std=c11 -Wall -Wextra || true
+
+  documentation:
+    name: Check Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check for README
+        run: test -f README.md
+
+      - name: Check for CONTRIBUTING
+        run: test -f CONTRIBUTING.md
+
+      - name: Check for CHANGELOG
+        run: test -f CHANGELOG.md
+
+      - name: Check for LICENSE
+        run: test -f LICENSE
+
+      - name: Verify documentation structure
+        run: |
+          test -d docs/ || (echo "docs/ directory missing" && exit 1)
+          test -d examples/ || echo "examples/ directory missing (recommended)"
+          test -d tests/ || (echo "tests/ directory missing" && exit 1)

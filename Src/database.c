@@ -52,6 +52,10 @@ return db;
  */
 void db_FreeMemory(database_t* db_ptr){
     
+    if (db_ptr == NULL) {
+        return; // NULL pointer protection
+    }
+    
     //free memory of db members from the heap
     free(db_ptr->pedal_node);
     free(db_ptr->dashboard_node);

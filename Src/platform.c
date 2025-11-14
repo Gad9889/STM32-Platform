@@ -13,6 +13,9 @@ static handler_set_t *plt_handlers; // Pointer to the handler set for the platfo
  */
 void plt_SetCallbacks(plt_callbacks_t *pcallbacks){
 
+    if (pcallbacks == NULL) {
+        return; // NULL pointer protection
+    }
     
     #ifdef HAL_CAN_MODULE_ENABLED
     callbacks.CAN_RxCallback = pcallbacks->CAN_RxCallback;
@@ -35,6 +38,9 @@ void plt_SetCallbacks(plt_callbacks_t *pcallbacks){
  * @param handlers Pointer to the handler set for the platform layer
 **/
 void plt_SetHandlers(handler_set_t * handlers){
+    if (handlers == NULL) {
+        return; // NULL pointer protection
+    }
     plt_handlers = handlers;
 }
 

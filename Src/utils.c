@@ -11,9 +11,35 @@
   * 
   */
 void Queue_Init(Queue_t* Q, QueueItem_t* item, size_t size){
+    // NULL pointer checks
+    if (Q == NULL || item == NULL) {
+        return;
+    }
+    
+    // Bounds checks
+    if (size == 0 || size > 256) {
+        return;
+    }
+    
+    if (item->sizeof_data == 0 || item->sizeof_data > 1024) {
+        return;
+    }
+    
     Q->buffer = (QueueItem_t *)malloc(size * sizeof(QueueItem_t));
+    if (Q->buffer == NULL) {
+        return; // Allocation failed
+    }
+    
     for (size_t i = 0; i < size; i++) {
         Q->buffer[i].data = calloc(1,item->sizeof_data);
+        if (Q->buffer[i].data == NULL) {
+            // Cleanup on allocation failure
+            for (size_t j = 0; j < i; j++) {
+                free(Q->buffer[j].data);
+            }
+            free(Q->buffer);
+            return;
+        }
         Q->buffer[i].sizeof_data = item->sizeof_data;
     }
     Q->head = 0;
@@ -34,8 +60,16 @@ void Queue_Init(Queue_t* Q, QueueItem_t* item, size_t size){
   *         a circular buffer behavior. Updates the status of the queue.
   */
 void* Queue_Push(Queue_t* Q, void* data){
+    // NULL pointer checks
+    if (Q == NULL || data == NULL || Q->buffer == NULL) {
+        return NULL;
+    }
     
     void* pointer = Q->buffer[Q->head].data;
+    if (pointer == NULL) {
+        return NULL;
+    }
+    
     memcpy(pointer, data, Q->buffer->sizeof_data);
     Q->head = (Q->head + 1) % Q->capacity;
     
@@ -68,6 +102,11 @@ void* Queue_Push(Queue_t* Q, void* data){
   *         tail index. Updates the status of the queue.
   */
 void Queue_Pop(Queue_t* Q, void* data){
+    // NULL pointer checks
+    if (Q == NULL || Q->buffer == NULL) {
+        return;
+    }
+    
     if(Q->status == QUEUE_EMPTY){
         return;
     }

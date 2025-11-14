@@ -47,10 +47,27 @@ static QueueItem_t debugTxMessage = {
   */
 void plt_UartInit(size_t tx_queue_size)
 {
-    pHandlers = plt_GetHandlersPointer();  // Get the handler set pointer
-    pCallbacks = plt_GetCallbacksPointer();  // Get the callback function pointer
-    Uart_RxCallback = pCallbacks->UART_RxCallback; // Set the UART RX callback function pointer
-    Queue_Init(&uartRxQueue,&uartRxMessage,tx_queue_size);  // Initialize the RX queue for UART1 reception
+    // NULL pointer checks
+    pHandlers = plt_GetHandlersPointer();
+    if (pHandlers == NULL) {
+        Error_Handler();
+        return;
+    }
+    
+    pCallbacks = plt_GetCallbacksPointer();
+    if (pCallbacks == NULL) {
+        Error_Handler();
+        return;
+    }
+    
+    // Bounds check for queue size
+    if (tx_queue_size == 0 || tx_queue_size > 256) {
+        Error_Handler();
+        return;
+    }
+    
+    Uart_RxCallback = pCallbacks->UART_RxCallback;
+    Queue_Init(&uartRxQueue,&uartRxMessage,tx_queue_size);
 
     Queue_Init(&uartTxQueue,&uartTxMessage,tx_queue_size);  // Initialize the TX queue for UART1 transmission
 
@@ -143,8 +160,21 @@ HAL_StatusTypeDef plt_UartSendMsg(UartChanel_t chanel, uart_message_t* pData)
 {  
     
     #ifdef HAL_UART_MODULE_ENABLED
+    // Parameter validation
+    if (pData == NULL) {
+        return HAL_ERROR;
+    }
+    
+    if (chanel != Uart1 && chanel != Uart3) {
+        return HAL_ERROR;
+    }
+    
     HAL_StatusTypeDef status;
     UART_HandleTypeDef* pUart = (chanel == Uart1) ? pUart1:pUart3;
+    
+    if (pUart == NULL) {
+        return HAL_ERROR;
+    }
     if(pUart->gState == HAL_UART_STATE_READY )
     {
     status = HAL_UART_Transmit_DMA(pUart,(uint8_t*)pData,(uint16_t)sizeof(uart_message_t));

@@ -31,9 +31,24 @@ uint16_t ADC3_AVG_Samples[ADC3_NUM_SENSORS];  // Stores the averaged sensor valu
 
 void plt_AdcInit() 
 {
-    pHandlers = plt_GetHandlersPointer(); // Get the platform layer handlers pointer
-    pCallbacks = plt_GetCallbacksPointer(); // Get the platform layer Callbacks pointer
-    pCanRxQueue = plt_GetCanRxQueue(); // Get the CAN RX queue pointer
+    // NULL pointer checks
+    pHandlers = plt_GetHandlersPointer();
+    if (pHandlers == NULL) {
+        Error_Handler();
+        return;
+    }
+    
+    pCallbacks = plt_GetCallbacksPointer();
+    if (pCallbacks == NULL) {
+        Error_Handler();
+        return;
+    }
+    
+    pCanRxQueue = plt_GetCanRxQueue();
+    if (pCanRxQueue == NULL) {
+        Error_Handler();
+        return;
+    }
     
     // Initialize the ADC1 peripheral
     if (pHandlers->hadc1 != NULL) 
@@ -74,6 +89,15 @@ void plt_AdcInit()
  */
 void plt_AdcProcessData(uint16_t *UF_Buffer, uint16_t Size)
 {
+    // NULL pointer and bounds checks
+    if (UF_Buffer == NULL) {
+        return;
+    }
+    
+    if (Size == 0 || Size > 1024) {
+        return;
+    }
+    
 /* ---------- 1.  Pick the right metadata for the buffer we got ---------- */
 uint16_t   numSensors;
 uint16_t   samplesPerSensor;

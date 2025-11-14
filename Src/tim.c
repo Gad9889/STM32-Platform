@@ -11,8 +11,18 @@ static plt_callbacks_t* pCallbacks = NULL; // Pointer to the callback function p
 
 void plt_TimInit(void) 
 {
-    pHandlers = plt_GetHandlersPointer(); // Get the platform layer handlers pointer
-    pCallbacks = plt_GetCallbacksPointer(); // Get the platform layer Callbacks pointer
+    // NULL pointer checks
+    pHandlers = plt_GetHandlersPointer();
+    if (pHandlers == NULL) {
+        Error_Handler();
+        return;
+    }
+    
+    pCallbacks = plt_GetCallbacksPointer();
+    if (pCallbacks == NULL) {
+        Error_Handler();
+        return;
+    }
 
     // Initialize the TIM2 peripheral
     if (pHandlers->htim2 != NULL) 
@@ -36,7 +46,20 @@ void plt_TimInit(void)
 
 void plt_StartPWM(TimModule_t timer, uint32_t Channel, uint32_t frequency, float dutyCycle)
 {
-    TIM_HandleTypeDef *pTim = (timer == Tim2) ? pTim2 : (timer == Tim3) ? pTim3 : pTim4; 
+    // Parameter validation
+    if (timer != Tim2 && timer != Tim3 && timer != Tim4) {
+        return;
+    }
+    
+    if (frequency == 0 || frequency > 1000000) {
+        return; // Invalid frequency range
+    }
+    
+    TIM_HandleTypeDef *pTim = (timer == Tim2) ? pTim2 : (timer == Tim3) ? pTim3 : pTim4;
+    
+    if (pTim == NULL || pTim->Instance == NULL) {
+        return;
+    }
 
     /* Clamp duty cycle between 0 and 100% */
     if (dutyCycle < 0.0f)  dutyCycle = 0.0f;
@@ -68,7 +91,16 @@ void plt_StartPWM(TimModule_t timer, uint32_t Channel, uint32_t frequency, float
 
 void plt_StopPWM(TimModule_t timer, uint32_t Channel)
 {
-    TIM_HandleTypeDef *pTim = (timer == Tim2) ? pTim2 : (timer == Tim3) ? pTim3 : pTim4; 
+    // Parameter validation
+    if (timer != Tim2 && timer != Tim3 && timer != Tim4) {
+        return;
+    }
+    
+    TIM_HandleTypeDef *pTim = (timer == Tim2) ? pTim2 : (timer == Tim3) ? pTim3 : pTim4;
+    
+    if (pTim == NULL) {
+        return;
+    }
 
     /* Stop PWM on the channel */
     return HAL_TIM_PWM_Stop(pTim, Channel);

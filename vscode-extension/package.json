@@ -1,0 +1,94 @@
+{
+  "name": "stm32-platform-integration",
+  "displayName": "STM32 Platform Integration",
+  "description": "Seamlessly integrate BGU Racing STM32 Platform into your STM32 CMake projects",
+  "version": "0.1.0",
+  "publisher": "ben-gurion-racing",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "stm32",
+    "embedded",
+    "cmake",
+    "platform",
+    "hal"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/CMakeLists.txt"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "stm32platform.integrate",
+        "title": "STM32 Platform: Integrate into Project"
+      },
+      {
+        "command": "stm32platform.checkCompatibility",
+        "title": "STM32 Platform: Check Project Compatibility"
+      }
+    ],
+    "configuration": {
+      "title": "STM32 Platform",
+      "properties": {
+        "stm32platform.autoDetect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically detect STM32 CMake projects and offer integration"
+        },
+        "stm32platform.defaultPeripherals": {
+          "type": "array",
+          "default": [
+            "CAN",
+            "UART"
+          ],
+          "description": "Default peripherals to enable during integration",
+          "items": {
+            "type": "string",
+            "enum": [
+              "CAN",
+              "UART",
+              "SPI",
+              "ADC",
+              "TIM"
+            ]
+          }
+        },
+        "stm32platform.useNewAPI": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use the new consumer-grade API (CAN.send, UART.print) instead of legacy plt_* API"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.x",
+    "@typescript-eslint/parser": "^6.x",
+    "@vscode/vsce": "^2.22.0",
+    "eslint": "^8.x",
+    "typescript": "^5.3.0",
+    "@vscode/test-electron": "^2.3.0"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ben-Gurion-Racing/STM32_Platform.git"
+  },
+  "license": "MIT"
+}

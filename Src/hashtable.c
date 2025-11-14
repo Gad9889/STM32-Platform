@@ -13,6 +13,11 @@ static void clear_table(void)
 /* hashtable.c ----------------------------------------------------------- */
 uint8_t hash_MapFunction(uint32_t id)
 {
+	// Input validation - check for reserved IDs
+	if (id == HASH_EMPTY_ID) {
+		return 0; // Return default hash for invalid ID
+	}
+	
 	/* ---- perfect hash for the two blocks we care about --------------- */
 	if (id >= 0x180 && id <= 0x19E)                 /* 0x180-0x19E → 0-30 */
 		return (uint8_t)(id - 0x180);
@@ -29,6 +34,11 @@ uint8_t hash_MapFunction(uint32_t id)
 HashStatus_t hash_InsertMember(const hash_member_t *member)
 {
 	if (!member) return HASH_ERROR;
+	
+	// Validate member data
+	if (member->id == HASH_EMPTY_ID || member->Set_Function == NULL) {
+		return HASH_ERROR;
+	}
 
 	int start = hash_MapFunction(member->id);
 	for (int i = 0; i < TABLE_SIZE; ++i) {

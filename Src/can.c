@@ -36,9 +36,26 @@ static QueueItem_t canRxMessage = {      // Queue item for CAN received messages
 */
 void plt_CanInit(size_t rx_queue_size)
 {
+    // NULL pointer checks
     pHandlers = plt_GetHandlersPointer();
+    if (pHandlers == NULL) {
+        Error_Handler();
+        return;
+    }
+    
     pCallbacks = plt_GetCallbacksPointer();
-    Can_RxCallback = pCallbacks->CAN_RxCallback;//pCallbacks->CAN_RxCallback; // Register the RX processing callback
+    if (pCallbacks == NULL) {
+        Error_Handler();
+        return;
+    }
+    
+    // Bounds check for queue size
+    if (rx_queue_size == 0 || rx_queue_size > 256) {
+        Error_Handler();
+        return;
+    }
+    
+    Can_RxCallback = pCallbacks->CAN_RxCallback;
     
     // Initialize the CAN1 peripheral
     if (pHandlers->hcan1 != NULL)
@@ -89,6 +106,11 @@ void plt_CanInit(size_t rx_queue_size)
  */
 void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
 {
+    if (pCan == NULL || pCan->Instance == NULL) {
+        Error_Handler();
+        return;
+    }
+    
     // Initialize the filter structure of FIFO0
     CAN_FilterTypeDef filter0;
     filter0.FilterActivation = ENABLE;
@@ -177,8 +199,17 @@ void plt_CanProcessRxMsgs()
 */
 HAL_StatusTypeDef plt_CanTx(CanChanel_t chanel, CAN_TxHeaderTypeDef* TxHeader, uint8_t* pData)
 {
-    CAN_HandleTypeDef* pCan = (chanel == Can1) ? pCan1 : (chanel == Can2) ? pCan2 : pCan3; // Select the CAN channel
-    if(pCan == NULL) return HAL_ERROR; // Return error if the CAN channel is not initialized
+    // Parameter validation
+    if (TxHeader == NULL || pData == NULL) {
+        return HAL_ERROR;
+    }
+    
+    if (chanel != Can1 && chanel != Can2 && chanel != Can3) {
+        return HAL_ERROR;
+    }
+    
+    CAN_HandleTypeDef* pCan = (chanel == Can1) ? pCan1 : (chanel == Can2) ? pCan2 : pCan3;
+    if(pCan == NULL) return HAL_ERROR;
     
     
     if(HAL_CAN_GetTxMailboxesFreeLevel(pCan) > 0)
@@ -202,6 +233,10 @@ HAL_StatusTypeDef plt_CanTx(CanChanel_t chanel, CAN_TxHeaderTypeDef* TxHeader, u
 HAL_StatusTypeDef 
 plt_CanSendMsg(CanChanel_t chanel, can_message_t *pData)
 {
+    if (pData == NULL) {
+        return HAL_ERROR;
+    }
+    
     CAN_TxHeaderTypeDef TxHeader = {0};
     TxHeader.StdId = pData->id;
     TxHeader.IDE = CAN_ID_STD;

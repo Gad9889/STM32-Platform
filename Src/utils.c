@@ -121,11 +121,21 @@ void Queue_Pop(Queue_t* Q, void* data){
 /**
   * @brief  Peeks at the data in the queue.
   * @param  Q Pointer to the queue structure
-  * @retval Pointer to the data at the tail index
+  * @retval Pointer to the data at the tail index, or NULL if queue is empty or invalid
   * 
   * @note   Returns the data pointer at the tail index without popping it.
   */
 void* Queue_Peek(Queue_t* Q){
+    // NULL pointer checks
+    if (Q == NULL || Q->buffer == NULL) {
+        return NULL;
+    }
+    
+    // Check if queue is empty
+    if (Q->status == QUEUE_EMPTY) {
+        return NULL;
+    }
+    
     return Q->buffer[Q->tail].data;
 }
 
@@ -137,9 +147,22 @@ void* Queue_Peek(Queue_t* Q){
  * @note   Frees the memory allocated for each queue item and the buffer itself.
  */
 void Queue_free(Queue_t* Q){
+    // NULL pointer check
+    if (Q == NULL || Q->buffer == NULL) {
+        return;
+    }
+    
     for (size_t i = 0; i < Q->capacity; i++) {
-        free(Q->buffer[i].data);
+        if (Q->buffer[i].data != NULL) {
+            free(Q->buffer[i].data);
+            Q->buffer[i].data = NULL;
+        }
     }
     free(Q->buffer);
+    Q->buffer = NULL;
+    Q->capacity = 0;
+    Q->head = 0;
+    Q->tail = 0;
+    Q->status = QUEUE_EMPTY;
     return;
 }

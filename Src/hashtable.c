@@ -44,6 +44,11 @@ HashStatus_t hash_InsertMember(const hash_member_t *member)
 	for (int i = 0; i < TABLE_SIZE; ++i) {
 		int idx = (start + i) % TABLE_SIZE;
 
+		// Check for duplicate ID
+		if (HashTable[idx].id == member->id) {
+			return HASH_ERROR;  // Duplicate found
+		}
+
 		if (HashTable[idx].id == HASH_EMPTY_ID) {   /* free slot */
 			HashTable[idx] = *member;               /* structure copy */
 			return HASH_OK;
@@ -172,6 +177,7 @@ HashStatus_t hash_SetTable(void)
 HashStatus_t hash_Init(void)
 {
 	clear_table();             /* replaces malloc/calloc/free path */
+	return HASH_OK;
 	//return hash_SetTable();
 }
 

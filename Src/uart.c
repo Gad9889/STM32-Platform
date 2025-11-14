@@ -169,7 +169,7 @@ HAL_StatusTypeDef plt_UartSendMsg(UartChanel_t chanel, uart_message_t* pData)
         return HAL_ERROR;
     }
     
-    HAL_StatusTypeDef status;
+    HAL_StatusTypeDef status = HAL_BUSY;
     UART_HandleTypeDef* pUart = (chanel == Uart1) ? pUart1:pUart3;
     
     if (pUart == NULL) {
@@ -219,13 +219,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     if (huart->Instance == USART1)
     {
         Queue_Push(&uartRxQueue,Uart_RxData[1]) ;
-        memcpy(Uart_RxData[1],0,sizeof(uart_message_t));
+        memset(Uart_RxData[1],0,sizeof(uart_message_t));
         HAL_UART_Receive_DMA(huart,Uart_RxData[1],(uint16_t)sizeof(uart_message_t));
     }
     if (huart->Instance == USART3)
     {
         Queue_Push(&uartRxQueue,Uart_RxData[2]) ;
-        memcpy(Uart_RxData[2],0,sizeof(uart_message_t));
+        memset(Uart_RxData[2],0,sizeof(uart_message_t));
         HAL_UART_Receive_DMA(huart,Uart_RxData[2],(uint16_t)sizeof(uart_message_t));
     }
    

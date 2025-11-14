@@ -222,6 +222,7 @@ HAL_StatusTypeDef plt_CanTx(CanChanel_t chanel, CAN_TxHeaderTypeDef* TxHeader, u
         );
       }
     
+    return HAL_BUSY; // No mailbox available
 }
 
 /**

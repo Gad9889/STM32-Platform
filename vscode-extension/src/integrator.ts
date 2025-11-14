@@ -110,6 +110,12 @@ export async function integratePlatform(
       }
     }
 
+    // Create DbSetFunctions stub if CAN is enabled
+    if (options.peripherals.includes("CAN")) {
+      await createDbSetFunctionsStub(incDir, srcDir);
+      result.filesAdded += 2;
+    }
+
     // Update CMakeLists.txt
     if (options.projectInfo.cmakeFile) {
       await updateCMakeLists(
@@ -159,7 +165,14 @@ async function updateCMakeLists(
 
   if (sourcesMatch) {
     // Build source list
-    const sourcesList = files.sources
+    let allSources = [...files.sources];
+    
+    // Add DbSetFunctions.c if CAN is enabled
+    if (options.peripherals.includes("CAN")) {
+      allSources.push("DbSetFunctions.c");
+    }
+    
+    const sourcesList = allSources
       .map((f) => `    ${path.basename(srcDir)}/${f}`)
       .join("\n");
 
@@ -306,4 +319,74 @@ void platform_example_init(void) {
 
   fs.writeFileSync(examplePath, exampleCode, "utf8");
   return examplePath;
+}
+
+async function createDbSetFunctionsStub(
+  incDir: string,
+  srcDir: string
+): Promise<void> {
+  const headerPath = path.join(incDir, "DbSetFunctions.h");
+  const sourcePath = path.join(srcDir, "DbSetFunctions.c");
+
+  // Don't overwrite if exists
+  if (fs.existsSync(headerPath) || fs.existsSync(sourcePath)) {
+    return;
+  }
+
+  const headerContent = `/**
+ * @file DbSetFunctions.h
+ * @brief CAN database set functions (user-defined)
+ * @note Generated stub - customize for your CAN database
+ */
+
+#ifndef DBSETFUNCTIONS_H
+#define DBSETFUNCTIONS_H
+
+#include <stdint.h>
+
+/**
+ * @brief Initialize database set functions
+ * 
+ * Register your CAN message handlers here using hash_InsertMember()
+ * 
+ * @example
+ * hash_member_t member = {
+ *     .id = 0x123,
+ *     .Set_Function = MyHandler
+ * };
+ * hash_InsertMember(&member);
+ */
+void DbSetFunctionsInit(void);
+
+/* Add your CAN message handler declarations here */
+// void MyHandler(uint8_t *data);
+
+#endif /* DBSETFUNCTIONS_H */
+`;
+
+  const sourceContent = `/**
+ * @file DbSetFunctions.c
+ * @brief CAN database set functions implementation
+ */
+
+#include "DbSetFunctions.h"
+#include "hashtable.h"
+
+/* Add your CAN message handler implementations here */
+
+void DbSetFunctionsInit(void) {
+    /* Register your CAN message handlers here
+     * 
+     * Example:
+     * hash_member_t member = {
+     *     .id = 0x123,
+     *     .Set_Function = MyHandler
+     * };
+     * hash_InsertMember(&member);
+     */
+}
+`;
+
+  fs.writeFileSync(headerPath, headerContent, "utf8");
+  fs.writeFileSync(sourcePath, sourceContent, "utf8");
 }

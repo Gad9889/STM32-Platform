@@ -56,9 +56,8 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-          exclude: |
-            tests/build_coverage/CMakeFiles/**
-            tests/build/**
+          disable_search: true
+          working-directory: ./tests/build_coverage
 
   lint:
     name: Code Quality Check

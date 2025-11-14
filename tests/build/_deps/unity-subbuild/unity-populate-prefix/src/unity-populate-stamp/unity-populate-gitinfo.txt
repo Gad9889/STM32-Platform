@@ -1,0 +1,15 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=git
+command=C:/msys64/mingw64/bin/cmake.exe;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/tmp/unity-populate-gitclone.cmake
+source_dir=C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity
+work_dir=C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests
+repository=https://github.com/ThrowTheSwitch/Unity.git
+remote=origin
+init_submodules=TRUE
+recurse_submodules=--recursive
+submodules=
+CMP0097=NEW
+      

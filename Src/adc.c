@@ -29,6 +29,32 @@ uint16_t ADC3_AVG_Samples[ADC3_NUM_SENSORS];  // Stores the averaged sensor valu
 
 
 
+/**
+ * @brief Initialize ADC peripheral(s) for continuous DMA sampling
+ * 
+ * Starts ADC1, ADC2, and ADC3 in DMA circular mode for continuous analog
+ * readings. Each ADC samples multiple channels sequentially, with results
+ * stored in DMA buffers. Conversion complete interrupt triggers data processing.
+ * 
+ * @note ADC Configuration Requirements:
+ *       - DMA in CIRCULAR mode (auto-restart)
+ *       - Scan mode enabled for multi-channel sampling
+ *       - Continuous conversion mode enabled
+ *       - DMA continuous requests enabled
+ *       - ADC_NUM_SENSORS channels configured per ADC
+ * 
+ * @note Buffer Layout:
+ *       Each ADC buffer contains [SENSORS × SAMPLES_PER_SENSOR] values.
+ *       Data is interleaved: [CH0_S0, CH1_S0, CH2_S0, CH0_S1, CH1_S1, ...]
+ * 
+ * @warning Calls Error_Handler() on:
+ *          - NULL handler pointers
+ *          - DMA start failure
+ *          - Invalid CAN queue (ADC results sent via CAN)
+ * 
+ * @see HAL_ADC_ConvCpltCallback() for automatic data processing
+ * @see plt_AdcProcessData() for averaging and CAN message generation
+ */
 void plt_AdcInit() 
 {
     // NULL pointer checks

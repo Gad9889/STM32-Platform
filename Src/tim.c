@@ -44,6 +44,47 @@ void plt_TimInit(void)
     }
 }
 
+/**
+ * @brief Start PWM output on specified timer channel
+ * 
+ * Configures and starts PWM generation with the requested frequency and duty cycle.
+ * Automatically calculates optimal prescaler and period values to achieve the
+ * target frequency while maintaining good resolution (period > 100 counts).
+ * 
+ * @param[in] timer      Timer peripheral to use (Tim2, Tim3, or Tim4)
+ * @param[in] Channel    Timer channel (TIM_CHANNEL_1, TIM_CHANNEL_2, etc.)
+ * @param[in] frequency  PWM frequency in Hz (1 Hz - 1 MHz)
+ * @param[in] dutyCycle  Duty cycle percentage (0.0 - 100.0)
+ *                       - 0.0% = always LOW
+ *                       - 50.0% = 50% duty
+ *                       - 100.0% = always HIGH
+ * 
+ * @return HAL_StatusTypeDef
+ * @retval HAL_OK     PWM started successfully
+ * @retval HAL_ERROR  Invalid parameters
+ * 
+ * @note Timer Configuration Requirements:
+ *       - Timer configured in PWM mode in CubeMX
+ *       - Channel enabled for PWM output
+ *       - GPIO configured as alternate function for timer
+ * 
+ * @note Prescaler Calculation:
+ *       Automatically finds prescaler to give period between 100-65535 for
+ *       best resolution. If no valid combination exists, uses minimum resolution.
+ * 
+ * @warning Parameter validation:
+ *          - Frequency clamped to 1 Hz - 1 MHz
+ *          - Duty cycle clamped to 0.0 - 100.0%
+ *          - Invalid timer returns HAL_ERROR without action
+ * 
+ * @par Example:
+ * @code
+ * // 1 kHz PWM at 75% duty cycle on TIM2 CH1
+ * plt_StartPWM(Tim2, TIM_CHANNEL_1, 1000, 75.0f);
+ * @endcode
+ * 
+ * @see plt_StopPWM() to stop PWM generation
+ */
 void plt_StartPWM(TimModule_t timer, uint32_t Channel, uint32_t frequency, float dutyCycle)
 {
     // Parameter validation

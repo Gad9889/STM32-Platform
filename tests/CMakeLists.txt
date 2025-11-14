@@ -7,12 +7,22 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # Enable testing
 enable_testing()
 
-# Unity Test Framework
+# Unity Test Framework - Download if not present
+include(FetchContent)
+FetchContent_Declare(
+    unity
+    GIT_REPOSITORY https://github.com/ThrowTheSwitch/Unity.git
+    GIT_TAG v2.6.0
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unity
+)
+FetchContent_MakeAvailable(unity)
+
+# Unity library target
 set(UNITY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unity/src)
-add_library(unity STATIC
+add_library(unity_framework STATIC
     ${UNITY_DIR}/unity.c
 )
-target_include_directories(unity PUBLIC
+target_include_directories(unity_framework PUBLIC
     ${UNITY_DIR}
 )
 
@@ -38,7 +48,7 @@ endif()
 # Helper function to create tests
 function(add_platform_test TEST_NAME)
     add_executable(${TEST_NAME} ${TEST_NAME}.c ${ARGN})
-    target_link_libraries(${TEST_NAME} unity)
+    target_link_libraries(${TEST_NAME} unity_framework)
     target_include_directories(${TEST_NAME} PRIVATE
         ${PLATFORM_INC_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks

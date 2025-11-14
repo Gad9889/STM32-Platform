@@ -28,12 +28,25 @@ static QueueItem_t canRxMessage = {      // Queue item for CAN received messages
 /* ========================== Function Definitions ============================ */
 
 /**
-  * @brief  Initializes the CAN peripherals and enables RX interrupts.
-  * @param  handlers     Pointer to the handler set for the platform layer
-  * @param  callback     Function pointer to the RX processing callback
-  * @param  rx_queue_size Size of the RX message queue
-  * @note   This function initializes the CAN peripherals and enables RX interrupts.
-*/
+ * @brief Initialize CAN peripheral(s) with RX interrupt handling
+ * 
+ * Initializes all available CAN peripherals (CAN1, CAN2, CAN3) with FIFO0 and FIFO1
+ * filters configured to accept all message IDs. Enables RX interrupts for message
+ * reception and sets up internal queue for ISR-to-main context message passing.
+ * 
+ * @param[in] rx_queue_size Size of the internal RX message queue (1-256)
+ * 
+ * @note All CAN peripherals must be pre-configured in CubeMX with:
+ *       - Bit timing configured for your bus speed
+ *       - RX FIFO0 interrupt enabled (CAN_IT_RX_FIFO0_MSG_PENDING)
+ *       - DMA not required for CAN
+ * 
+ * @warning This function calls Error_Handler() on failure and does not return.
+ *          For production use, consider returning error codes instead.
+ * 
+ * @see plt_CanProcessRxMsgs() to process received messages in main loop
+ * @see plt_CanSendMsg() to transmit CAN messages
+ */
 void plt_CanInit(size_t rx_queue_size)
 {
     // NULL pointer checks
@@ -173,10 +186,29 @@ void plt_CanFilterInit(CAN_HandleTypeDef* pCan)
 
 
 /**
-  * @brief  Processes received CAN messages from the queue.
-  * @note   This function should be called periodically in the main loop. It
-  *         dequeues messages and invokes the registered callback for processing.
-*/
+ * @brief Process all pending CAN RX messages from the queue
+ * 
+ * Dequeues CAN messages received in interrupt context and processes them
+ * in the main loop by calling the registered user callback. Processes up to
+ * PLT_MAX_QUEUE_SIZE+1 messages per call to prevent infinite loops in case
+ * of queue corruption.
+ * 
+ * @note Call this function periodically in your main loop (e.g., every 1-10ms)
+ *       to ensure timely message processing and prevent queue overflow.
+ * 
+ * @warning If the queue fills up (256 messages), new messages will be dropped
+ *          silently in the ISR. Monitor queue usage if message loss is critical.
+ * 
+ * @par Example:
+ * @code
+ * while(1) {
+ *     plt_CanProcessRxMsgs();  // Process CAN messages
+ *     HAL_Delay(5);             // 5ms loop
+ * }
+ * @endcode
+ * 
+ * @see plt_CanInit() to configure CAN and set callback
+ */
 void plt_CanProcessRxMsgs()
 {
     can_message_t data = {0};
@@ -229,11 +261,34 @@ HAL_StatusTypeDef plt_CanTx(CanChanel_t chanel, CAN_TxHeaderTypeDef* TxHeader, u
 }
 
 /**
- * @brief  Sends a CAN message through the specified CAN channel.
- * @param  chanel   CAN channel to send the message on
- * @param  pData    Pointer to the CAN message to be sent
- * @retval HAL status
-*/
+ * @brief Send a CAN message on the specified channel
+ * 
+ * Transmits a standard CAN message (11-bit ID, 8 data bytes) through the
+ * selected CAN peripheral. Uses hardware TX mailboxes with automatic retry.
+ * 
+ * @param[in] chanel CAN channel to use (Can1, Can2, or Can3)
+ * @param[in] pData  Pointer to CAN message structure containing:
+ *                   - id: 11-bit standard identifier (0x000-0x7FF)
+ *                   - data: 8 bytes of payload data
+ * 
+ * @return HAL_StatusTypeDef
+ * @retval HAL_OK      Message successfully queued to TX mailbox
+ * @retval HAL_BUSY    All TX mailboxes full, retry later
+ * @retval HAL_ERROR   Invalid parameters or peripheral not initialized
+ * 
+ * @note This function is non-blocking. Message transmission happens
+ *       asynchronously in hardware. Check return value for queue status.
+ * 
+ * @warning NULL pointer check is performed. Returns HAL_ERROR if pData is NULL.
+ * 
+ * @par Example:
+ * @code
+ * can_message_t msg = {.id = 0x123, .data = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}};
+ * if (plt_CanSendMsg(Can1, &msg) != HAL_OK) {
+ *     // Handle error - mailbox full or invalid channel
+ * }
+ * @endcode
+ */
 HAL_StatusTypeDef 
 plt_CanSendMsg(CanChanel_t chanel, can_message_t *pData)
 {

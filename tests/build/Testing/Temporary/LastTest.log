@@ -1,10 +1,10 @@
-Start testing: Nov 14 21:33 Jerusalem Standard Time
+Start testing: Nov 14 21:43 Jerusalem Standard Time
 ----------------------------------------------------------
 1/3 Testing: test_utils
 1/3 Test: test_utils
 Command: "C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/test_utils.exe"
 Directory: C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build
-"test_utils" start time: Nov 14 21:33 Jerusalem Standard Time
+"test_utils" start time: Nov 14 21:43 Jerusalem Standard Time
 Output:
 ----------------------------------------------------------
 C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_utils.c:261:test_QueueInit_ValidParams_InitializesCorrectly:PASS
@@ -26,10 +26,10 @@ C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_utils.c:284:test_QueueI
 14 Tests 0 Failures 0 Ignored 
 OK
 <end of output>
-Test time =   0.01 sec
+Test time =   0.06 sec
 ----------------------------------------------------------
 Test Passed.
-"test_utils" end time: Nov 14 21:33 Jerusalem Standard Time
+"test_utils" end time: Nov 14 21:43 Jerusalem Standard Time
 "test_utils" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -37,7 +37,7 @@ Test Passed.
 2/3 Test: test_database
 Command: "C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/test_database.exe"
 Directory: C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build
-"test_database" start time: Nov 14 21:33 Jerusalem Standard Time
+"test_database" start time: Nov 14 21:43 Jerusalem Standard Time
 Output:
 ----------------------------------------------------------
 C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:158:test_dbAllocateMemory_Success_ReturnsValidPointer:PASS
@@ -58,10 +58,10 @@ C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:176:test_Dat
 13 Tests 0 Failures 0 Ignored 
 OK
 <end of output>
-Test time =   0.01 sec
+Test time =   0.05 sec
 ----------------------------------------------------------
 Test Passed.
-"test_database" end time: Nov 14 21:33 Jerusalem Standard Time
+"test_database" end time: Nov 14 21:43 Jerusalem Standard Time
 "test_database" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -69,7 +69,7 @@ Test Passed.
 3/3 Test: test_hashtable
 Command: "C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/test_hashtable.exe"
 Directory: C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build
-"test_hashtable" start time: Nov 14 21:33 Jerusalem Standard Time
+"test_hashtable" start time: Nov 14 21:43 Jerusalem Standard Time
 Output:
 ----------------------------------------------------------
 C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:241:test_hashMapFunction_DifferentIDs_ProduceDifferentHashes:PASS
@@ -93,11 +93,11 @@ C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:264:test_Ha
 16 Tests 0 Failures 0 Ignored 
 OK
 <end of output>
-Test time =   0.02 sec
+Test time =   0.05 sec
 ----------------------------------------------------------
 Test Passed.
-"test_hashtable" end time: Nov 14 21:33 Jerusalem Standard Time
+"test_hashtable" end time: Nov 14 21:43 Jerusalem Standard Time
 "test_hashtable" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Nov 14 21:33 Jerusalem Standard Time
+End testing: Nov 14 21:43 Jerusalem Standard Time

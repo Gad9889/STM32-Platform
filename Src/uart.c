@@ -36,15 +36,29 @@ static QueueItem_t debugTxMessage = {
 /*========================= Function Definitions =========================*/
 
 /**
-  * @brief  Initializes the UART module for transmission and sets up the queue and buffer.
-  * @param  pUart Pointer to the UART handle to initialize       
-  * @param  tx_queue_size Size of the transmission queue
-  * @retval None
-  *
-  * @note   This function sets up the UART handle and initializes the TX queue and buffer.
-  *  ! BE CareFull the Rx DMA channel need to be in Circular mode to work properly
-  *  ! BE CareFull the Tx DMA channel need to be in Normal mode to work properly
-  */
+ * @brief Initialize UART peripheral(s) for DMA-based communication
+ * 
+ * Configures UART1 and UART3 for message reception via DMA in circular mode,
+ * and UART2 for debug output. Sets up internal queues for buffering RX/TX
+ * messages between ISR and main contexts.
+ * 
+ * @param[in] tx_queue_size Size of TX and RX queues (1-256 messages)
+ * 
+ * @note DMA Configuration Requirements:
+ *       - UART RX DMA: CIRCULAR mode (auto-restart on completion)
+ *       - UART TX DMA: NORMAL mode (one-shot per transmission)
+ *       - Word size: Byte (8-bit)
+ *       - Priority: Medium or higher recommended
+ * 
+ * @warning This function calls Error_Handler() on failure:
+ *          - NULL handler pointers
+ *          - Invalid queue size (0 or >256)
+ *          - DMA start failure
+ * 
+ * @see plt_UartProcessRxMsgs() to process received UART messages
+ * @see plt_UartSendMsg() to transmit messages
+ * @see _write() for printf redirection to UART2
+ */
 void plt_UartInit(size_t tx_queue_size)
 {
     // NULL pointer checks

@@ -164,38 +164,38 @@ void setInv4Av2Parameters(uint8_t* data)
 
 void setBmsParameters(uint8_t* data)
 {
-
+    (void)data; // Unused - to be implemented
 }
 
 void setResParameters(uint8_t* data)
 {
-
+    (void)data; // Unused - to be implemented
 }
 
 
 void setStage0Parameters(uint8_t* data)
 {
-
+    (void)data; // Unused - to be implemented
 }
 
 void setStage1Parameters(uint8_t* data)
 {
-
+    (void)data; // Unused - to be implemented
 }
 
 void setStage2Parameters(uint8_t* data)
 {
-
+    (void)data; // Unused - to be implemented
 }
 
 void setStage3Parameters(uint8_t* data)
 {
-
+    (void)data; // Unused - to be implemented
 }
 
 
 void setVCUParameters(uint8_t* data)
 {
-
+    (void)data; // Unused - to be implemented
 }
 

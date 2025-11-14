@@ -23,13 +23,32 @@ static QueueItem_t spiRxMessage = {
 /*========================= Function Definitions =========================*/
 
 /**
-  * @brief  Initializes the SPI module for reception and assigns a processing callback.
-  * @param  huart      Pointer to the SPI handle to initialize
-  * @param  callback   Function pointer to the RX processing callback
-  * @retval None
-  *
-  * @note   This function enables SPI reception in interrupt mode.
-  */
+ * @brief Initialize SPI peripheral for DMA-based full-duplex communication
+ * 
+ * Configures SPI1, SPI2, or SPI3 for message exchange via DMA. Supports both
+ * master and slave modes with automatic mode detection from HAL configuration.
+ * Sets up circular RX buffer and message queue for ISR-to-main data transfer.
+ * 
+ * @param[in] rx_queue_size Size of the RX message queue (1-256)
+ * 
+ * @note SPI Configuration Requirements:
+ *       - DMA enabled for both TX and RX (if master)
+ *       - DMA RX only (if slave)
+ *       - SPI configured in CubeMX with correct CPOL/CPHA for your device
+ *       - NSS (chip select) managed by user code
+ * 
+ * @note Mode Detection:
+ *       - Master: Uses TransmitReceive DMA (full duplex)
+ *       - Slave: Uses Receive DMA only
+ * 
+ * @warning Calls Error_Handler() on:
+ *          - NULL handler pointers
+ *          - Invalid queue size (0 or >256)
+ *          - DMA start failure
+ * 
+ * @see plt_SpiProcessRxMsgs() to process received messages
+ * @see plt_SpiSendMsg() to transmit messages (non-blocking)
+ */
 void plt_SpiInit(size_t rx_queue_size)
 {
     // NULL pointer checks

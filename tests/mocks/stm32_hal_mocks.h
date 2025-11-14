@@ -150,7 +150,10 @@ typedef struct {
     uint32_t Mode;
 } SPI_InitTypeDef;
 
-typedef struct {
+// Forward declaration for self-referencing struct
+struct __SPI_HandleTypeDef;
+
+typedef struct __SPI_HandleTypeDef {
     void *Instance;
     SPI_InitTypeDef Init;
     HAL_SPI_StateTypeDef State;

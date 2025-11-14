@@ -1,0 +1,7 @@
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/CMakeFiles/unity.dir
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/CMakeFiles/test_utils.dir
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/CMakeFiles/test_database.dir
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/CMakeFiles/test_hashtable.dir
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/CMakeFiles/test.dir
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/CMakeFiles/edit_cache.dir
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/CMakeFiles/rebuild_cache.dir

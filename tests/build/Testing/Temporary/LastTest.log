@@ -1,0 +1,85 @@
+Start testing: Nov 14 21:17 Jerusalem Standard Time
+----------------------------------------------------------
+1/3 Testing: test_utils
+1/3 Test: test_utils
+Command: "C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/test_utils.exe"
+Directory: C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build
+"test_utils" start time: Nov 14 21:17 Jerusalem Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.14 sec
+----------------------------------------------------------
+Test Failed.
+"test_utils" end time: Nov 14 21:17 Jerusalem Standard Time
+"test_utils" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/3 Testing: test_database
+2/3 Test: test_database
+Command: "C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/test_database.exe"
+Directory: C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build
+"test_database" start time: Nov 14 21:17 Jerusalem Standard Time
+Output:
+----------------------------------------------------------
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:158:test_dbAllocateMemory_Success_ReturnsValidPointer:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:159:test_dbAllocateMemory_AllocatesAllNodes:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:160:test_dbAllocateMemory_InitializesToZero:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:163:test_dbFreeMemory_ValidDatabase_FreesAllNodes:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:166:test_dbInit_ReturnsInitializedDatabase:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:167:test_dbGetDBPointer_AfterInit_ReturnsSamePointer:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:170:test_Database_PedalNode_CanStoreAndRetrieveData:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:171:test_Database_VCUNode_CanStoreInverterData:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:172:test_Database_VCUNode_MultipleInverters:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:173:test_Database_VCUNode_ErrorGroup:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:174:test_Database_VCUNode_KeepAliveArray:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:175:test_Database_SubNode_CanStoreData:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_database.c:176:test_Database_DashboardNode_CanStoreData:PASS
+
+-----------------------
+13 Tests 0 Failures 0 Ignored 
+OK
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"test_database" end time: Nov 14 21:17 Jerusalem Standard Time
+"test_database" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/3 Testing: test_hashtable
+3/3 Test: test_hashtable
+Command: "C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/test_hashtable.exe"
+Directory: C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build
+"test_hashtable" start time: Nov 14 21:17 Jerusalem Standard Time
+Output:
+----------------------------------------------------------
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:241:test_hashMapFunction_DifferentIDs_ProduceDifferentHashes:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:242:test_hashMapFunction_SameID_ProducesSameHash:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:243:test_hashMapFunction_ResultWithinTableSize:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:246:test_hashInsertMember_NewMember_ReturnsOK:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:76:test_hashInsertMember_DuplicateID_ReturnsError:FAIL: Expected 2 Was 0
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:248:test_hashInsertMember_MultipleMembers_AllInserted:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:251:test_hashLookup_ExistingID_ReturnsFunction:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:252:test_hashLookup_NonExistentID_ReturnsNull:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:253:test_hashLookup_AfterDelete_ReturnsNull:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:254:test_hashLookup_MultipleMembers_FindsCorrectOne:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:257:test_hashDeleteMember_ExistingMember_Removes:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:258:test_hashDeleteMember_NonExistentMember_DoesNotCrash:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:259:test_hashDeleteMember_ThenReinsert_Works:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:262:test_HashTable_LookupAndCall_ExecutesCorrectFunction:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:263:test_HashTable_CollisionHandling_LinearProbing:PASS
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/test_hashtable.c:264:test_HashTable_FullTable_ReturnsHashFull:PASS
+
+-----------------------
+16 Tests 1 Failures 0 Ignored 
+FAIL
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Failed.
+"test_hashtable" end time: Nov 14 21:17 Jerusalem Standard Time
+"test_hashtable" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 14 21:17 Jerusalem Standard Time

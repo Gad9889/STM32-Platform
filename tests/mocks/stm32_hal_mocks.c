@@ -52,7 +52,7 @@ void Mock_CAN_SetRxMessage(uint32_t id, uint8_t *data, uint8_t dlc) {
 
 // ==================== HAL General ====================
 
-__weak void Error_Handler(void) {
+void Error_Handler(void) {
     // Mock error handler - do nothing in tests
     // Can be overridden in tests to track errors
 }

@@ -1,6 +1,6 @@
 # Wiki Content for GitHub
 
-This directory contains documentation formatted for the GitHub Wiki. 
+This directory contains documentation formatted for the GitHub Wiki.
 
 ## Publishing to Wiki
 
@@ -13,7 +13,7 @@ To add these pages to your GitHub Wiki:
    - Home
    - Getting-Started
    - API-Reference
-   - Architecture  
+   - Architecture
    - Examples
    - Migration-Guide
    - VS-Code-Extension

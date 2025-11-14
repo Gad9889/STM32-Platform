@@ -17,11 +17,11 @@ int main(void) {
     HAL_Init();
     SystemClock_Config();
     MX_UART2_Init();
-    
+
     Platform.begin(NULL, &huart2, NULL, NULL, NULL);
-    
+
     UART.println("Hello, STM32 Platform!");
-    
+
     while (1) {
         HAL_Delay(1000);
     }
@@ -49,22 +49,22 @@ int main(void) {
     SystemClock_Config();
     MX_CAN1_Init();
     MX_UART2_Init();
-    
+
     Platform.begin(&hcan1, &huart2, NULL, NULL, NULL)
             ->onCAN(can_handler);
-    
+
     UART.println("CAN example ready");
-    
+
     uint8_t counter = 0;
-    
+
     while (1) {
         // Process incoming messages
         CAN.handleRxMessages();
-        
+
         // Send periodic message
         uint8_t data[] = {counter++, 0x11, 0x22};
         CAN.send(0x100, data, 3);
-        
+
         HAL_Delay(1000);
     }
 }
@@ -83,20 +83,20 @@ int main(void) {
     SystemClock_Config();
     MX_ADC1_Init();
     MX_UART2_Init();
-    
+
     Platform.begin(NULL, &huart2, NULL, &hadc1, NULL);
-    
+
     ADC.calibrate();
     UART.println("ADC example ready");
-    
+
     while (1) {
         ADC.handleConversions();
-        
+
         uint16_t raw = ADC.readRaw(0);
         float voltage = ADC.readVoltage(0);
-        
+
         UART.printf("ADC Ch0: %u (%.2fV)\\n", raw, voltage);
-        
+
         HAL_Delay(500);
     }
 }
@@ -113,13 +113,13 @@ int main(void) {
     HAL_Init();
     SystemClock_Config();
     MX_TIM2_Init();
-    
+
     Platform.begin(NULL, NULL, NULL, NULL, &htim2);
-    
+
     // Start PWM on channel 1
     PWM.start(&htim2, TIM_CHANNEL_1);
     PWM.setFrequency(&htim2, 1000);  // 1 kHz
-    
+
     // Fade in and out
     while (1) {
         // Fade in
@@ -127,7 +127,7 @@ int main(void) {
             PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, duty);
             HAL_Delay(50);
         }
-        
+
         // Fade out
         for (float duty = 100; duty >= 0; duty -= 5) {
             PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, duty);
@@ -156,13 +156,13 @@ void battery_handler(CANMessage_t* msg) {
 
 int main(void) {
     // ... initialization ...
-    
+
     Platform.begin(&hcan1, &huart2, NULL, NULL, NULL);
-    
+
     // Route specific IDs
     CAN.route(0x201, motor_handler);
     CAN.route(0x301, battery_handler);
-    
+
     while (1) {
         CAN.handleRxMessages();  // Automatically calls correct handler
         HAL_Delay(10);
@@ -183,12 +183,12 @@ extern UART_HandleTypeDef huart2;
 
 uint8_t read_sensor_register(uint8_t reg) {
     SPI.select(CS_PORT, CS_PIN);
-    
+
     SPI.transferByte(0x80 | reg);  // Read command
     uint8_t value = SPI.transferByte(0x00);
-    
+
     SPI.deselect(CS_PORT, CS_PIN);
-    
+
     return value;
 }
 
@@ -197,15 +197,15 @@ int main(void) {
     SystemClock_Config();
     MX_SPI1_Init();
     MX_UART2_Init();
-    
+
     Platform.begin(NULL, &huart2, &hspi1, NULL, NULL);
-    
+
     while (1) {
         uint8_t id = read_sensor_register(0x00);
         uint8_t temp = read_sensor_register(0x01);
-        
+
         UART.printf("Sensor ID: 0x%02X, Temp: %u°C\\n", id, temp);
-        
+
         HAL_Delay(1000);
     }
 }
@@ -249,7 +249,7 @@ void update_throttle(void) {
     // Read throttle pedal position
     vehicle.throttle_raw = ADC.readRaw(0);
     vehicle.throttle_percent = (vehicle.throttle_raw / 4095.0f) * 100.0f;
-    
+
     // Send motor command
     uint8_t cmd[] = {
         (uint8_t)(vehicle.throttle_percent),
@@ -278,25 +278,25 @@ int main(void) {
     MX_UART2_Init();
     MX_ADC1_Init();
     MX_TIM2_Init();
-    
+
     Platform.begin(&hcan1, &huart2, NULL, &hadc1, &htim2)
             ->onCAN(can_handler);
-    
+
     PWM.start(&htim2, TIM_CHANNEL_1);
     PWM.setFrequency(&htim2, 25000);  // 25 kHz for fan
-    
+
     UART.println("Vehicle Control Unit Ready");
     UART.printf("Version: %s\\n", Platform.version());
-    
+
     while (1) {
         // Process inputs
         CAN.handleRxMessages();
         ADC.handleConversions();
-        
+
         // Update control logic
         update_throttle();
         update_cooling();
-        
+
         // Status reporting
         if (HAL_GetTick() % 1000 == 0) {
             UART.printf("Throttle: %.1f%%, RPM: %u, Fan: %s\\n",
@@ -304,7 +304,7 @@ int main(void) {
                 vehicle.motor_rpm,
                 vehicle.fan_enabled ? "ON" : "OFF");
         }
-        
+
         HAL_Delay(10);
     }
 }

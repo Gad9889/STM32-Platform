@@ -27,7 +27,7 @@ cp -r STM32-Platform/Src/* YourProject/Src/
 # Add to your build system
 # CMakeLists.txt example:
 include_directories(Inc)
-add_executable(${PROJECT_NAME} 
+add_executable(${PROJECT_NAME}
     Src/main.c
     Src/stm32_platform.c
     Src/can.c
@@ -72,23 +72,23 @@ int main(void) {
     SystemClock_Config();
     MX_CAN1_Init();
     MX_UART2_Init();
-    
+
     // Initialize platform
     Platform.begin(&hcan1, &huart2, NULL, NULL, NULL);
-    
+
     // Say hello!
     UART.println("STM32 Platform ready!");
     UART.printf("Version: %s\\n", Platform.version());
-    
+
     // Main loop
     while (1) {
         // Process incoming CAN messages
         CAN.handleRxMessages();
-        
+
         // Send periodic CAN message
         uint8_t data[] = {0x01, 0x02, 0x03};
         CAN.send(0x100, data, 3);
-        
+
         HAL_Delay(1000);
     }
 }
@@ -107,19 +107,23 @@ Compile and flash to your STM32. Open a serial terminal at 115200 baud to see ou
 ## Common Issues
 
 ### Extension doesn't activate
+
 - Make sure your workspace has a `CMakeLists.txt`
 - Run: `STM32 Platform: Check Project Compatibility`
 
 ### Platform functions not found
+
 - Verify you copied all files from `Inc/` and `Src/`
 - Check include paths in your build system
 
 ### CAN not working
+
 - Enable CAN interrupts in CubeMX
 - Call `CAN.handleRxMessages()` in your main loop
 - Check CAN transceiver wiring
 
 ### UART output not visible
+
 - Verify UART baud rate (default 115200)
 - Check TX pin connection
 - Ensure `huart2` handle is passed to `Platform.begin()`

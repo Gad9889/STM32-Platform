@@ -89,7 +89,7 @@ void test_QueuePush_MultipleItems_WrapsAround(void) {
     TEST_ASSERT_EQUAL(QUEUE_OK, test_queue.status);
 }
 
-void test_QueuePush_WhenFull_SetsFull Status(void) {
+void test_QueuePush_WhenFull_SetsFullStatus(void) {
     queue_item.data = NULL;
     queue_item.sizeof_data = sizeof(test_data_t);
     Queue_Init(&test_queue, &queue_item, 2);
@@ -264,7 +264,7 @@ int main(void) {
     // Push tests
     RUN_TEST(test_QueuePush_SingleItem_ReturnsPointer);
     RUN_TEST(test_QueuePush_MultipleItems_WrapsAround);
-    RUN_TEST(test_QueuePush_WhenFull_SetsFull Status);
+    RUN_TEST(test_QueuePush_WhenFull_SetsFullStatus);
     RUN_TEST(test_QueuePush_NullQueue_ReturnsNull);
     
     // Pop tests

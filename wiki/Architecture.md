@@ -175,11 +175,11 @@ xSemaphoreGive(canMutex);
 
 **Benchmarks on STM32F4 @ 168MHz:**
 
-| Operation | Time | CPU Usage |
-|-----------|------|-----------|
+| Operation         | Time      | CPU Usage  |
+| ----------------- | --------- | ---------- |
 | CAN RX processing | ~5 µs/msg | <1% @ 1kHz |
-| Queue push/pop | ~2 µs | Minimal |
-| ADC averaging | ~100 µs | <5% |
+| Queue push/pop    | ~2 µs     | Minimal    |
+| ADC averaging     | ~100 µs   | <5%        |
 
 **DMA ensures zero-copy transfers with minimal CPU involvement.**
 

@@ -33,17 +33,17 @@ PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 75.0);
 ✅ **Explicit Control** - You decide when to process messages  
 ✅ **Battle-Tested** - Used in Formula Student racing  
 ✅ **Well-Tested** - 49 unit tests, 90%+ coverage  
-✅ **Two APIs** - New consumer API + legacy `plt_*` functions  
+✅ **Two APIs** - New consumer API + legacy `plt_*` functions
 
 ## Supported Peripherals
 
-| Peripheral | API Example | Features |
-|------------|-------------|----------|
-| CAN | `CAN.send()`, `CAN.handleRxMessages()` | Multi-channel, filtering, routing |
-| UART | `UART.println()`, `UART.printf()` | DMA, printf support |
-| SPI | `SPI.transfer()`, `SPI.transferByte()` | Full-duplex DMA |
-| ADC | `ADC.readRaw()`, `ADC.readVoltage()` | Multi-channel, averaging |
-| PWM | `PWM.setDutyCycle()`, `PWM.setFrequency()` | Frequency and duty control |
+| Peripheral | API Example                                | Features                          |
+| ---------- | ------------------------------------------ | --------------------------------- |
+| CAN        | `CAN.send()`, `CAN.handleRxMessages()`     | Multi-channel, filtering, routing |
+| UART       | `UART.println()`, `UART.printf()`          | DMA, printf support               |
+| SPI        | `SPI.transfer()`, `SPI.transferByte()`     | Full-duplex DMA                   |
+| ADC        | `ADC.readRaw()`, `ADC.readVoltage()`       | Multi-channel, averaging          |
+| PWM        | `PWM.setDutyCycle()`, `PWM.setFrequency()` | Frequency and duty control        |
 
 ## Getting Help
 

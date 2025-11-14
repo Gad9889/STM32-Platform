@@ -20,6 +20,7 @@ Born from Ben-Gurion Racing's Formula Student team, now redesigned for developer
 ## 🚀 Two APIs, Your Choice
 
 **New API** (Recommended):
+
 ```c
 Platform.begin(&hcan1, &huart2, &hspi1);
 CAN.send(0x123, data, 8);
@@ -28,6 +29,7 @@ ADC.handleConversions();
 ```
 
 **Legacy API** (Still supported):
+
 ```c
 plt_SetHandlers(&handlers);
 plt_CanSendMsg(Can1, &msg);
@@ -74,20 +76,20 @@ int main(void) {
     SystemClock_Config();
     MX_CAN1_Init();  // CubeMX generated
     MX_UART2_Init();
-    
+
     // Initialize platform
     Platform.begin(&hcan1, &huart2, NULL, NULL, NULL);
-    
+
     UART.println("Platform ready!");
-    
+
     while (1) {
         // Handle incoming CAN messages
         CAN.handleRxMessages();
-        
+
         // Send a message
         uint8_t data[] = {0x01, 0x02, 0x03};
         CAN.send(0x123, data, 3);
-        
+
         HAL_Delay(100);
     }
 }
@@ -110,13 +112,13 @@ All documentation is now in the **[Wiki](https://github.com/Gad9889/STM32-Platfo
 
 ## 🎯 Supported Peripherals
 
-| Peripheral | New API | Legacy API | Features |
-|------------|---------|------------|----------|
-| **CAN** | `CAN.send()`, `CAN.handleRxMessages()` | `plt_CanSendMsg()` | Multi-channel, filtering, routing |
-| **UART** | `UART.println()`, `UART.printf()` | `plt_UartSendMsg()` | DMA, printf redirection |
-| **SPI** | `SPI.transfer()`, `SPI.transferByte()` | `plt_SpiSendMsg()` | Full-duplex DMA |
-| **ADC** | `ADC.readRaw()`, `ADC.readVoltage()` | `plt_AdcInit()` | Multi-channel, averaging |
-| **PWM** | `PWM.setDutyCycle()`, `PWM.setFrequency()` | `plt_StartPWM()` | Frequency & duty control |
+| Peripheral | New API                                    | Legacy API          | Features                          |
+| ---------- | ------------------------------------------ | ------------------- | --------------------------------- |
+| **CAN**    | `CAN.send()`, `CAN.handleRxMessages()`     | `plt_CanSendMsg()`  | Multi-channel, filtering, routing |
+| **UART**   | `UART.println()`, `UART.printf()`          | `plt_UartSendMsg()` | DMA, printf redirection           |
+| **SPI**    | `SPI.transfer()`, `SPI.transferByte()`     | `plt_SpiSendMsg()`  | Full-duplex DMA                   |
+| **ADC**    | `ADC.readRaw()`, `ADC.readVoltage()`       | `plt_AdcInit()`     | Multi-channel, averaging          |
+| **PWM**    | `PWM.setDutyCycle()`, `PWM.setFrequency()` | `plt_StartPWM()`    | Frequency & duty control          |
 
 ---
 
@@ -151,10 +153,10 @@ void can_handler(CANMessage_t* msg) {
 int main(void) {
     Platform.begin(&hcan1, &huart2, NULL, NULL, NULL)
             ->onCAN(can_handler);
-    
+
     while (1) {
         CAN.handleRxMessages();
-        
+
         if (button_pressed) {
             uint8_t data[] = {0xAA, 0xBB};
             CAN.send(0x100, data, 2);

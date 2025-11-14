@@ -21,6 +21,7 @@ Platform_t* Platform.begin(
 ```
 
 **Parameters:**
+
 - `hcan` - CAN handle (or `NULL` if not used)
 - `huart` - UART handle (or `NULL` if not used)
 - `hspi` - SPI handle (or `NULL` if not used)
@@ -30,6 +31,7 @@ Platform_t* Platform.begin(
 **Returns:** Pointer to Platform object for method chaining
 
 **Example:**
+
 ```c
 Platform.begin(&hcan1, &huart2, NULL, &hadc1, &htim2);
 ```
@@ -45,6 +47,7 @@ Platform_t* Platform.onSPI(void (*callback)(SPIMessage_t*));
 ```
 
 **Example:**
+
 ```c
 void my_can_handler(CANMessage_t* msg) {
     UART.printf("CAN ID: 0x%03X\\n", msg->id);
@@ -93,6 +96,7 @@ bool CAN.send(uint16_t id, const uint8_t* data, uint8_t length);
 ```
 
 **Parameters:**
+
 - `id` - CAN message ID (11-bit standard)
 - `data` - Pointer to data bytes
 - `length` - Data length (0-8 bytes)
@@ -100,6 +104,7 @@ bool CAN.send(uint16_t id, const uint8_t* data, uint8_t length);
 **Returns:** `true` if sent successfully
 
 **Example:**
+
 ```c
 uint8_t data[] = {0xAA, 0xBB, 0xCC};
 if (CAN.send(0x100, data, 3)) {
@@ -134,6 +139,7 @@ void CAN.route(uint16_t id, void (*handler)(CANMessage_t*));
 ```
 
 **Example:**
+
 ```c
 void motor_handler(CANMessage_t* msg) {
     uint16_t rpm = (msg->data[0] << 8) | msg->data[1];
@@ -182,6 +188,7 @@ void UART.printf(const char* fmt, ...);
 ```
 
 **Example:**
+
 ```c
 int speed = 85;
 float temp = 23.5;
@@ -243,6 +250,7 @@ uint8_t SPI.transferByte(uint8_t data);
 ```
 
 **Example:**
+
 ```c
 uint8_t response = SPI.transferByte(0x42);
 ```
@@ -257,6 +265,7 @@ void SPI.deselect(GPIO_TypeDef* port, uint16_t pin);
 ```
 
 **Example:**
+
 ```c
 SPI.select(GPIOA, GPIO_PIN_4);
 uint8_t cmd = SPI.transferByte(0x03);  // Read command
@@ -291,6 +300,7 @@ float ADC.readVoltage(uint8_t channel);
 **Returns:** Voltage in volts
 
 **Example:**
+
 ```c
 float voltage = ADC.readVoltage(0);
 UART.printf("Voltage: %.2fV\\n", voltage);
@@ -344,6 +354,7 @@ void PWM.setDutyCycle(TIM_HandleTypeDef* htim, uint32_t channel, float percent);
 ```
 
 **Example:**
+
 ```c
 PWM.start(&htim2, TIM_CHANNEL_1);
 PWM.setFrequency(&htim2, 1000);  // 1 kHz
@@ -377,6 +388,7 @@ typedef struct {
 ### `plt_status_t`
 
 Error codes:
+
 - `PLT_OK` - Success
 - `PLT_ERROR_INVALID_PARAM` - Invalid parameter
 - `PLT_ERROR_NULL_POINTER` - NULL pointer

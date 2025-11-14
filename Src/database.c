@@ -1,5 +1,6 @@
 
 #include "database.h"
+#include "DbSetFunctions.h"
 
 
 /* =============================== Global Variables =============================== */

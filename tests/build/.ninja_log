@@ -1,0 +1,18 @@
+# ninja log v6
+22	385	7848510288611453	CMakeFiles/test_database.dir/test_database.c.obj	93e865fbeb2bf61a
+38	387	7848510288765066	CMakeFiles/test_database.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/DbSetFunctions.c.obj	5652e7a67bdfd698
+65	389	7848510289040811	CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/hashtable.c.obj	60e3b5facc90c602
+74	396	7848510289129354	CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/DbSetFunctions.c.obj	94460ed6ab817ab0
+13	397	7848510288519032	CMakeFiles/test_utils.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/utils.c.obj	3a154b9b65e4a2b2
+55	414	7848510288945649	CMakeFiles/test_hashtable.dir/test_hashtable.c.obj	226049275facdda7
+8	415	7848510288464745	CMakeFiles/test_utils.dir/test_utils.c.obj	5d97d7d0454c5e0e
+2	468	7848510288409158	CMakeFiles/unity.dir/unity/src/unity.c.obj	a79022e3246f7878
+36	152	7848510449979168	CMakeFiles/test_utils.dir/mocks/stm32_hal_mocks.c.obj	b0a2d73c08bf2fcf
+45	152	7848510450070827	CMakeFiles/test_database.dir/mocks/stm32_hal_mocks.c.obj	b32d57c0b2611e62
+54	157	7848510450148348	CMakeFiles/test_hashtable.dir/mocks/stm32_hal_mocks.c.obj	e9b73f3af8b7c8df
+29	293	7848510449903968	libunity.a	6d99d844bcf13745
+22	118	7848510600662432	CMakeFiles/test_database.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/database.c.obj	afc4509c3ed5f1cc
+27	125	7848510600715904	CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/database.c.obj	51aa1ea477940024
+30	183	7848510600751913	test_utils.exe	1450a765d5c2276b
+118	217	7848510601629779	test_database.exe	dd2546c97e4a9b3d
+125	223	7848510601704998	test_hashtable.exe	7c8ba98a267862c5

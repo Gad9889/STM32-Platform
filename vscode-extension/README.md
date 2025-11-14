@@ -45,7 +45,8 @@ When you integrate the platform, the extension:
 
    - Core: `platform.h/c`, `platform_status.h`, `platform_config.h/c`, `utils.h/c`
    - Selected peripherals: `can.h/c`, `uart.h/c`, `spi.h/c`, etc.
-   - New API (optional): `stm32_platform.h/c`
+   - New API: `stm32_platform.h/c` (with P_CAN, P_UART, etc.)
+   - CAN support: Auto-generates `DbSetFunctions.h/c` stub
 
 2. **Updates CMakeLists.txt**:
 
@@ -58,28 +59,34 @@ When you integrate the platform, the extension:
    - Main loop with peripheral handling
    - Ready to copy into your `main.c`
 
+4. **Optional: Testing Starter Kit** (if selected):
+   - Unity test framework setup
+   - Example test template
+   - GitHub Actions workflow
+   - For testing YOUR application logic (not platform)
+
 ## Example: New API
 
 ```c
 #include "stm32_platform.h"
 
 void app_init(void) {
-    Platform.begin(&hcan1, &huart2, &hspi1)
+    Platform.begin(&hcan1, &huart2, &hspi1, NULL, NULL)
             ->onCAN(my_can_handler);
 
-    UART.println("Platform initialized!");
+    P_UART.println("Platform initialized!");
 }
 
 void app_loop(void) {
-    CAN.handleRxMessages();
+    P_CAN.handleRxMessages();
 
-    if (CAN.availableMessages() > 0) {
+    if (P_CAN.availableMessages() > 0) {
         uint8_t data[] = {0x01, 0x02, 0x03};
-        CAN.send(0x123, data, 3);
+        P_CAN.send(0x123, data, 3);
     }
 
-    uint16_t temp = ADC.readRaw(0);
-    UART.printf("Temperature: %u\n", temp);
+    uint16_t temp = P_ADC.readRaw(0);
+    P_UART.printf("Temperature: %u\n", temp);
 }
 ```
 

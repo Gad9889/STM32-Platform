@@ -6,7 +6,6 @@ This directory contains unit tests for the STM32 Platform using the Unity Test F
 
 ```
 tests/
-├── unity/                  # Unity test framework (submodule)
 ├── test_utils.c           # Queue implementation tests
 ├── test_can.c             # CAN module tests
 ├── test_uart.c            # UART module tests
@@ -14,9 +13,11 @@ tests/
 ├── test_hashtable.c       # Hash table tests
 ├── mocks/                 # Mock HAL functions
 │   └── stm32_hal_mocks.c
-├── CMakeLists.txt         # Build configuration
+├── CMakeLists.txt         # Build configuration (uses FetchContent for Unity)
 └── README.md              # This file
 ```
+
+**Note:** Unity is now fetched automatically via CMake FetchContent, not a submodule.
 
 ## Setup
 

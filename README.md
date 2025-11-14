@@ -10,30 +10,32 @@ Born from Ben-Gurion Racing's Formula Student team, now redesigned for developer
 
 ## ✨ Features
 
-- **🎯 Consumer-Grade API**: Arduino-style interface - `CAN.send()`, `UART.println()`, `ADC.readVoltage()`
+- **🎯 Consumer-Grade API**: Arduino-style interface - `P_CAN.send()`, `P_UART.println()`, `P_ADC.readVoltage()`
 - **⚡ One-Click Integration**: VS Code extension automatically adds platform to your STM32 CMake project
 - **🔧 Explicit Control**: No magic - you decide when to process messages with `.handleRxMessages()`
-- **🛡️ Production-Ready**: Used in Formula Student racing, 30+ safety checks, comprehensive error handling
-- **🧪 Well-Tested**: 49 unit tests, 90%+ coverage, CI/CD with GitHub Actions
-- **📦 CMake Build System**: Build as library, easy integration, package distribution
+- **🛡️ Production-Ready**: Used in Formula Student racing, standardized error handling with plt_status_t
+- **🧪 Well-Tested**: 49 unit tests, 40%+ coverage, CI/CD with GitHub Actions
+- **📦 Testing Starter Kit**: Optional Unity test framework setup for testing your application logic
 
 ## 🚀 Two APIs, Your Choice
 
-**New API** (Recommended):
+**New API** (Recommended - Arduino-style with P_ prefix to avoid HAL conflicts):
 
 ```c
-Platform.begin(&hcan1, &huart2, &hspi1);
-CAN.send(0x123, data, 8);
-UART.printf("Speed: %d km/h\n", speed);
-ADC.handleConversions();
+Platform.begin(&hcan1, &huart2, &hspi1, NULL, NULL);
+P_CAN.send(0x123, data, 8);
+P_UART.printf("Speed: %d km/h\n", speed);
+P_ADC.readVoltage(0);
+P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 50.0f);
 ```
 
-**Legacy API** (Still supported):
+**Legacy API** (Still supported - plt_ prefix functions):
 
 ```c
 plt_SetHandlers(&handlers);
+plt_status_t status = plt_CanInit(32);
+if (status != PLT_OK) { /* handle error */ }
 plt_CanSendMsg(Can1, &msg);
-plt_DebugSendMSG(buffer, len);
 plt_CanProcessRxMsgs();
 ```
 
@@ -80,15 +82,15 @@ int main(void) {
     // Initialize platform
     Platform.begin(&hcan1, &huart2, NULL, NULL, NULL);
 
-    UART.println("Platform ready!");
+    P_UART.println("Platform ready!");
 
     while (1) {
         // Handle incoming CAN messages
-        CAN.handleRxMessages();
+        P_CAN.handleRxMessages();
 
         // Send a message
         uint8_t data[] = {0x01, 0x02, 0x03};
-        CAN.send(0x123, data, 3);
+        P_CAN.send(0x123, data, 3);
 
         HAL_Delay(100);
     }
@@ -112,13 +114,13 @@ All documentation is now in the **[Wiki](https://github.com/Gad9889/STM32-Platfo
 
 ## 🎯 Supported Peripherals
 
-| Peripheral | New API                                    | Legacy API          | Features                          |
-| ---------- | ------------------------------------------ | ------------------- | --------------------------------- |
-| **CAN**    | `CAN.send()`, `CAN.handleRxMessages()`     | `plt_CanSendMsg()`  | Multi-channel, filtering, routing |
-| **UART**   | `UART.println()`, `UART.printf()`          | `plt_UartSendMsg()` | DMA, printf redirection           |
-| **SPI**    | `SPI.transfer()`, `SPI.transferByte()`     | `plt_SpiSendMsg()`  | Full-duplex DMA                   |
-| **ADC**    | `ADC.readRaw()`, `ADC.readVoltage()`       | `plt_AdcInit()`     | Multi-channel, averaging          |
-| **PWM**    | `PWM.setDutyCycle()`, `PWM.setFrequency()` | `plt_StartPWM()`    | Frequency & duty control          |
+| Peripheral | New API                                        | Legacy API          | Features                          |
+| ---------- | ---------------------------------------------- | ------------------- | --------------------------------- |
+| **CAN**    | `P_CAN.send()`, `P_CAN.handleRxMessages()`     | `plt_CanSendMsg()`  | Multi-channel, filtering, routing |
+| **UART**   | `P_UART.println()`, `P_UART.printf()`          | `plt_UartSendMsg()` | DMA, printf redirection           |
+| **SPI**    | `P_SPI.transfer()`, `P_SPI.transferByte()`     | `plt_SpiSendMsg()`  | Full-duplex DMA                   |
+| **ADC**    | `P_ADC.readRaw()`, `P_ADC.readVoltage()`       | `plt_AdcInit()`     | Multi-channel, circular DMA       |
+| **PWM**    | `P_PWM.setDutyCycle()`, `P_PWM.setFrequency()` | `plt_TimInit()`     | Dynamic frequency calculation     |
 
 ---
 
@@ -127,16 +129,17 @@ All documentation is now in the **[Wiki](https://github.com/Gad9889/STM32-Platfo
 ```
 STM32-Platform/
 ├── Inc/                        # Headers
-│   ├── stm32_platform.h       # ⭐ New consumer-grade API
-│   ├── platform.h             # Legacy API
+│   ├── stm32_platform.h       # ⭐ New consumer-grade API (P_* objects)
+│   ├── platform.h             # Legacy API (plt_* functions)
+│   ├── platform_status.h      # Error codes and status types
 │   └── [can|uart|spi|adc|tim].h
 ├── Src/                        # Implementation
 │   ├── stm32_platform.c       # ⭐ New API implementation
 │   └── [peripheral].c         # Core drivers
 ├── vscode-extension/          # VS Code integration
-├── examples/                  # Working examples
-├── tests/                     # Unit tests (Unity)
-└── CMakeLists.txt            # Build system
+├── test-kit/                  # Application testing starter kit
+├── tests/                     # Platform unit tests (Unity)
+└── .github/workflows/         # CI/CD automation
 ```
 
 ## 🎓 Code Examples
@@ -147,7 +150,7 @@ STM32-Platform/
 #include "stm32_platform.h"
 
 void can_handler(CANMessage_t* msg) {
-    UART.printf("CAN ID: 0x%03X\n", msg->id);
+    P_UART.printf("CAN ID: 0x%03X\n", msg->id);
 }
 
 int main(void) {
@@ -155,11 +158,11 @@ int main(void) {
             ->onCAN(can_handler);
 
     while (1) {
-        CAN.handleRxMessages();
+        P_CAN.handleRxMessages();
 
         if (button_pressed) {
             uint8_t data[] = {0xAA, 0xBB};
-            CAN.send(0x100, data, 2);
+            P_CAN.send(0x100, data, 2);
         }
     }
 }

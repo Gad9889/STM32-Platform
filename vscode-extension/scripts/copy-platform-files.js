@@ -11,6 +11,9 @@ const incDest = path.join(extensionRoot, "platform", "Inc");
 const srcSrc = path.join(platformRoot, "Src");
 const srcDest = path.join(extensionRoot, "platform", "Src");
 
+const testKitSrc = path.join(platformRoot, "test-kit");
+const testKitDest = path.join(extensionRoot, "test-kit");
+
 function copyDir(src, dest) {
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
@@ -34,4 +37,7 @@ function copyDir(src, dest) {
 console.log("Copying platform files into extension...");
 copyDir(incSrc, incDest);
 copyDir(srcSrc, srcDest);
+if (fs.existsSync(testKitSrc)) {
+  copyDir(testKitSrc, testKitDest);
+}
 console.log("Platform files copied successfully!");

@@ -2,10 +2,14 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProjectInfo } from "./detector";
 
+// Node.js global variables
+declare const __dirname: string;
+
 export interface IntegrationOptions {
   peripherals: string[];
   useNewAPI: boolean;
   projectInfo: ProjectInfo;
+  includeTestKit?: boolean;
 }
 
 export interface IntegrationResult {
@@ -133,6 +137,18 @@ export async function integratePlatform(
     if (exampleFile) {
       result.exampleFile = exampleFile;
       result.filesAdded++;
+    }
+
+    // Copy test kit if requested
+    if (options.includeTestKit) {
+      const extensionDir = __dirname;
+      const testKitRoot = path.resolve(extensionDir, "..", "test-kit");
+      const testsDir = path.join(workspacePath, "tests");
+      
+      if (fs.existsSync(testKitRoot)) {
+        await copyTestKit(testKitRoot, testsDir);
+        result.filesAdded += 4; // CMakeLists, test_example, tests.yml, README
+      }
     }
 
     result.success = true;
@@ -389,4 +405,28 @@ void DbSetFunctionsInit(void) {
 
   fs.writeFileSync(headerPath, headerContent, "utf8");
   fs.writeFileSync(sourcePath, sourceContent, "utf8");
+}
+
+async function copyTestKit(srcDir: string, destDir: string): Promise<void> {
+  // Create tests directory
+  if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+  }
+
+  // Copy all test kit files
+  const testKitFiles = [
+    "CMakeLists.txt",
+    "test_example.c",
+    "tests.yml",
+    "README.md"
+  ];
+
+  for (const file of testKitFiles) {
+    const src = path.join(srcDir, file);
+    const dest = path.join(destDir, file);
+    
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, dest);
+    }
+  }
 }

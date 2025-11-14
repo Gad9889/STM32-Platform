@@ -73,6 +73,14 @@ async function handleIntegration() {
       return;
     }
 
+    // Ask about testing starter kit
+    const includeTests = await vscode.window.showQuickPick(["Yes", "No"], {
+      placeHolder: "Include unit testing starter kit? (Unity framework + GitHub Actions)",
+      title: "STM32 Platform Integration",
+    });
+
+    const includeTestKit = includeTests === "Yes";
+
     // Perform integration
     await vscode.window.withProgress(
       {
@@ -87,6 +95,7 @@ async function handleIntegration() {
           peripherals,
           useNewAPI,
           projectInfo,
+          includeTestKit,
         });
 
         if (result.success) {

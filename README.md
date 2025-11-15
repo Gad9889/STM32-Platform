@@ -12,6 +12,7 @@ Born from Ben-Gurion Racing's Formula Student team, now redesigned for developer
 
 - **🎯 Consumer-Grade API**: Arduino-style interface - `P_CAN.send()`, `P_UART.println()`, `P_ADC.readVoltage()`
 - **⚡ One-Click Integration**: VS Code extension automatically adds platform to your STM32 CMake project
+- **🤖 Auto-Detection**: Automatically detects STM32 family (F0/F1/F3/F4/F7/H7/L/G/WB/WL) and includes correct HAL
 - **🔧 Explicit Control**: No magic - you decide when to process messages with `.handleRxMessages()`
 - **🛡️ Production-Ready**: Used in Formula Student racing, standardized error handling with plt_status_t
 - **🧪 Well-Tested**: 49 unit tests, 40%+ coverage, CI/CD with GitHub Actions

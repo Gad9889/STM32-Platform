@@ -5,6 +5,10 @@
  * Modern, explicit interface with singleton objects for each peripheral.
  * Users have full control over when and what to process.
  * 
+ * AUTO-DETECTION: This header automatically detects your STM32 family
+ * (F0/F1/F2/F3/F4/F7/H7/L0/L1/L4/L5/G0/G4/WB/WL) and includes the correct
+ * HAL header. No manual configuration needed!
+ * 
  * @example
  * Platform.begin(&hcan1, &huart2, NULL)->onCAN(myHandler);
  * 
@@ -20,7 +24,42 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
-#include "stm32f4xx_hal.h"  // Adjust for your MCU family
+
+/* Auto-detect STM32 family and include appropriate HAL */
+#if defined(STM32F0)
+    #include "stm32f0xx_hal.h"
+#elif defined(STM32F1)
+    #include "stm32f1xx_hal.h"
+#elif defined(STM32F2)
+    #include "stm32f2xx_hal.h"
+#elif defined(STM32F3)
+    #include "stm32f3xx_hal.h"
+#elif defined(STM32F4)
+    #include "stm32f4xx_hal.h"
+#elif defined(STM32F7)
+    #include "stm32f7xx_hal.h"
+#elif defined(STM32H7)
+    #include "stm32h7xx_hal.h"
+#elif defined(STM32L0)
+    #include "stm32l0xx_hal.h"
+#elif defined(STM32L1)
+    #include "stm32l1xx_hal.h"
+#elif defined(STM32L4)
+    #include "stm32l4xx_hal.h"
+#elif defined(STM32L5)
+    #include "stm32l5xx_hal.h"
+#elif defined(STM32G0)
+    #include "stm32g0xx_hal.h"
+#elif defined(STM32G4)
+    #include "stm32g4xx_hal.h"
+#elif defined(STM32WB)
+    #include "stm32wbxx_hal.h"
+#elif defined(STM32WL)
+    #include "stm32wlxx_hal.h"
+#else
+    #error "STM32 family not detected. Please define STM32Fxx, STM32Lxx, STM32Gxx, STM32H7, or STM32WB/WL"
+#endif
+
 #include "platform_status.h"
 
 /* ==================== Message Types ==================== */

@@ -6,6 +6,11 @@
 #include "platform_status.h"
 #include <stdbool.h>
 
+// Include CMSIS core for ARM intrinsics on target platform
+#if defined(__ARM_ARCH) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__) || defined(__ARMCC_VERSION)
+#include "cmsis_gcc.h"
+#endif
+
 /*========================= Queue related definitions =========================*/
 
 /**

@@ -81,18 +81,22 @@ static struct {
     uint16_t timeout_ms;
 } uart_state = {0};
 
+#ifdef HAL_SPI_MODULE_ENABLED
 // SPI state
 static struct {
     Queue_t rx_queue;
     volatile bool busy;
 } spi_state = {0};
+#endif
 
+#ifdef HAL_ADC_MODULE_ENABLED
 // ADC state
 static struct {
     uint16_t* dma_buffer;
     uint16_t buffer_size;
     float vref;
 } adc_state = {0};
+#endif
 
 /* ==================== CAN Implementation ==================== */
 
@@ -350,6 +354,18 @@ static void SPI_deselect_impl(GPIO_TypeDef* port, uint16_t pin) {
     HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
 }
 
+#else // !HAL_SPI_MODULE_ENABLED
+
+// Stub implementations when SPI not enabled
+static void SPI_transfer_impl(uint8_t* txData, uint8_t* rxData, uint16_t length) { (void)txData; (void)rxData; (void)length; lastError = PLT_NOT_SUPPORTED; }
+static uint8_t SPI_transferByte_impl(uint8_t data) { (void)data; lastError = PLT_NOT_SUPPORTED; return 0; }
+static void SPI_handleRxData_impl(void) { }
+static uint16_t SPI_availableBytes_impl(void) { return 0; }
+static void SPI_setClockSpeed_impl(uint32_t hz) { (void)hz; lastError = PLT_NOT_SUPPORTED; }
+static void SPI_setMode_impl(uint8_t mode) { (void)mode; lastError = PLT_NOT_SUPPORTED; }
+static void SPI_select_impl(GPIO_TypeDef* port, uint16_t pin) { (void)port; (void)pin; }
+static void SPI_deselect_impl(GPIO_TypeDef* port, uint16_t pin) { (void)port; (void)pin; }
+
 #endif // HAL_SPI_MODULE_ENABLED
 
 /* ==================== ADC Implementation ==================== */
@@ -420,6 +436,16 @@ static void ADC_calibrate_impl(void) {
 #endif
 }
 
+#else // !HAL_ADC_MODULE_ENABLED
+
+// Stub implementations when ADC not enabled
+static uint16_t ADC_readRaw_impl(uint8_t channel) { (void)channel; lastError = PLT_NOT_SUPPORTED; return 0; }
+static float ADC_readVoltage_impl(uint8_t channel) { (void)channel; lastError = PLT_NOT_SUPPORTED; return 0.0f; }
+static void ADC_handleConversions_impl(void) { }
+static void ADC_setResolution_impl(uint8_t bits) { (void)bits; lastError = PLT_NOT_SUPPORTED; }
+static void ADC_setReference_impl(float voltage) { (void)voltage; }
+static void ADC_calibrate_impl(void) { lastError = PLT_NOT_SUPPORTED; }
+
 #endif // HAL_ADC_MODULE_ENABLED
 
 /* ==================== PWM Implementation ==================== */
@@ -470,6 +496,15 @@ static void PWM_setPulseWidth_impl(TIM_HandleTypeDef* htim, uint32_t channel, ui
     if (htim == NULL) return;
     __HAL_TIM_SET_COMPARE(htim, channel, us);
 }
+
+#else // !HAL_TIM_MODULE_ENABLED
+
+// Stub implementations when TIM not enabled
+static void PWM_start_impl(TIM_HandleTypeDef* htim, uint32_t channel) { (void)htim; (void)channel; lastError = PLT_NOT_SUPPORTED; }
+static void PWM_stop_impl(TIM_HandleTypeDef* htim, uint32_t channel) { (void)htim; (void)channel; lastError = PLT_NOT_SUPPORTED; }
+static void PWM_setFrequency_impl(TIM_HandleTypeDef* htim, uint32_t hz) { (void)htim; (void)hz; lastError = PLT_NOT_SUPPORTED; }
+static void PWM_setDutyCycle_impl(TIM_HandleTypeDef* htim, uint32_t channel, float percent) { (void)htim; (void)channel; (void)percent; lastError = PLT_NOT_SUPPORTED; }
+static void PWM_setPulseWidth_impl(TIM_HandleTypeDef* htim, uint32_t channel, uint32_t us) { (void)htim; (void)channel; (void)us; lastError = PLT_NOT_SUPPORTED; }
 
 #endif // HAL_TIM_MODULE_ENABLED
 

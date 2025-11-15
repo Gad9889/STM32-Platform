@@ -1,76 +1,75 @@
 # STM32 Platform VS Code Extension
 
-Seamlessly integrate the BGU Racing STM32 Platform into your STM32 CMake projects with one command.
+Automated integration tool for deploying BGU Racing STM32 Platform into STM32 CMake projects.
 
-## Features
+## Capabilities
 
-- **One-Click Integration**: Automatically detects STM32 CMake projects and integrates the platform
-- **Smart Detection**: Identifies CubeMX-generated projects and existing STM32 HAL setups
-- **Selective Peripherals**: Choose which peripherals to enable (CAN, UART, SPI, ADC, TIM)
-- **Modern API**: Option to use the new consumer-grade API (`P_CAN.send()`) or legacy API (`plt_CanSendMsg()`)
-- **Example Generation**: Creates working example code tailored to your peripheral selection
+- **Automated Integration**: Detects STM32 CMake projects and deploys platform components
+- **Project Detection**: Identifies CubeMX-generated projects and STM32 HAL configurations
+- **Peripheral Selection**: Configure specific peripherals (CAN, UART, SPI, ADC, TIM)
+- **Direct API**: Deploys v2.0.0 API with direct HAL integration
+- **Code Generation**: Produces initialization templates for selected peripherals
 
-## Usage
+## Operation
 
-### Quick Start
+### Deployment Procedure
 
-1. Open an STM32 CMake project in VS Code
-2. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
-3. Type "STM32 Platform: Integrate into Project"
-4. Select the peripherals you want to use
-5. Done! The platform is integrated and ready to use
+1. Open STM32 CMake project in VS Code
+2. Execute `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+3. Enter "STM32 Platform: Integrate into Project"
+4. Select required peripherals
+5. Integration complete - platform operational
 
-### Auto-Detection
+### Automatic Detection
 
-The extension automatically detects STM32 projects when you open a workspace and prompts you to integrate the platform.
+Extension automatically scans workspace for STM32 projects and initiates integration protocol.
 
-### Commands
+### Available Commands
 
-- **STM32 Platform: Integrate into Project** - Integrate platform into current project
-- **STM32 Platform: Check Project Compatibility** - Check if current project is compatible
+- **STM32 Platform: Integrate into Project** - Deploy platform to current project
+- **STM32 Platform: Check Project Compatibility** - Verify project compatibility
 
-## Configuration
+## Configuration Parameters
 
-| Setting                            | Description                                               | Default           |
-| ---------------------------------- | --------------------------------------------------------- | ----------------- |
-| `stm32platform.autoDetect`         | Automatically detect STM32 projects and offer integration | `true`            |
-| `stm32platform.defaultPeripherals` | Default peripherals to enable during integration          | `["CAN", "UART"]` |
-| `stm32platform.useNewAPI`          | Use new consumer-grade API instead of legacy plt\_\* API  | `true`            |
+| Parameter                          | Function                                                | Default           |
+| ---------------------------------- | ------------------------------------------------------- | ----------------- |
+| `stm32platform.autoDetect`         | Enable automatic STM32 project detection               | `true`            |
+| `stm32platform.defaultPeripherals` | Default peripheral modules for integration              | `["CAN", "UART"]` |
+| `stm32platform.useNewAPI`          | Deploy v2.0.0 direct API                                | `true`            |
 
-## What Gets Integrated
+## Integration Components
 
-When you integrate the platform, the extension:
+Platform integration deploys:
 
-1. **Copies platform files** to your `Inc/` and `Src/` directories:
+1. **Platform Files** to `Core/Inc/` and `Core/Src/` directories:
 
-   - Core: `platform.h/c`, `platform_status.h`, `platform_config.h/c`, `utils.h/c`
-   - Selected peripherals: `can.h/c`, `uart.h/c`, `spi.h/c`, etc.
-   - New API: `stm32_platform.h/c` (with P_CAN, P_UART, etc.)
-   - CAN support: Auto-generates `DbSetFunctions.h/c` stub
+   - Core modules: `stm32_platform.h/c`, `platform_status.h/c`, `utils.h/c`
+   - Peripheral modules: Selected from CAN, UART, SPI, ADC, PWM
+   - Support modules: `hashtable.h/c`, `database.h/c`, `DbSetFunctions.h/c`
 
-2. **Updates CMakeLists.txt**:
+2. **Build Configuration Updates** (`CMakeLists.txt`):
 
-   - Adds platform source files
-   - Adds include directories
-   - Sets compile definitions for enabled peripherals
+   - Adds platform source files to build
+   - Configures include directories
+   - Sets peripheral compile definitions
 
-3. **Creates example code** (`platform_example.c`):
-   - Initialization function
-   - Main loop with peripheral handling
-   - Ready to copy into your `main.c`
+3. **Initialization Template** (`platform_example.c`):
 
-4. **Optional: Testing Starter Kit** (if selected):
-   - Unity test framework setup
-   - Example test template
-   - GitHub Actions workflow
-   - For testing YOUR application logic (not platform)
+   - Platform initialization code
+   - Peripheral configuration examples
+   - Ready for deployment to main.c USER CODE sections
 
-## Example: v2.0.0 API
+4. **Test Framework** (optional):
+   - Unity test framework configuration
+   - Test template structure
+   - CI/CD workflow template
+
+## Implementation Example: v2.0.0 API
 
 ```c
 #include "stm32_platform.h"
 
-void app_init(void) {
+void system_initialize(void) {
     PlatformHandles_t handles = {
         .hcan = &hcan1,
         .huart = &huart2,
@@ -80,11 +79,11 @@ void app_init(void) {
     };
     Platform.begin(&handles);
 
-    P_CAN.route(0x100, my_can_handler);
-    P_UART.println("Platform initialized!");
+    P_CAN.route(0x100, can_message_handler);
+    P_UART.println("Platform operational");
 }
 
-void app_loop(void) {
+void system_loop(void) {
     P_CAN.handleRxMessages();
 
     uint8_t data[] = {0x01, 0x02, 0x03};
@@ -95,20 +94,58 @@ void app_loop(void) {
 }
 ```
 
-## Requirements
+## System Requirements
 
-- VS Code 1.85.0 or higher
+- Visual Studio Code 1.60.0 or higher
 - STM32 project with CMake build system
-- STM32 HAL drivers
+- STM32CubeMX-generated HAL configuration (recommended)
+- ARM GCC toolchain
 
-## Compatibility
+## Supported STM32 Families
 
-The extension works with:
+All STM32 families supported by STM32CubeMX:
+- STM32F0/F1/F2/F3/F4/F7
+- STM32H7
+- STM32G0/G4
+- STM32L0/L1/L4/L5
+- STM32WB/WL
+- STM32U5
 
-- CubeMX-generated projects
-- Manual STM32 CMake projects
-- STM32 families: F0, F1, F4, F7, H7, G0, G4, L4, etc.
+## Installation
+
+1. Download `.vsix` file from [Releases](https://github.com/Gad9889/STM32-Platform/releases)
+2. Open VS Code
+3. Navigate to Extensions view (`Ctrl+Shift+X`)
+4. Click "..." menu → "Install from VSIX..."
+5. Select downloaded `.vsix` file
+
+Or install from source:
+
+```bash
+cd vscode-extension
+npm install
+npm run compile
+# Press F5 in VS Code to launch extension development host
+```
+
+## Operation Notes
+
+**CubeMX Integration**: Extension inserts code into USER CODE sections to prevent deletion during CubeMX code regeneration.
+
+**Peripheral Configuration**: Configure peripherals in STM32CubeMX before integration. Extension generates initialization code for enabled peripherals.
+
+**Build System**: Extension requires CMake-based build system. For Makefile projects, manual integration required.
+
+## Technical Support
+
+Report issues: [GitHub Issues](https://github.com/Gad9889/STM32-Platform/issues)
+
+Documentation: [Platform Wiki](https://github.com/Gad9889/STM32-Platform/wiki)
 
 ## License
 
-MIT - See LICENSE file in the main repository
+MIT License - see [LICENSE](../LICENSE) file.
+
+## Origin
+
+Developed by **Ben Gurion Racing Team** for Formula Student electric vehicle applications.

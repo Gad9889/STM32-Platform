@@ -1,1 +1,9 @@
 tests/unity/
+build/
+tests/build/
+*.o
+*.exe
+*.elf
+*.bin
+*.hex
+*.map

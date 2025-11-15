@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/cmake_install.cmake",
-		"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-build/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

@@ -144,7 +144,7 @@ export async function integratePlatform(
       const extensionDir = __dirname;
       const testKitRoot = path.resolve(extensionDir, "..", "test-kit");
       const testsDir = path.join(workspacePath, "tests");
-      
+
       if (fs.existsSync(testKitRoot)) {
         await copyTestKit(testKitRoot, testsDir);
         result.filesAdded += 4; // CMakeLists, test_example, tests.yml, README
@@ -182,16 +182,16 @@ async function updateCMakeLists(
   if (sourcesMatch) {
     // Build source list
     let allSources = [...files.sources];
-    
+
     // Add DbSetFunctions.c if CAN is enabled
     if (options.peripherals.includes("CAN")) {
       allSources.push("DbSetFunctions.c");
     }
-    
+
     // Get relative path from CMakeLists.txt location to srcDir
     const cmakeDir = path.dirname(cmakeFile);
-    const relativeSrcPath = path.relative(cmakeDir, srcDir).replace(/\\/g, '/');
-    
+    const relativeSrcPath = path.relative(cmakeDir, srcDir).replace(/\\/g, "/");
+
     const sourcesList = allSources
       .map((f) => `    ${relativeSrcPath}/${f}`)
       .join("\n");
@@ -293,7 +293,9 @@ void platform_example_init(void) {
         .huart = ${peripherals.includes("UART") ? "&huart2" : "NULL"},
         .hspi = ${peripherals.includes("SPI") ? "&hspi1" : "NULL"},
         .hadc = ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
-        .htim = ${peripherals.includes("TIM") ? "&htim1" : "NULL"} // Update to match your timer handle
+        .htim = ${
+          peripherals.includes("TIM") ? "&htim1" : "NULL"
+        } // Update to match your timer handle
     };
     Platform.begin(&handles);
     
@@ -327,7 +329,9 @@ void platform_example_init(void) {
         ${peripherals.includes("UART") ? ".huart2 = &huart2," : ""}
         ${peripherals.includes("SPI") ? ".hspi = &hspi1" : ""}
         ${peripherals.includes("ADC") ? ".hadc = &hadc1" : ""}
-        ${peripherals.includes("TIM") ? ".htim = &htim1" : ""} // Update to match your timer handle
+        ${
+          peripherals.includes("TIM") ? ".htim = &htim1" : ""
+        } // Update to match your timer handle
     };
     plt_SetHandlers(&handlers);
     
@@ -433,13 +437,13 @@ async function copyTestKit(srcDir: string, destDir: string): Promise<void> {
     "CMakeLists.txt",
     "test_example.c",
     "tests.yml",
-    "README.md"
+    "README.md",
   ];
 
   for (const file of testKitFiles) {
     const src = path.join(srcDir, file);
     const dest = path.join(destDir, file);
-    
+
     if (fs.existsSync(src)) {
       fs.copyFileSync(src, dest);
     }
@@ -471,76 +475,50 @@ async function modifyMainC(
   let content = fs.readFileSync(mainCPath, "utf8");
 
   // Check if already integrated
-  if (content.includes("stm32_platform.h") || content.includes("Platform.begin")) {
+  if (
+    content.includes("stm32_platform.h") ||
+    content.includes("Platform.begin")
+  ) {
     return; // Already integrated
   }
 
-  // Add include after other includes (after main.h)
-  const mainIncludeMatch = content.match(/#include\s+"main\.h"/);
-  if (mainIncludeMatch) {
-    const insertPos = mainIncludeMatch.index! + mainIncludeMatch[0].length;
-    content =
-      content.slice(0, insertPos) +
-      '\n#include "stm32_platform.h"  // STM32 Platform API' +
-      content.slice(insertPos);
+  // Add include in USER CODE BEGIN Includes section (safe from CubeMX regeneration)
+  const includesPattern = /(\/\* USER CODE BEGIN Includes \*\/)([\s\S]*?)(\/\* USER CODE END Includes \*\/)/;
+  const includesMatch = content.match(includesPattern);
+  
+  if (includesMatch) {
+    const userIncludes = includesMatch[2];
+    if (!userIncludes.includes("stm32_platform.h")) {
+      const newInclude = '\n#include "stm32_platform.h"\n';
+      content = content.replace(includesPattern, `$1${userIncludes}${newInclude}$3`);
+    }
   }
 
-  // Find main() function and add Platform.begin() after HAL_Init() or SystemClock_Config()
-  const mainFunctionMatch = content.match(
-    /int\s+main\s*\(\s*void\s*\)\s*\{([^}]*)\}/s
-  );
-  if (mainFunctionMatch) {
-    const mainBody = mainFunctionMatch[1];
-
-    // Find a good insertion point (after HAL_Init, SystemClock_Config, and MX_* init calls)
-    const patterns = [
-      /SystemClock_Config\s*\(\s*\)\s*;/,
-      /HAL_Init\s*\(\s*\)\s*;/,
-    ];
-
-    let insertionPoint = -1;
-    for (const pattern of patterns) {
-      const match = mainBody.match(pattern);
-      if (match) {
-        insertionPoint =
-          mainFunctionMatch.index! +
-          mainFunctionMatch[0].indexOf(mainBody) +
-          match.index! +
-          match[0].length;
-        break;
-      }
-    }
-
-    if (insertionPoint > 0) {
-      // Find all MX_* init calls after insertion point
-      const afterInit = content.slice(insertionPoint);
-      const mxInitMatches = afterInit.matchAll(/MX_\w+_Init\s*\(\s*\)\s*;/g);
-      let lastMxInit = insertionPoint;
-
-      for (const match of mxInitMatches) {
-        const pos = insertionPoint + match.index! + match[0].length;
-        if (pos > lastMxInit) {
-          lastMxInit = pos;
-        }
-      }
-
-      // Build Platform.begin() call
+  // Insert Platform.begin() in USER CODE BEGIN 2 section (after peripheral init, safe from CubeMX)
+  const userCode2Pattern = /(\/\* USER CODE BEGIN 2 \*\/)([\s\S]*?)(\/\* USER CODE END 2 \*\/)/;
+  const userCode2Match = content.match(userCode2Pattern);
+  
+  if (userCode2Match) {
+    const userCode = userCode2Match[2];
+    
+    // Only add if not already present
+    if (!userCode.includes("Platform.begin")) {
       const peripherals = options.peripherals;
       const platformInit = `
-  
   /* STM32 Platform Integration */
   PlatformHandles_t handles = {
       .hcan = ${peripherals.includes("CAN") ? "&hcan" : "NULL"},
       .huart = ${peripherals.includes("UART") ? "&huart2" : "NULL"},
       .hspi = ${peripherals.includes("SPI") ? "&hspi1" : "NULL"},
       .hadc = ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
-      .htim = ${peripherals.includes("TIM") ? "&htim1" : "NULL"} // Update to match your timer handle
+      .htim = ${
+        peripherals.includes("TIM") ? "&htim1" : "NULL"
+      } // Update to match your timer handle
   };
   Platform.begin(&handles);
 `;
-
-      content =
-        content.slice(0, lastMxInit) + platformInit + content.slice(lastMxInit);
+      
+      content = content.replace(userCode2Pattern, `$1${userCode}${platformInit}\n$3`);
     }
   }
 

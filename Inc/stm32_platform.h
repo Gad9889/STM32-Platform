@@ -62,6 +62,29 @@
 
 #include "platform_status.h"
 
+/* ==================== HAL Type Forward Declarations ==================== */
+/* These ensure the types are available even if the peripheral isn't configured in CubeMX */
+
+#ifndef CAN_HandleTypeDef
+typedef struct __CAN_HandleTypeDef CAN_HandleTypeDef;
+#endif
+
+#ifndef UART_HandleTypeDef
+typedef struct __UART_HandleTypeDef UART_HandleTypeDef;
+#endif
+
+#ifndef SPI_HandleTypeDef
+typedef struct __SPI_HandleTypeDef SPI_HandleTypeDef;
+#endif
+
+#ifndef ADC_HandleTypeDef
+typedef struct __ADC_HandleTypeDef ADC_HandleTypeDef;
+#endif
+
+#ifndef TIM_HandleTypeDef
+typedef struct __TIM_HandleTypeDef TIM_HandleTypeDef;
+#endif
+
 /* ==================== Message Types ==================== */
 
 /**

@@ -29,12 +29,38 @@ static bool platform_initialized = false;
 
 // Hardware handles (set by Platform.begin())
 static struct {
+    #ifdef HAL_CAN_MODULE_ENABLED
     CAN_HandleTypeDef*  hcan;
+    #endif
+    #ifdef HAL_UART_MODULE_ENABLED
     UART_HandleTypeDef* huart;
+    #endif
+    #ifdef HAL_SPI_MODULE_ENABLED
     SPI_HandleTypeDef*  hspi;
+    #endif
+    #ifdef HAL_ADC_MODULE_ENABLED
     ADC_HandleTypeDef*  hadc;
+    #endif
+    #ifdef HAL_TIM_MODULE_ENABLED
     TIM_HandleTypeDef*  htim;
-} hw_handles = {NULL, NULL, NULL, NULL, NULL};
+    #endif
+} hw_handles = {
+    #ifdef HAL_CAN_MODULE_ENABLED
+    .hcan = NULL,
+    #endif
+    #ifdef HAL_UART_MODULE_ENABLED
+    .huart = NULL,
+    #endif
+    #ifdef HAL_SPI_MODULE_ENABLED
+    .hspi = NULL,
+    #endif
+    #ifdef HAL_ADC_MODULE_ENABLED
+    .hadc = NULL,
+    #endif
+    #ifdef HAL_TIM_MODULE_ENABLED
+    .htim = NULL
+    #endif
+};
 
 // CAN state
 static struct {
@@ -439,14 +465,25 @@ static Platform_t* Platform_begin_impl(PlatformHandles_t* handles) {
     lastError = PLT_OK;
     
     // Store hardware handles (cast void* back to proper types internally)
+    #ifdef HAL_CAN_MODULE_ENABLED
     hw_handles.hcan = (CAN_HandleTypeDef*)handles->hcan;
+    #endif
+    #ifdef HAL_UART_MODULE_ENABLED
     hw_handles.huart = (UART_HandleTypeDef*)handles->huart;
+    #endif
+    #ifdef HAL_SPI_MODULE_ENABLED
     hw_handles.hspi = (SPI_HandleTypeDef*)handles->hspi;
+    #endif
+    #ifdef HAL_ADC_MODULE_ENABLED
     hw_handles.hadc = (ADC_HandleTypeDef*)handles->hadc;
+    #endif
+    #ifdef HAL_TIM_MODULE_ENABLED
     hw_handles.htim = (TIM_HandleTypeDef*)handles->htim;
+    #endif
     
+    #ifdef HAL_CAN_MODULE_ENABLED
     // Initialize CAN if enabled
-    if (hcan != NULL) {
+    if (hw_handles.hcan != NULL) {
         // Initialize RX queue
         if (Queue_Init(&can_state.rx_queue, sizeof(CANMessage_t), CAN_RX_QUEUE_SIZE) != PLT_OK) {
             lastError = PLT_NO_MEMORY;
@@ -471,19 +508,21 @@ static Platform_t* Platform_begin_impl(PlatformHandles_t* handles) {
         filter.FilterMode = CAN_FILTERMODE_IDMASK;
         filter.FilterScale = CAN_FILTERSCALE_32BIT;
         filter.FilterActivation = ENABLE;
-        HAL_CAN_ConfigFilter(hcan, &filter);
+        HAL_CAN_ConfigFilter(hw_handles.hcan, &filter);
         
         // Start CAN
-        HAL_CAN_Start(hcan);
-        HAL_CAN_ActivateNotification(hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+        HAL_CAN_Start(hw_handles.hcan);
+        HAL_CAN_ActivateNotification(hw_handles.hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
         
         can_state.tx_count = 0;
         can_state.rx_count = 0;
         can_state.error_count = 0;
     }
+    #endif
     
+    #ifdef HAL_UART_MODULE_ENABLED
     // Initialize UART if enabled
-    if (huart != NULL) {
+    if (hw_handles.huart != NULL) {
         // Initialize queues
         Queue_Init(&uart_state.rx_queue, sizeof(uint8_t), UART_RX_QUEUE_SIZE);
         Queue_Init(&uart_state.tx_queue, sizeof(uint8_t), UART_TX_QUEUE_SIZE);
@@ -492,17 +531,21 @@ static Platform_t* Platform_begin_impl(PlatformHandles_t* handles) {
         uart_state.timeout_ms = 1000;
         
         // Start UART RX in interrupt mode
-        HAL_UART_Receive_IT(huart, &uart_state.rx_buffer[0], 1);
+        HAL_UART_Receive_IT(hw_handles.huart, &uart_state.rx_buffer[0], 1);
     }
+    #endif
     
+    #ifdef HAL_SPI_MODULE_ENABLED
     // Initialize SPI if enabled
-    if (hspi != NULL) {
+    if (hw_handles.hspi != NULL) {
         Queue_Init(&spi_state.rx_queue, sizeof(uint8_t), SPI_RX_QUEUE_SIZE);
         spi_state.busy = false;
     }
+    #endif
     
+    #ifdef HAL_ADC_MODULE_ENABLED
     // Initialize ADC if enabled
-    if (hadc != NULL) {
+    if (hw_handles.hadc != NULL) {
         adc_state.vref = 3.3f; // Default VREF
         adc_state.dma_buffer = NULL;
         adc_state.buffer_size = 0;
@@ -510,6 +553,7 @@ static Platform_t* Platform_begin_impl(PlatformHandles_t* handles) {
         // Calibrate ADC
         ADC_calibrate_impl();
     }
+    #endif
     
     platform_initialized = true;
     return &Platform;

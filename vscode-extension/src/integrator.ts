@@ -188,8 +188,12 @@ async function updateCMakeLists(
       allSources.push("DbSetFunctions.c");
     }
     
+    // Get relative path from CMakeLists.txt location to srcDir
+    const cmakeDir = path.dirname(cmakeFile);
+    const relativeSrcPath = path.relative(cmakeDir, srcDir).replace(/\\/g, '/');
+    
     const sourcesList = allSources
-      .map((f) => `    ${path.basename(srcDir)}/${f}`)
+      .map((f) => `    ${relativeSrcPath}/${f}`)
       .join("\n");
 
     const platformSection = `
@@ -204,11 +208,20 @@ ${sourcesList}
     content =
       content.slice(0, insertPos) + platformSection + content.slice(insertPos);
 
-    // Add platform sources to target
-    content = content.replace(
-      /add_executable\s*\(\s*\$\{PROJECT_NAME\}([^)]*)\)/,
-      "add_executable(${PROJECT_NAME}$1 ${PLATFORM_SOURCES})"
-    );
+    // Add platform sources to target_sources or add_executable
+    if (content.includes("target_sources")) {
+      // Add to target_sources section
+      content = content.replace(
+        /(target_sources\s*\(\s*\$\{[^}]+\}\s+PRIVATE\s*\n\s*# Add user sources here)/,
+        `$1\n    \${PLATFORM_SOURCES}`
+      );
+    } else {
+      // Add to add_executable
+      content = content.replace(
+        /add_executable\s*\(\s*\$\{[^}]+\}([^)]*)\)/,
+        "add_executable(${CMAKE_PROJECT_NAME}$1 ${PLATFORM_SOURCES})"
+      );
+    }
   }
 
   // Add include directory

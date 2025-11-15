@@ -1,0 +1,3 @@
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/build/_deps/unity-subbuild/CMakeFiles/unity-populate.dir
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/build/_deps/unity-subbuild/CMakeFiles/edit_cache.dir
+C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/build/_deps/unity-subbuild/CMakeFiles/rebuild_cache.dir

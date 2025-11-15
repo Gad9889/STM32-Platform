@@ -65,28 +65,33 @@ When you integrate the platform, the extension:
    - GitHub Actions workflow
    - For testing YOUR application logic (not platform)
 
-## Example: New API
+## Example: v2.0.0 API
 
 ```c
 #include "stm32_platform.h"
 
 void app_init(void) {
-    Platform.begin(&hcan1, &huart2, &hspi1, NULL, NULL)
-            ->onCAN(my_can_handler);
+    PlatformHandles_t handles = {
+        .hcan = &hcan1,
+        .huart = &huart2,
+        .hspi = &hspi1,
+        .hadc = NULL,
+        .htim = NULL
+    };
+    Platform.begin(&handles);
 
+    P_CAN.route(0x100, my_can_handler);
     P_UART.println("Platform initialized!");
 }
 
 void app_loop(void) {
     P_CAN.handleRxMessages();
 
-    if (P_CAN.availableMessages() > 0) {
-        uint8_t data[] = {0x01, 0x02, 0x03};
-        P_CAN.send(0x123, data, 3);
-    }
+    uint8_t data[] = {0x01, 0x02, 0x03};
+    P_CAN.send(0x123, data, 3);
 
-    uint16_t temp = P_ADC.readRaw(0);
-    P_UART.printf("Temperature: %u\n", temp);
+    float voltage = P_ADC.readVoltage(ADC_CHANNEL_1);
+    P_UART.printf("Voltage: %.2fV\n", voltage);
 }
 ```
 

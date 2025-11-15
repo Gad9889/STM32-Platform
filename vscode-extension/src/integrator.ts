@@ -282,14 +282,16 @@ async function createExampleFile(
     exampleCode += `
 void platform_example_init(void) {
     // Initialize platform with selected peripherals
-    Platform.begin(${peripherals.includes("CAN") ? "&hcan1" : "NULL"},
-                   ${peripherals.includes("UART") ? "&huart2" : "NULL"},
-                   ${peripherals.includes("SPI") ? "&hspi1" : "NULL"},
-                   ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
-                   ${peripherals.includes("TIM") ? "&htim2" : "NULL"});
+    PlatformHandles_t handles = {
+        .hcan = ${peripherals.includes("CAN") ? "&hcan1" : "NULL"},
+        .huart = ${peripherals.includes("UART") ? "&huart2" : "NULL"},
+        .hspi = ${peripherals.includes("SPI") ? "&hspi1" : "NULL"},
+        .hadc = ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
+        .htim = ${peripherals.includes("TIM") ? "&htim2" : "NULL"}
+    };
+    Platform.begin(&handles);
     
     P_UART.println("STM32 Platform initialized!");
-    P_UART.printf("Version: %s\\n", Platform.version());
 }
 
 void platform_example_loop(void) {
@@ -521,11 +523,14 @@ async function modifyMainC(
       const platformInit = `
   
   /* STM32 Platform Integration */
-  Platform.begin(${peripherals.includes("CAN") ? "&hcan" : "NULL"},
-                 ${peripherals.includes("UART") ? "&huart2" : "NULL"},
-                 ${peripherals.includes("SPI") ? "&hspi1" : "NULL"},
-                 ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
-                 ${peripherals.includes("TIM") ? "&htim2" : "NULL"});
+  PlatformHandles_t handles = {
+      .hcan = ${peripherals.includes("CAN") ? "&hcan" : "NULL"},
+      .huart = ${peripherals.includes("UART") ? "&huart2" : "NULL"},
+      .hspi = ${peripherals.includes("SPI") ? "&hspi1" : "NULL"},
+      .hadc = ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
+      .htim = ${peripherals.includes("TIM") ? "&htim2" : "NULL"}
+  };
+  Platform.begin(&handles);
 `;
 
       content =

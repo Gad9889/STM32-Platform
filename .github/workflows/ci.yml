@@ -139,6 +139,5 @@ jobs:
 
       - name: Verify documentation structure
         run: |
-          test -d wiki/ || (echo "wiki/ directory missing" && exit 1)
-          test -d examples/ || echo "examples/ directory missing (recommended)"
+          test -d wiki-repo/ || (echo "wiki-repo/ directory missing" && exit 1)
           test -d tests/ || (echo "tests/ directory missing" && exit 1)

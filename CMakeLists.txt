@@ -18,20 +18,11 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # ==================== Library Sources ====================
 
-set(PLATFORM_SOURCES
-    Src/platform.c
+set(CORE_SOURCES
+    Src/stm32_platform.c
     Src/callbacks.c
     Src/utils.c
     Src/platform_status.c
-    Src/platform_config.c
-)
-
-set(PERIPHERAL_SOURCES
-    Src/can.c
-    Src/uart.c
-    Src/spi.c
-    Src/adc.c
-    Src/tim.c
 )
 
 set(DATABASE_SOURCES
@@ -41,8 +32,7 @@ set(DATABASE_SOURCES
 )
 
 set(ALL_SOURCES
-    ${PLATFORM_SOURCES}
-    ${PERIPHERAL_SOURCES}
+    ${CORE_SOURCES}
     ${DATABASE_SOURCES}
 )
 

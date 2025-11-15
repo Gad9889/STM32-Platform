@@ -38,57 +38,64 @@ set(ALL_SOURCES
 
 # ==================== Library Target ====================
 
-add_library(stm32_platform ${ALL_SOURCES})
-add_library(STM32Platform::platform ALIAS stm32_platform)
+# Note: stm32_platform requires STM32 HAL headers to compile.
+# When running unit tests, skip library build - tests compile individual
+# source files (utils.c, hashtable.c, database.c) without HAL dependencies.
+if(NOT PLT_BUILD_TESTS)
+    add_library(stm32_platform ${ALL_SOURCES})
+    add_library(STM32Platform::platform ALIAS stm32_platform)
 
-# Include directories
-target_include_directories(stm32_platform PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Inc>
-    $<INSTALL_INTERFACE:include>
-)
+    # Include directories
+    target_include_directories(stm32_platform PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Inc>
+        $<INSTALL_INTERFACE:include>
+    )
 
-# Compiler definitions
-target_compile_definitions(stm32_platform PUBLIC
-    $<$<CONFIG:Debug>:DEBUG>
-    $<$<CONFIG:Release>:NDEBUG>
-)
+    # Compiler definitions
+    target_compile_definitions(stm32_platform PUBLIC
+        $<$<CONFIG:Debug>:DEBUG>
+        $<$<CONFIG:Release>:NDEBUG>
+    )
 
-# Compiler options
-target_compile_options(stm32_platform PRIVATE
-    $<$<C_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
-    $<$<C_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic>
-    $<$<C_COMPILER_ID:MSVC>:/W4>
-)
+    # Compiler options
+    target_compile_options(stm32_platform PRIVATE
+        $<$<C_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
+        $<$<C_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic>
+        $<$<C_COMPILER_ID:MSVC>:/W4>
+    )
 
-# STM32 HAL dependency (user must provide)
-# Platform requires STM32 HAL headers and libraries
-# User should add via target_link_libraries() in their project
+    # STM32 HAL dependency (user must provide)
+    # Platform requires STM32 HAL headers and libraries
+    # User should add via target_link_libraries() in their project
+endif()
 
 # ==================== Installation ====================
 
-include(GNUInstallDirs)
+if(NOT PLT_BUILD_TESTS)
+    include(GNUInstallDirs)
 
-# Install library
-install(TARGETS stm32_platform
-    EXPORT STM32PlatformTargets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+    # Install library
+    install(TARGETS stm32_platform
+        EXPORT STM32PlatformTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
 
-# Install headers
-install(DIRECTORY Inc/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/stm32_platform
-    FILES_MATCHING PATTERN "*.h"
-)
+    # Install headers
+    install(DIRECTORY Inc/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/stm32_platform
+        FILES_MATCHING PATTERN "*.h"
+    )
 
-# Install CMake config files
-install(EXPORT STM32PlatformTargets
-    FILE STM32PlatformTargets.cmake
-    NAMESPACE STM32Platform::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/STM32Platform
-)
+    # Install CMake config files
+    install(EXPORT STM32PlatformTargets
+        FILE STM32PlatformTargets.cmake
+        NAMESPACE STM32Platform::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/STM32Platform
+    )
+endif()
 
 # ==================== Package Configuration ====================
 

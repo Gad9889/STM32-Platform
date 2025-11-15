@@ -1,171 +1,44 @@
+/**
+ * @file callbacks.c
+ * @brief Application callback stub implementation
+ * 
+ * @note This file is a compatibility stub. The old callback system using plt_*
+ *       functions was removed in Platform v2.0.0 refactor. Applications should
+ *       migrate to the new direct HAL API:
+ *       - Platform_begin() for initialization
+ *       - P_CAN, P_UART, P_SPI, P_ADC, P_PWM for peripheral access
+ *       - Implement HAL callbacks directly in user code
+ * 
+ * @deprecated Legacy implementation removed - kept as stub for compilation
+ */
+
 #include "callbacks.h"
 
 /* =============================== Global Variables =============================== */
-static database_t* pMainDB = NULL;
-static Queue_t* pUartTxQueue = NULL;
-plt_callbacks_t pcallbacks;
-Set_Function_t pSet_Function;
 
+// Compatibility stubs for legacy application code
+uint8_t KL_Nodes[3] = {0};
+uint8_t FSM_stage = 0;
 
-/* ========================== Function Definitions ============================ */
-
- /**
-  * @brief Initialize the platform layer with the provided handlers and RxQueueSize
-  * @param handlers Pointer to the handler set for the platform layer
-  * @param RxQueueSize Size of the RX message queue
-  * @note This function initializes the platform layer with the provided handlers and RxQueueSize
-  */
- void PlatformInit(handler_set_t *handlers,size_t RxQueueSize)
- {
-    // Initialize the platform layer with the provided handlers and RxQueueSize
-    
-    pMainDB = db_Init();
-    //pUartTxQueue = plt_GetUartTxQueue(); // Get the UART transmission queue pointer
-    plt_SetHandlers(handlers);
-    SetCallbacks();
-    plt_SetCallbacks(&pcallbacks);
-    //hash_Init(); // Initialize the hash table for storing set functions
-
-    #ifdef HAL_CAN_MODULE_ENABLED
-    plt_CanInit(RxQueueSize);
-    #if PLT_ENABLE_INIT_PRINTS
-    printf("CAN Initialized \r\n");
-    #endif
-    #endif
-
-    #ifdef HAL_UART_MODULE_ENABLED
-    plt_UartInit(RxQueueSize);
-    pUartTxQueue = plt_GetUartTxQueue(); // Get the UART transmission queue pointer
-    #if PLT_ENABLE_INIT_PRINTS
-    printf("UART Initialized \r\n");
-    #endif
-    #endif
-
-    #ifdef HAL_SPI_MODULE_ENABLED
-    plt_SpiInit(RxQueueSize);
-    #if PLT_ENABLE_INIT_PRINTS
-    printf("SPI Initialized \r\n");
-    #endif
-    #endif
-
-    #ifdef HAL_ADC_MODULE_ENABLED
-    plt_AdcInit();
-    #if PLT_ENABLE_INIT_PRINTS
-    printf("ADC Initialized \r\n");
-    #endif
-    #endif
-
-    #ifdef HAL_TIM_MODULE_ENABLED
-    plt_TimInit();
-    #if PLT_ENABLE_INIT_PRINTS
-    printf("Advanced TIM Initialized \r\n");
-    #endif
-    #endif
- }
+/* ========================== Legacy Function Stubs ============================ */
 
 /**
- * @brief Callback function for handling CAN messages from the CAN-RxQueue and store the data in the DB.
- * @param msg Pointer to the received CAN message
- * @note This function is called in the plt_CanProcessRxMsgs function
- * @link plt_CanProcessRxMsgs
+ * @deprecated All legacy callback functions removed in Platform v2.0.0
  * 
- */
-void CanRxCallback(can_message_t *msg) 
-{
-  //printf("Received CAN message with ID: %lu\r\n", msg->id);
- /* pSet_Function = hash_Lookup(msg->id);
-  if(pSet_Function != NULL)
-  {
-    pSet_Function(msg->data); // Call the set function for the received message
-  }
-    */
-  switch (msg->id) // Replace with actual condition
-  {
-    case PEDAL_ID:
-      setPedalParameters(msg->data);
-      break;
-    case DB_ID:
-      setDBParameters(msg->data);
-      break;\
-    case INV1_AV1_ID:
-      msg->data[0] = 1; // Inverter number change before calling this function
-      setInv1Av1Parameters(msg->data);
-      break;
-    case INV2_AV1_ID:
-      msg->data[0] = 2; // Inverter number change before calling this function
-      setInv2Av1Parameters(msg->data);
-      break;
-    case INV3_AV1_ID:
-      msg->data[0] = 3; // Inverter number change before calling this function
-      setInv3Av1Parameters(msg->data);
-      break;
-    case INV4_AV1_ID:
-      msg->data[0] = 4; // Inverter number change before calling this function
-      setInv4Av1Parameters(msg->data);
-      break;
-    case INV1_AV2_ID:
-      msg->data[6] = 1; // Inverter number change before calling this function
-      setInv1Av2Parameters(msg->data);
-      break;
-    case INV2_AV2_ID:
-      msg->data[6] = 2; // Inverter number change before calling this function
-      setInv2Av2Parameters(msg->data);
-      break;
-    case INV3_AV2_ID:
-      msg->data[6] = 3; // Inverter number change before calling this function
-      setInv3Av2Parameters(msg->data);
-      break;
-    case INV4_AV2_ID:
-      msg->data[6] = 4; // Inverter number change before calling this function
-      setInv4Av1Parameters(msg->data);
-      break;
-    
-    default:
-      break;
-  }
-}
-
-/**
- * @brief Callback function for handling SPI messages from the SPI-RxQueue and store the data in the DB.
- * @param msg Pointer to the received SPI message
- * @note This function is called in the plt_SpiProcessRxMsgs function
- * @link plt_SpiProcessRxMsgs
+ * Migration Guide:
+ * ----------------
+ * Old API (removed):
+ *   - PlatformInit()
+ *   - SetCallbacks()
+ *   - plt_CanInit(), plt_UartInit(), etc.
  * 
- */
-void SpiRxCallback(spi_message_t *msg) {
-
-}
-
-/**
- * @brief Callback function for handling UART messages from the UART-RXQueue and store the data in the DB.
- * @param msg Pointer to the received UART message
- * @note This function is called in the plt_UartProcessRxMsgs function
- * @link plt_UartProcessRxMsgs
+ * New API (use instead):
+ *   - Platform_begin(&handlers) - Initialize platform with HAL handles
+ *   - P_CAN->send()/receive()   - Direct CAN access
+ *   - P_UART->printf()/read()   - Direct UART access
+ *   - P_SPI->transfer()         - Direct SPI access
+ *   - P_ADC->read()             - Direct ADC access
+ *   - P_PWM->set()              - Direct PWM access
  * 
+ * See README.md and examples/ for v2.0.0 usage patterns.
  */
-void UartRxCallback(uart_message_t *msg) {
-
-}
-
-/**
- * @brief Set the callback functions for the platform layer
- * @note This function sets the callback functions for the platform layer
- * @link SetCallbacks
- * 
- */
-void SetCallbacks() {
-   
-    
-    #ifdef HAL_CAN_MODULE_ENABLED
-    pcallbacks.CAN_RxCallback = CanRxCallback;
-    pcallbacks.CAN_TxCallback = NULL;
-    #endif
-    #ifdef HAL_UART_MODULE_ENABLED
-    pcallbacks.UART_RxCallback = UartRxCallback;
-    #endif
-    #ifdef HAL_SPI_MODULE_ENABLED
-    pcallbacks.SPI_RxCallback = SpiRxCallback;
-    pcallbacks.SPI_TxCallback = NULL;
-    #endif
- }
-

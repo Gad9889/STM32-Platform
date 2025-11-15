@@ -158,10 +158,11 @@ void test_QueuePop_NullData_DoesNotCrash(void) {
     test_data_t push_data = {.value = 42};
     Queue_Push(&test_queue, &push_data);
     
-    plt_status_t status = Queue_Pop(&test_queue, NULL); // Should return error
+    plt_status_t status = Queue_Pop(&test_queue, NULL); // Should discard item (NULL data allowed)
     
-    TEST_ASSERT_EQUAL(PLT_NULL_POINTER, status);
-    TEST_ASSERT_EQUAL(1, Queue_Count(&test_queue)); // Item still in queue
+    TEST_ASSERT_EQUAL(PLT_OK, status);
+    TEST_ASSERT_EQUAL(0, Queue_Count(&test_queue)); // Item was discarded
+    TEST_ASSERT_TRUE(Queue_IsEmpty(&test_queue));
 }
 
 // ==================== Queue_Peek Tests ====================

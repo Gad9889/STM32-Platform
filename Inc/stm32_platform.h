@@ -164,31 +164,51 @@ typedef struct {
     uint16_t length;       /*!< Actual data length */
 } SPIMessage_t;
 
+/* ==================== Configuration Limits ==================== */
+
+#define PLT_MAX_CAN_INSTANCES   4   /*!< Maximum number of CAN peripherals */
+#define PLT_MAX_UART_INSTANCES  8   /*!< Maximum number of UART peripherals */
+#define PLT_MAX_SPI_INSTANCES   6   /*!< Maximum number of SPI peripherals */
+#define PLT_MAX_ADC_INSTANCES   4   /*!< Maximum number of ADC peripherals */
+#define PLT_MAX_TIM_INSTANCES   20  /*!< Maximum number of timer peripherals */
+
 /* ==================== Peripheral Handles Structure ==================== */
 
 /**
  * @brief Peripheral handles for platform initialization
  * 
  * Pass peripheral handles to Platform.begin() using this structure.
- * Set unused peripherals to NULL. This avoids type dependencies when
- * HAL modules are not enabled in CubeMX.
+ * Populate arrays with peripheral handles and specify counts.
+ * This avoids type dependencies when HAL modules are not enabled in CubeMX.
  * 
  * @example
+ * void* cans[] = {&hcan1, &hcan2};
+ * void* uarts[] = {&huart1, &huart2, &huart3};
  * PlatformHandles_t handles = {
- *     .hcan = &hcan,
- *     .huart = &huart2,
- *     .hspi = NULL,     // Not using SPI
- *     .hadc = NULL,     // Not using ADC
- *     .htim = &htim1
+ *     .hcan = cans,
+ *     .can_count = 2,
+ *     .huart = uarts,
+ *     .uart_count = 3,
+ *     .hspi = NULL,
+ *     .spi_count = 0,
+ *     .hadc = NULL,
+ *     .adc_count = 0,
+ *     .htim = &htim1,
+ *     .tim_count = 1
  * };
  * Platform.begin(&handles);
  */
 typedef struct {
-    void* hcan;   /*!< CAN_HandleTypeDef* - CAN peripheral handle */
-    void* huart;  /*!< UART_HandleTypeDef* - UART peripheral handle */
-    void* hspi;   /*!< SPI_HandleTypeDef* - SPI peripheral handle */
-    void* hadc;   /*!< ADC_HandleTypeDef* - ADC peripheral handle */
-    void* htim;   /*!< TIM_HandleTypeDef* - Timer peripheral handle */
+    void** hcan;        /*!< Array of CAN_HandleTypeDef* - CAN peripheral handles */
+    uint8_t can_count;  /*!< Number of CAN instances in array */
+    void** huart;       /*!< Array of UART_HandleTypeDef* - UART peripheral handles */
+    uint8_t uart_count; /*!< Number of UART instances in array */
+    void** hspi;        /*!< Array of SPI_HandleTypeDef* - SPI peripheral handles */
+    uint8_t spi_count;  /*!< Number of SPI instances in array */
+    void** hadc;        /*!< Array of ADC_HandleTypeDef* - ADC peripheral handles */
+    uint8_t adc_count;  /*!< Number of ADC instances in array */
+    void** htim;        /*!< Array of TIM_HandleTypeDef* - Timer peripheral handles */
+    uint8_t tim_count;  /*!< Number of timer instances in array */
 } PlatformHandles_t;
 
 /* ==================== Forward Declarations ==================== */
@@ -208,85 +228,97 @@ typedef struct PWM_t PWM_t;
 struct CAN_t {
     /**
      * @brief Send CAN message
+     * @param instance CAN instance index (0 to can_count-1)
      * @param id CAN identifier (11-bit standard)
      * @param data Pointer to data buffer
      * @param length Data length (0-8 bytes)
      * @return true if message queued successfully
      */
-    bool (*send)(uint16_t id, const uint8_t* data, uint8_t length);
+    bool (*send)(uint8_t instance, uint16_t id, const uint8_t* data, uint8_t length);
     
     /**
      * @brief Send CAN message structure
+     * @param instance CAN instance index (0 to can_count-1)
      * @param msg Pointer to CAN message
      * @return true if message queued successfully
      */
-    bool (*sendMessage)(const CANMessage_t* msg);
+    bool (*sendMessage)(uint8_t instance, const CANMessage_t* msg);
     
     /**
      * @brief Handle received CAN messages from queue
      * 
      * Dequeues all pending messages and routes to registered handlers.
      * Call this in your main loop.
+     * @param instance CAN instance index (0 to can_count-1)
      */
-    void (*handleRxMessages)(void);
+    void (*handleRxMessages)(uint8_t instance);
     
     /**
      * @brief Get number of messages waiting in queue
+     * @param instance CAN instance index (0 to can_count-1)
      * @return Number of unprocessed messages
      */
-    uint16_t (*availableMessages)(void);
+    uint16_t (*availableMessages)(uint8_t instance);
     
     /**
      * @brief Register handler for specific CAN ID
+     * @param instance CAN instance index (0 to can_count-1)
      * @param id CAN identifier to route
      * @param handler Callback function for this ID
      */
-    void (*route)(uint16_t id, void (*handler)(CANMessage_t*));
+    void (*route)(uint8_t instance, uint16_t id, void (*handler)(CANMessage_t*));
     
     /**
      * @brief Register handler for range of CAN IDs
+     * @param instance CAN instance index (0 to can_count-1)
      * @param idStart Start of ID range (inclusive)
      * @param idEnd End of ID range (inclusive)
      * @param handler Callback function for this range
      */
-    void (*routeRange)(uint16_t idStart, uint16_t idEnd, void (*handler)(CANMessage_t*));
+    void (*routeRange)(uint8_t instance, uint16_t idStart, uint16_t idEnd, void (*handler)(CANMessage_t*));
     
     /**
      * @brief Configure CAN acceptance filter
+     * @param instance CAN instance index (0 to can_count-1)
      * @param id Filter ID
      * @param mask Filter mask
      */
-    void (*setFilter)(uint16_t id, uint16_t mask);
+    void (*setFilter)(uint8_t instance, uint16_t id, uint16_t mask);
     
     /**
      * @brief Set CAN baudrate
+     * @param instance CAN instance index (0 to can_count-1)
      * @param baudrate Baudrate in bps (e.g., 500000 for 500 kbit/s)
      */
-    void (*setBaudrate)(uint32_t baudrate);
+    void (*setBaudrate)(uint8_t instance, uint32_t baudrate);
     
     /**
      * @brief Check if CAN peripheral is ready
+     * @param instance CAN instance index (0 to can_count-1)
      * @return true if ready for transmission
      */
-    bool (*isReady)(void);
+    bool (*isReady)(uint8_t instance);
     
     /**
      * @brief Get total transmitted messages count
+     * @param instance CAN instance index (0 to can_count-1)
      * @return Number of messages sent since init
      */
-    uint32_t (*getTxCount)(void);
+    uint32_t (*getTxCount)(uint8_t instance);
     
     /**
      * @brief Get total received messages count
+     * @param instance CAN instance index (0 to can_count-1)
      * @return Number of messages received since init
      */
-    uint32_t (*getRxCount)(void);
+    uint32_t (*getRxCount)(uint8_t instance);
     
     /**
      * @brief Get CAN bus error count
+     * @param instance CAN instance index (0 to can_count-1)
      * @return Number of errors detected
      */
-    uint32_t (*getErrorCount)(void);
+    uint32_t (*getErrorCount)(uint8_t instance);
 };
 
 /* ==================== UART Interface ==================== */
@@ -297,76 +329,87 @@ struct CAN_t {
 struct UART_t {
     /**
      * @brief Print string without newline
+     * @param instance UART instance index (0 to uart_count-1)
      * @param str Null-terminated string
      */
-    void (*print)(const char* str);
+    void (*print)(uint8_t instance, const char* str);
     
     /**
      * @brief Print string with newline
+     * @param instance UART instance index (0 to uart_count-1)
      * @param str Null-terminated string
      */
-    void (*println)(const char* str);
+    void (*println)(uint8_t instance, const char* str);
     
     /**
      * @brief Print formatted string (printf-style)
+     * @param instance UART instance index (0 to uart_count-1)
      * @param fmt Format string
      * @param ... Variable arguments
      */
-    void (*printf)(const char* fmt, ...);
+    void (*printf)(uint8_t instance, const char* fmt, ...);
     
     /**
      * @brief Write raw bytes
+     * @param instance UART instance index (0 to uart_count-1)
      * @param data Pointer to data buffer
      * @param length Number of bytes to write
      * @return true if write successful
      */
-    bool (*write)(const uint8_t* data, uint16_t length);
+    bool (*write)(uint8_t instance, const uint8_t* data, uint16_t length);
     
     /**
      * @brief Handle received UART data from queue
      * 
      * Dequeues all pending data and calls registered handler.
      * Call this in your main loop.
+     * @param instance UART instance index (0 to uart_count-1)
      */
-    void (*handleRxData)(void);
+    void (*handleRxData)(uint8_t instance);
     
     /**
      * @brief Get number of bytes waiting in RX queue
+     * @param instance UART instance index (0 to uart_count-1)
      * @return Number of unread bytes
      */
-    uint16_t (*availableBytes)(void);
+    uint16_t (*availableBytes)(uint8_t instance);
     
     /**
      * @brief Read single byte from RX buffer
+     * @param instance UART instance index (0 to uart_count-1)
      * @return Byte read (0 if buffer empty)
      */
-    uint8_t (*read)(void);
+    uint8_t (*read)(uint8_t instance);
     
     /**
      * @brief Read multiple bytes from RX buffer
+     * @param instance UART instance index (0 to uart_count-1)
      * @param buffer Pointer to destination buffer
      * @param length Maximum bytes to read
      * @return Number of bytes actually read
      */
-    uint16_t (*readBytes)(uint8_t* buffer, uint16_t length);
+    uint16_t (*readBytes)(uint8_t instance, uint8_t* buffer, uint16_t length);
     
     /**
      * @brief Set UART baudrate
+     * @param instance UART instance index (0 to uart_count-1)
      * @param baudrate Baudrate in bps (e.g., 115200)
      */
-    void (*setBaudrate)(uint32_t baudrate);
+    void (*setBaudrate)(uint8_t instance, uint32_t baudrate);
     
     /**
      * @brief Set RX/TX timeout
+     * @param instance UART instance index (0 to uart_count-1)
      * @param ms Timeout in milliseconds
      */
-    void (*setTimeout)(uint16_t ms);
+    void (*setTimeout)(uint8_t instance, uint16_t ms);
     
     /**
      * @brief Check if UART peripheral is ready
+     * @param instance UART instance index (0 to uart_count-1)
      * @return true if ready for transmission
      */
-    bool (*isReady)(void);
+    bool (*isReady)(uint8_t instance);
 };
 
 /* ==================== SPI Interface ==================== */
@@ -377,44 +420,50 @@ struct UART_t {
 struct SPI_t {
     /**
      * @brief Full-duplex SPI transfer
+     * @param instance SPI instance index (0 to spi_count-1)
      * @param txData Pointer to transmit buffer
      * @param rxData Pointer to receive buffer
      * @param length Number of bytes to transfer
      */
-    void (*transfer)(uint8_t* txData, uint8_t* rxData, uint16_t length);
+    void (*transfer)(uint8_t instance, uint8_t* txData, uint8_t* rxData, uint16_t length);
     
     /**
      * @brief Transfer single byte
+     * @param instance SPI instance index (0 to spi_count-1)
      * @param data Byte to transmit
      * @return Byte received
      */
-    uint8_t (*transferByte)(uint8_t data);
+    uint8_t (*transferByte)(uint8_t instance, uint8_t data);
     
     /**
      * @brief Handle received SPI data from queue
      * 
      * Dequeues all pending data and calls registered handler.
      * Call this in your main loop.
+     * @param instance SPI instance index (0 to spi_count-1)
      */
-    void (*handleRxData)(void);
+    void (*handleRxData)(uint8_t instance);
     
     /**
      * @brief Get number of bytes waiting in RX queue
+     * @param instance SPI instance index (0 to spi_count-1)
      * @return Number of unprocessed bytes
      */
-    uint16_t (*availableBytes)(void);
+    uint16_t (*availableBytes)(uint8_t instance);
     
     /**
      * @brief Set SPI clock speed
+     * @param instance SPI instance index (0 to spi_count-1)
      * @param hz Clock frequency in Hz
      */
-    void (*setClockSpeed)(uint32_t hz);
+    void (*setClockSpeed)(uint8_t instance, uint32_t hz);
     
     /**
      * @brief Set SPI mode (0-3)
+     * @param instance SPI instance index (0 to spi_count-1)
      * @param mode SPI mode (CPOL/CPHA combination)
      */
-    void (*setMode)(uint8_t mode);
+    void (*setMode)(uint8_t instance, uint8_t mode);
     
     /**
      * @brief Assert chip select (pull low)
@@ -439,42 +488,48 @@ struct SPI_t {
 struct ADC_t {
     /**
      * @brief Read raw ADC value
+     * @param instance ADC instance index (0 to adc_count-1)
      * @param channel ADC channel number
      * @return Raw ADC value (12-bit: 0-4095)
      */
-    uint16_t (*readRaw)(uint8_t channel);
+    uint16_t (*readRaw)(uint8_t instance, uint8_t channel);
     
     /**
      * @brief Read ADC value converted to voltage
+     * @param instance ADC instance index (0 to adc_count-1)
      * @param channel ADC channel number
      * @return Voltage in volts
      */
-    float (*readVoltage)(uint8_t channel);
+    float (*readVoltage)(uint8_t instance, uint8_t channel);
     
     /**
      * @brief Handle completed ADC conversions
      * 
      * Processes DMA conversion complete callbacks.
      * Call this in your main loop.
+     * @param instance ADC instance index (0 to adc_count-1)
      */
-    void (*handleConversions)(void);
+    void (*handleConversions)(uint8_t instance);
     
     /**
      * @brief Set ADC resolution
+     * @param instance ADC instance index (0 to adc_count-1)
      * @param bits Resolution in bits (8, 10, or 12)
      */
-    void (*setResolution)(uint8_t bits);
+    void (*setResolution)(uint8_t instance, uint8_t bits);
     
     /**
      * @brief Set voltage reference
+     * @param instance ADC instance index (0 to adc_count-1)
      * @param voltage Reference voltage in volts
      */
-    void (*setReference)(float voltage);
+    void (*setReference)(uint8_t instance, float voltage);
     
     /**
      * @brief Calibrate ADC
+     * @param instance ADC instance index (0 to adc_count-1)
      */
-    void (*calibrate)(void);
+    void (*calibrate)(uint8_t instance);
 };
 
 /* ==================== PWM Interface ==================== */
@@ -485,40 +540,40 @@ struct ADC_t {
 struct PWM_t {
     /**
      * @brief Start PWM output
-     * @param htim Pointer to timer handle
+     * @param instance Timer instance index (0 to tim_count-1)
      * @param channel Timer channel
      */
-    void (*start)(TIM_HandleTypeDef* htim, uint32_t channel);
+    void (*start)(uint8_t instance, uint32_t channel);
     
     /**
      * @brief Stop PWM output
-     * @param htim Pointer to timer handle
+     * @param instance Timer instance index (0 to tim_count-1)
      * @param channel Timer channel
      */
-    void (*stop)(TIM_HandleTypeDef* htim, uint32_t channel);
+    void (*stop)(uint8_t instance, uint32_t channel);
     
     /**
      * @brief Set PWM frequency
-     * @param htim Pointer to timer handle
+     * @param instance Timer instance index (0 to tim_count-1)
      * @param hz Frequency in Hz
      */
-    void (*setFrequency)(TIM_HandleTypeDef* htim, uint32_t hz);
+    void (*setFrequency)(uint8_t instance, uint32_t hz);
     
     /**
      * @brief Set PWM duty cycle
-     * @param htim Pointer to timer handle
+     * @param instance Timer instance index (0 to tim_count-1)
      * @param channel Timer channel
      * @param percent Duty cycle (0.0 - 100.0)
      */
-    void (*setDutyCycle)(TIM_HandleTypeDef* htim, uint32_t channel, float percent);
+    void (*setDutyCycle)(uint8_t instance, uint32_t channel, float percent);
     
     /**
      * @brief Set PWM pulse width
-     * @param htim Pointer to timer handle
+     * @param instance Timer instance index (0 to tim_count-1)
      * @param channel Timer channel
      * @param us Pulse width in microseconds
      */
-    void (*setPulseWidth)(TIM_HandleTypeDef* htim, uint32_t channel, uint32_t us);
+    void (*setPulseWidth)(uint8_t instance, uint32_t channel, uint32_t us);
 };
 
 /* ==================== Platform Interface ==================== */

@@ -5,6 +5,32 @@ All notable changes to the STM32 Platform project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-11-15
+
+### Added
+
+- **Multi-Instance Peripheral Support:** Platform now supports multiple instances of each peripheral type (CAN, UART, SPI, ADC, TIM)
+- **Instance Index API:** All peripheral functions now accept an instance parameter as the first argument
+- **Configurable Instance Limits:** `PLT_MAX_*_INSTANCES` defines for compile-time configuration
+- **Array-Based Initialization:** `PlatformHandles_t` now uses arrays with counts for each peripheral type
+- **Automatic Instance Detection:** HAL callbacks automatically detect which peripheral instance triggered the interrupt
+
+### Changed
+
+- **Breaking API Change:** All peripheral functions now require instance index as first parameter
+  - Example: `P_CAN.send(0, id, data, length)` instead of `P_CAN.send(id, data, length)`
+- **PlatformHandles_t Structure:** Changed from single pointers to arrays:
+  - `void** hcan` with `uint8_t can_count`
+  - `void** huart` with `uint8_t uart_count`
+  - Similar for SPI, ADC, TIM
+- **CAN Filter Bank Assignment:** Properly handles dual CAN controllers (CAN1: banks 0-13, CAN2: banks 14-27)
+- **Internal State Management:** All peripheral state structures converted to per-instance arrays
+
+### Fixed
+
+- CAN filter bank assignment for STM32 MCUs with dual CAN controllers (e.g., F446RE)
+- Proper `SlaveStartFilterBank` configuration for CAN2 on dual CAN systems
+
 ## [1.0.0] - 2025-11-14
 
 ### Added

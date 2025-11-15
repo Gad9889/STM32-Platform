@@ -30,39 +30,28 @@ static bool platform_initialized = false;
 // Hardware handles (set by Platform.begin())
 static struct {
     #ifdef HAL_CAN_MODULE_ENABLED
-    CAN_HandleTypeDef*  hcan;
+    CAN_HandleTypeDef*  hcan[PLT_MAX_CAN_INSTANCES];
+    uint8_t             can_count;
     #endif
     #ifdef HAL_UART_MODULE_ENABLED
-    UART_HandleTypeDef* huart;
+    UART_HandleTypeDef* huart[PLT_MAX_UART_INSTANCES];
+    uint8_t             uart_count;
     #endif
     #ifdef HAL_SPI_MODULE_ENABLED
-    SPI_HandleTypeDef*  hspi;
+    SPI_HandleTypeDef*  hspi[PLT_MAX_SPI_INSTANCES];
+    uint8_t             spi_count;
     #endif
     #ifdef HAL_ADC_MODULE_ENABLED
-    ADC_HandleTypeDef*  hadc;
+    ADC_HandleTypeDef*  hadc[PLT_MAX_ADC_INSTANCES];
+    uint8_t             adc_count;
     #endif
     #ifdef HAL_TIM_MODULE_ENABLED
-    TIM_HandleTypeDef*  htim;
+    TIM_HandleTypeDef*  htim[PLT_MAX_TIM_INSTANCES];
+    uint8_t             tim_count;
     #endif
-} hw_handles = {
-    #ifdef HAL_CAN_MODULE_ENABLED
-    .hcan = NULL,
-    #endif
-    #ifdef HAL_UART_MODULE_ENABLED
-    .huart = NULL,
-    #endif
-    #ifdef HAL_SPI_MODULE_ENABLED
-    .hspi = NULL,
-    #endif
-    #ifdef HAL_ADC_MODULE_ENABLED
-    .hadc = NULL,
-    #endif
-    #ifdef HAL_TIM_MODULE_ENABLED
-    .htim = NULL
-    #endif
-};
+} hw_handles = {0};
 
-// CAN state
+// CAN state (per instance)
 static struct {
     Queue_t rx_queue;
     bool routing_initialized;
@@ -70,38 +59,38 @@ static struct {
     volatile uint32_t tx_count;
     volatile uint32_t rx_count;
     volatile uint32_t error_count;
-} can_state = {0};
+} can_state[PLT_MAX_CAN_INSTANCES] = {0};
 
-// UART state  
+// UART state (per instance)
 static struct {
     Queue_t rx_queue;
     Queue_t tx_queue;
     uint8_t rx_buffer[256];
     volatile uint16_t rx_index;
     uint16_t timeout_ms;
-} uart_state = {0};
+} uart_state[PLT_MAX_UART_INSTANCES] = {0};
 
 #ifdef HAL_SPI_MODULE_ENABLED
-// SPI state
+// SPI state (per instance)
 static struct {
     Queue_t rx_queue;
     volatile bool busy;
-} spi_state = {0};
+} spi_state[PLT_MAX_SPI_INSTANCES] = {0};
 #endif
 
 #ifdef HAL_ADC_MODULE_ENABLED
-// ADC state
+// ADC state (per instance)
 static struct {
     uint16_t* dma_buffer;
     uint16_t buffer_size;
     float vref;
-} adc_state = {0};
+} adc_state[PLT_MAX_ADC_INSTANCES] = {0};
 #endif
 
 /* ==================== CAN Implementation ==================== */
 
-static bool CAN_send_impl(uint16_t id, const uint8_t* data, uint8_t length) {
-    if (hw_handles.hcan == NULL) {
+static bool CAN_send_impl(uint8_t instance, uint16_t id, const uint8_t* data, uint8_t length) {
+    if (instance >= hw_handles.can_count || hw_handles.hcan[instance] == NULL) {
         lastError = PLT_NOT_INITIALIZED;
         return false;
     }
@@ -121,54 +110,55 @@ static bool CAN_send_impl(uint16_t id, const uint8_t* data, uint8_t length) {
     tx_header.TransmitGlobalTime = DISABLE;
     
     uint32_t tx_mailbox;
-    HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(hw_handles.hcan, &tx_header, 
+    HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(hw_handles.hcan[instance], &tx_header, 
                                                      (uint8_t*)data, &tx_mailbox);
     
     if (status == HAL_OK) {
-        can_state.tx_count++;
+        can_state[instance].tx_count++;
         lastError = PLT_OK;
         return true;
     } else {
         lastError = PLT_HAL_ERROR;
-        can_state.error_count++;
+        can_state[instance].error_count++;
         return false;
     }
 }
 
-static bool CAN_sendMessage_impl(const CANMessage_t* msg) {
+static bool CAN_sendMessage_impl(uint8_t instance, const CANMessage_t* msg) {
     if (msg == NULL) {
         lastError = PLT_NULL_POINTER;
         return false;
     }
-    return CAN_send_impl(msg->id, msg->data, msg->length);
+    return CAN_send_impl(instance, msg->id, msg->data, msg->length);
 }
 
-static void CAN_handleRxMessages_impl(void) {
-    if (hw_handles.hcan == NULL) return;
+static void CAN_handleRxMessages_impl(uint8_t instance) {
+    if (instance >= hw_handles.can_count || hw_handles.hcan[instance] == NULL) return;
     
     CANMessage_t msg;
     
     // Process all messages in queue
-    while (Queue_Pop(&can_state.rx_queue, &msg) == PLT_OK) {
+    while (Queue_Pop(&can_state[instance].rx_queue, &msg) == PLT_OK) {
         // Try hashtable routing first
         Set_Function_t handler = hash_Lookup(msg.id);
         
         if (handler != NULL) {
             // Route to specific handler - pass message data buffer
             handler(msg.data);
-        } else if (can_state.default_handler != NULL) {
+        } else if (can_state[instance].default_handler != NULL) {
             // Route to default handler
-            can_state.default_handler(&msg);
+            can_state[instance].default_handler(&msg);
         }
     }
 }
 
-static uint16_t CAN_availableMessages_impl(void) {
-    return (uint16_t)Queue_Count(&can_state.rx_queue);
+static uint16_t CAN_availableMessages_impl(uint8_t instance) {
+    if (instance >= hw_handles.can_count) return 0;
+    return (uint16_t)Queue_Count(&can_state[instance].rx_queue);
 }
 
-static void CAN_route_impl(uint16_t id, void (*handler)(CANMessage_t*)) {
-    if (!can_state.routing_initialized || handler == NULL) {
+static void CAN_route_impl(uint8_t instance, uint16_t id, void (*handler)(CANMessage_t*)) {
+    if (instance >= hw_handles.can_count || !can_state[instance].routing_initialized || handler == NULL) {
         return;
     }
     
@@ -182,14 +172,14 @@ static void CAN_route_impl(uint16_t id, void (*handler)(CANMessage_t*)) {
     hash_InsertMember(&member);
 }
 
-static void CAN_routeRange_impl(uint16_t idStart, uint16_t idEnd, void (*handler)(CANMessage_t*)) {
+static void CAN_routeRange_impl(uint8_t instance, uint16_t idStart, uint16_t idEnd, void (*handler)(CANMessage_t*)) {
     for (uint16_t id = idStart; id <= idEnd; id++) {
-        CAN_route_impl(id, handler);
+        CAN_route_impl(instance, id, handler);
     }
 }
 
-static void CAN_setFilter_impl(uint16_t id, uint16_t mask) {
-    if (hw_handles.hcan == NULL) return;
+static void CAN_setFilter_impl(uint8_t instance, uint16_t id, uint16_t mask) {
+    if (instance >= hw_handles.can_count || hw_handles.hcan[instance] == NULL) return;
     
     CAN_FilterTypeDef filter;
     filter.FilterIdHigh = id << 5;
@@ -197,54 +187,70 @@ static void CAN_setFilter_impl(uint16_t id, uint16_t mask) {
     filter.FilterMaskIdHigh = mask << 5;
     filter.FilterMaskIdLow = 0;
     filter.FilterFIFOAssignment = CAN_RX_FIFO0;
-    filter.FilterBank = 0;
     filter.FilterMode = CAN_FILTERMODE_IDMASK;
     filter.FilterScale = CAN_FILTERSCALE_32BIT;
     filter.FilterActivation = ENABLE;
     
-    HAL_CAN_ConfigFilter(hw_handles.hcan, &filter);
+    // Determine filter bank based on CAN instance
+    #if defined(CAN2)
+    if (hw_handles.hcan[instance]->Instance == CAN1) {
+        filter.FilterBank = instance;  // CAN1: banks 0-13
+        filter.SlaveStartFilterBank = 14;  // CAN2 starts at bank 14
+    } else if (hw_handles.hcan[instance]->Instance == CAN2) {
+        filter.FilterBank = 14 + instance;  // CAN2: banks 14-27
+    }
+    #else
+    // Single CAN controller
+    filter.FilterBank = instance;
+    #endif
+    
+    HAL_CAN_ConfigFilter(hw_handles.hcan[instance], &filter);
 }
 
-static void CAN_setBaudrate_impl(uint32_t baudrate) {
+static void CAN_setBaudrate_impl(uint8_t instance, uint32_t baudrate) {
+    (void)instance;
+    (void)baudrate;
     // Would require HAL re-initialization
     lastError = PLT_NOT_SUPPORTED;
 }
 
-static bool CAN_isReady_impl(void) {
-    if (hw_handles.hcan == NULL) return false;
+static bool CAN_isReady_impl(uint8_t instance) {
+    if (instance >= hw_handles.can_count || hw_handles.hcan[instance] == NULL) return false;
     
-    HAL_CAN_StateTypeDef state = HAL_CAN_GetState(hw_handles.hcan);
+    HAL_CAN_StateTypeDef state = HAL_CAN_GetState(hw_handles.hcan[instance]);
     return (state == HAL_CAN_STATE_READY || state == HAL_CAN_STATE_LISTENING);
 }
 
-static uint32_t CAN_getTxCount_impl(void) {
-    return can_state.tx_count;
+static uint32_t CAN_getTxCount_impl(uint8_t instance) {
+    if (instance >= hw_handles.can_count) return 0;
+    return can_state[instance].tx_count;
 }
 
-static uint32_t CAN_getRxCount_impl(void) {
-    return can_state.rx_count;
+static uint32_t CAN_getRxCount_impl(uint8_t instance) {
+    if (instance >= hw_handles.can_count) return 0;
+    return can_state[instance].rx_count;
 }
 
-static uint32_t CAN_getErrorCount_impl(void) {
-    if (hw_handles.hcan == NULL) return 0;
-    return hw_handles.hcan->ErrorCode + can_state.error_count;
+static uint32_t CAN_getErrorCount_impl(uint8_t instance) {
+    if (instance >= hw_handles.can_count || hw_handles.hcan[instance] == NULL) return 0;
+    return hw_handles.hcan[instance]->ErrorCode + can_state[instance].error_count;
 }
 
 /* ==================== UART Implementation ==================== */
 
-static void UART_print_impl(const char* str) {
-    if (hw_handles.huart == NULL || str == NULL) return;
+static void UART_print_impl(uint8_t instance, const char* str) {
+    if (instance >= hw_handles.uart_count || hw_handles.huart[instance] == NULL || str == NULL) return;
     
-    HAL_UART_Transmit(hw_handles.huart, (uint8_t*)str, strlen(str), uart_state.timeout_ms);
+    HAL_UART_Transmit(hw_handles.huart[instance], (uint8_t*)str, strlen(str), uart_state[instance].timeout_ms);
 }
 
-static void UART_println_impl(const char* str) {
-    UART_print_impl(str);
-    UART_print_impl("\r\n");
+static void UART_println_impl(uint8_t instance, const char* str) {
+    UART_print_impl(instance, str);
+    UART_print_impl(instance, "\r\n");
 }
 
-static void UART_printf_impl(const char* fmt, ...) {
-    if (hw_handles.huart == NULL) return;
+static void UART_printf_impl(uint8_t instance, const char* fmt, ...) {
+    if (instance >= hw_handles.uart_count || hw_handles.huart[instance] == NULL) return;
     
     char buffer[256];
     va_list args;
@@ -253,95 +259,105 @@ static void UART_printf_impl(const char* fmt, ...) {
     va_end(args);
     
     if (len > 0) {
-        HAL_UART_Transmit(hw_handles.huart, (uint8_t*)buffer, len, uart_state.timeout_ms);
+        HAL_UART_Transmit(hw_handles.huart[instance], (uint8_t*)buffer, len, uart_state[instance].timeout_ms);
     }
 }
 
-static bool UART_write_impl(const uint8_t* data, uint16_t length) {
-    if (hw_handles.huart == NULL || data == NULL || length == 0) {
+static bool UART_write_impl(uint8_t instance, const uint8_t* data, uint16_t length) {
+    if (instance >= hw_handles.uart_count || hw_handles.huart[instance] == NULL || data == NULL || length == 0) {
         lastError = PLT_INVALID_PARAM;
         return false;
     }
     
-    HAL_StatusTypeDef status = HAL_UART_Transmit(hw_handles.huart, (uint8_t*)data, 
-                                                  length, uart_state.timeout_ms);
+    HAL_StatusTypeDef status = HAL_UART_Transmit(hw_handles.huart[instance], (uint8_t*)data, 
+                                                  length, uart_state[instance].timeout_ms);
     
     lastError = (status == HAL_OK) ? PLT_OK : PLT_HAL_ERROR;
     return (status == HAL_OK);
 }
 
-static void UART_handleRxData_impl(void) {
+static void UART_handleRxData_impl(uint8_t instance) {
+    (void)instance;
     // Process received data from queue
     // Implementation depends on user callback design
 }
 
-static uint16_t UART_availableBytes_impl(void) {
-    return (uint16_t)Queue_Count(&uart_state.rx_queue);
+static uint16_t UART_availableBytes_impl(uint8_t instance) {
+    if (instance >= hw_handles.uart_count) return 0;
+    return (uint16_t)Queue_Count(&uart_state[instance].rx_queue);
 }
 
-static uint8_t UART_read_impl(void) {
+static uint8_t UART_read_impl(uint8_t instance) {
+    if (instance >= hw_handles.uart_count) return 0;
     uint8_t byte = 0;
-    Queue_Pop(&uart_state.rx_queue, &byte);
+    Queue_Pop(&uart_state[instance].rx_queue, &byte);
     return byte;
 }
 
-static uint16_t UART_readBytes_impl(uint8_t* buffer, uint16_t length) {
-    if (buffer == NULL || length == 0) return 0;
+static uint16_t UART_readBytes_impl(uint8_t instance, uint8_t* buffer, uint16_t length) {
+    if (instance >= hw_handles.uart_count || buffer == NULL || length == 0) return 0;
     
     uint16_t count = 0;
-    while (count < length && Queue_Pop(&uart_state.rx_queue, &buffer[count]) == PLT_OK) {
+    while (count < length && Queue_Pop(&uart_state[instance].rx_queue, &buffer[count]) == PLT_OK) {
         count++;
     }
     return count;
 }
 
-static void UART_setBaudrate_impl(uint32_t baudrate) {
-    if (hw_handles.huart == NULL) return;
+static void UART_setBaudrate_impl(uint8_t instance, uint32_t baudrate) {
+    if (instance >= hw_handles.uart_count || hw_handles.huart[instance] == NULL) return;
     
-    hw_handles.huart->Init.BaudRate = baudrate;
-    HAL_UART_Init(hw_handles.huart);
+    hw_handles.huart[instance]->Init.BaudRate = baudrate;
+    HAL_UART_Init(hw_handles.huart[instance]);
 }
 
-static void UART_setTimeout_impl(uint16_t ms) {
-    uart_state.timeout_ms = ms;
+static void UART_setTimeout_impl(uint8_t instance, uint16_t ms) {
+    if (instance >= hw_handles.uart_count) return;
+    uart_state[instance].timeout_ms = ms;
 }
 
-static bool UART_isReady_impl(void) {
-    if (hw_handles.huart == NULL) return false;
-    return (HAL_UART_GetState(hw_handles.huart) == HAL_UART_STATE_READY);
+static bool UART_isReady_impl(uint8_t instance) {
+    if (instance >= hw_handles.uart_count || hw_handles.huart[instance] == NULL) return false;
+    return (HAL_UART_GetState(hw_handles.huart[instance]) == HAL_UART_STATE_READY);
 }
 
 /* ==================== SPI Implementation ==================== */
 #ifdef HAL_SPI_MODULE_ENABLED
 
-static void SPI_transfer_impl(uint8_t* txData, uint8_t* rxData, uint16_t length) {
-    if (hw_handles.hspi == NULL || txData == NULL || rxData == NULL || length == 0) {
+static void SPI_transfer_impl(uint8_t instance, uint8_t* txData, uint8_t* rxData, uint16_t length) {
+    if (instance >= hw_handles.spi_count || hw_handles.hspi[instance] == NULL || txData == NULL || rxData == NULL || length == 0) {
         return;
     }
     
-    HAL_SPI_TransmitReceive(hw_handles.hspi, txData, rxData, length, 1000);
+    HAL_SPI_TransmitReceive(hw_handles.hspi[instance], txData, rxData, length, 1000);
 }
 
-static uint8_t SPI_transferByte_impl(uint8_t data) {
+static uint8_t SPI_transferByte_impl(uint8_t instance, uint8_t data) {
     uint8_t rx = 0;
-    SPI_transfer_impl(&data, &rx, 1);
+    SPI_transfer_impl(instance, &data, &rx, 1);
     return rx;
 }
 
-static void SPI_handleRxData_impl(void) {
+static void SPI_handleRxData_impl(uint8_t instance) {
+    (void)instance;
     // SPI is synchronous, no background handling needed
 }
 
-static uint16_t SPI_availableBytes_impl(void) {
-    return (uint16_t)Queue_Count(&spi_state.rx_queue);
+static uint16_t SPI_availableBytes_impl(uint8_t instance) {
+    if (instance >= hw_handles.spi_count) return 0;
+    return (uint16_t)Queue_Count(&spi_state[instance].rx_queue);
 }
 
-static void SPI_setClockSpeed_impl(uint32_t hz) {
+static void SPI_setClockSpeed_impl(uint8_t instance, uint32_t hz) {
+    (void)instance;
+    (void)hz;
     // Would require HAL re-initialization
     lastError = PLT_NOT_SUPPORTED;
 }
 
-static void SPI_setMode_impl(uint8_t mode) {
+static void SPI_setMode_impl(uint8_t instance, uint8_t mode) {
+    (void)instance;
+    (void)mode;
     // Would require HAL re-initialization
     lastError = PLT_NOT_SUPPORTED;
 }
@@ -357,12 +373,12 @@ static void SPI_deselect_impl(GPIO_TypeDef* port, uint16_t pin) {
 #else // !HAL_SPI_MODULE_ENABLED
 
 // Stub implementations when SPI not enabled
-static void SPI_transfer_impl(uint8_t* txData, uint8_t* rxData, uint16_t length) { (void)txData; (void)rxData; (void)length; lastError = PLT_NOT_SUPPORTED; }
-static uint8_t SPI_transferByte_impl(uint8_t data) { (void)data; lastError = PLT_NOT_SUPPORTED; return 0; }
-static void SPI_handleRxData_impl(void) { }
-static uint16_t SPI_availableBytes_impl(void) { return 0; }
-static void SPI_setClockSpeed_impl(uint32_t hz) { (void)hz; lastError = PLT_NOT_SUPPORTED; }
-static void SPI_setMode_impl(uint8_t mode) { (void)mode; lastError = PLT_NOT_SUPPORTED; }
+static void SPI_transfer_impl(uint8_t instance, uint8_t* txData, uint8_t* rxData, uint16_t length) { (void)instance; (void)txData; (void)rxData; (void)length; lastError = PLT_NOT_SUPPORTED; }
+static uint8_t SPI_transferByte_impl(uint8_t instance, uint8_t data) { (void)instance; (void)data; lastError = PLT_NOT_SUPPORTED; return 0; }
+static void SPI_handleRxData_impl(uint8_t instance) { (void)instance; }
+static uint16_t SPI_availableBytes_impl(uint8_t instance) { (void)instance; return 0; }
+static void SPI_setClockSpeed_impl(uint8_t instance, uint32_t hz) { (void)instance; (void)hz; lastError = PLT_NOT_SUPPORTED; }
+static void SPI_setMode_impl(uint8_t instance, uint8_t mode) { (void)instance; (void)mode; lastError = PLT_NOT_SUPPORTED; }
 static void SPI_select_impl(GPIO_TypeDef* port, uint16_t pin) { (void)port; (void)pin; }
 static void SPI_deselect_impl(GPIO_TypeDef* port, uint16_t pin) { (void)port; (void)pin; }
 
@@ -371,37 +387,38 @@ static void SPI_deselect_impl(GPIO_TypeDef* port, uint16_t pin) { (void)port; (v
 /* ==================== ADC Implementation ==================== */
 #ifdef HAL_ADC_MODULE_ENABLED
 
-static uint16_t ADC_readRaw_impl(uint8_t channel) {
-    if (hw_handles.hadc == NULL) return 0;
+static uint16_t ADC_readRaw_impl(uint8_t instance, uint8_t channel) {
+    if (instance >= hw_handles.adc_count || hw_handles.hadc[instance] == NULL) return 0;
     
     // For DMA mode, read from buffer
-    if (adc_state.dma_buffer != NULL && channel < adc_state.buffer_size) {
-        return adc_state.dma_buffer[channel];
+    if (adc_state[instance].dma_buffer != NULL && channel < adc_state[instance].buffer_size) {
+        return adc_state[instance].dma_buffer[channel];
     }
     
     // For polling mode, start conversion
-    HAL_ADC_Start(hw_handles.hadc);
-    HAL_ADC_PollForConversion(hw_handles.hadc, 100);
-    uint16_t value = HAL_ADC_GetValue(hw_handles.hadc);
-    HAL_ADC_Stop(hw_handles.hadc);
+    HAL_ADC_Start(hw_handles.hadc[instance]);
+    HAL_ADC_PollForConversion(hw_handles.hadc[instance], 100);
+    uint16_t value = HAL_ADC_GetValue(hw_handles.hadc[instance]);
+    HAL_ADC_Stop(hw_handles.hadc[instance]);
     
     return value;
 }
 
-static float ADC_readVoltage_impl(uint8_t channel) {
-    uint16_t raw = ADC_readRaw_impl(channel);
+static float ADC_readVoltage_impl(uint8_t instance, uint8_t channel) {
+    uint16_t raw = ADC_readRaw_impl(instance, channel);
     
     // Assume 12-bit ADC
     float max_value = 4095.0f;
-    return (raw / max_value) * adc_state.vref;
+    return (raw / max_value) * adc_state[instance].vref;
 }
 
-static void ADC_handleConversions_impl(void) {
+static void ADC_handleConversions_impl(uint8_t instance) {
+    (void)instance;
     // DMA handles conversions automatically
 }
 
-static void ADC_setResolution_impl(uint8_t bits) {
-    if (hw_handles.hadc == NULL) return;
+static void ADC_setResolution_impl(uint8_t instance, uint8_t bits) {
+    if (instance >= hw_handles.adc_count || hw_handles.hadc[instance] == NULL) return;
     
     uint32_t resolution;
     switch (bits) {
@@ -420,49 +437,52 @@ static void ADC_setResolution_impl(uint8_t bits) {
         default: return;
     }
     
-    hw_handles.hadc->Init.Resolution = resolution;
-    HAL_ADC_Init(hw_handles.hadc);
+    hw_handles.hadc[instance]->Init.Resolution = resolution;
+    HAL_ADC_Init(hw_handles.hadc[instance]);
 }
 
-static void ADC_setReference_impl(float voltage) {
-    adc_state.vref = voltage;
+static void ADC_setReference_impl(uint8_t instance, float voltage) {
+    if (instance >= hw_handles.adc_count) return;
+    adc_state[instance].vref = voltage;
 }
 
-static void ADC_calibrate_impl(void) {
-    if (hw_handles.hadc == NULL) return;
+static void ADC_calibrate_impl(uint8_t instance) {
+    if (instance >= hw_handles.adc_count || hw_handles.hadc[instance] == NULL) return;
     
 #ifdef HAL_ADCEx_Calibration_Start
-    HAL_ADCEx_Calibration_Start(hw_handles.hadc);
+    HAL_ADCEx_Calibration_Start(hw_handles.hadc[instance]);
 #endif
 }
 
 #else // !HAL_ADC_MODULE_ENABLED
 
 // Stub implementations when ADC not enabled
-static uint16_t ADC_readRaw_impl(uint8_t channel) { (void)channel; lastError = PLT_NOT_SUPPORTED; return 0; }
-static float ADC_readVoltage_impl(uint8_t channel) { (void)channel; lastError = PLT_NOT_SUPPORTED; return 0.0f; }
-static void ADC_handleConversions_impl(void) { }
-static void ADC_setResolution_impl(uint8_t bits) { (void)bits; lastError = PLT_NOT_SUPPORTED; }
-static void ADC_setReference_impl(float voltage) { (void)voltage; }
-static void ADC_calibrate_impl(void) { lastError = PLT_NOT_SUPPORTED; }
+static uint16_t ADC_readRaw_impl(uint8_t instance, uint8_t channel) { (void)instance; (void)channel; lastError = PLT_NOT_SUPPORTED; return 0; }
+static float ADC_readVoltage_impl(uint8_t instance, uint8_t channel) { (void)instance; (void)channel; lastError = PLT_NOT_SUPPORTED; return 0.0f; }
+static void ADC_handleConversions_impl(uint8_t instance) { (void)instance; }
+static void ADC_setResolution_impl(uint8_t instance, uint8_t bits) { (void)instance; (void)bits; lastError = PLT_NOT_SUPPORTED; }
+static void ADC_setReference_impl(uint8_t instance, float voltage) { (void)instance; (void)voltage; }
+static void ADC_calibrate_impl(uint8_t instance) { (void)instance; lastError = PLT_NOT_SUPPORTED; }
 
 #endif // HAL_ADC_MODULE_ENABLED
 
 /* ==================== PWM Implementation ==================== */
 #ifdef HAL_TIM_MODULE_ENABLED
 
-static void PWM_start_impl(TIM_HandleTypeDef* htim, uint32_t channel) {
-    if (htim == NULL) return;
-    HAL_TIM_PWM_Start(htim, channel);
+static void PWM_start_impl(uint8_t instance, uint32_t channel) {
+    if (instance >= hw_handles.tim_count || hw_handles.htim[instance] == NULL) return;
+    HAL_TIM_PWM_Start(hw_handles.htim[instance], channel);
 }
 
-static void PWM_stop_impl(TIM_HandleTypeDef* htim, uint32_t channel) {
-    if (htim == NULL) return;
-    HAL_TIM_PWM_Stop(htim, channel);
+static void PWM_stop_impl(uint8_t instance, uint32_t channel) {
+    if (instance >= hw_handles.tim_count || hw_handles.htim[instance] == NULL) return;
+    HAL_TIM_PWM_Stop(hw_handles.htim[instance], channel);
 }
 
-static void PWM_setFrequency_impl(TIM_HandleTypeDef* htim, uint32_t hz) {
-    if (htim == NULL || hz == 0) return;
+static void PWM_setFrequency_impl(uint8_t instance, uint32_t hz) {
+    if (instance >= hw_handles.tim_count || hw_handles.htim[instance] == NULL || hz == 0) return;
+    
+    TIM_HandleTypeDef* htim = hw_handles.htim[instance];
     
     // Calculate prescaler and period for desired frequency
     // This assumes timer clock = SystemCoreClock
@@ -481,8 +501,10 @@ static void PWM_setFrequency_impl(TIM_HandleTypeDef* htim, uint32_t hz) {
     HAL_TIM_GenerateEvent(htim, TIM_EVENTSOURCE_UPDATE);
 }
 
-static void PWM_setDutyCycle_impl(TIM_HandleTypeDef* htim, uint32_t channel, float percent) {
-    if (htim == NULL) return;
+static void PWM_setDutyCycle_impl(uint8_t instance, uint32_t channel, float percent) {
+    if (instance >= hw_handles.tim_count || hw_handles.htim[instance] == NULL) return;
+    
+    TIM_HandleTypeDef* htim = hw_handles.htim[instance];
     
     if (percent < 0.0f) percent = 0.0f;
     if (percent > 100.0f) percent = 100.0f;
@@ -492,19 +514,19 @@ static void PWM_setDutyCycle_impl(TIM_HandleTypeDef* htim, uint32_t channel, flo
     __HAL_TIM_SET_COMPARE(htim, channel, pulse);
 }
 
-static void PWM_setPulseWidth_impl(TIM_HandleTypeDef* htim, uint32_t channel, uint32_t us) {
-    if (htim == NULL) return;
-    __HAL_TIM_SET_COMPARE(htim, channel, us);
+static void PWM_setPulseWidth_impl(uint8_t instance, uint32_t channel, uint32_t us) {
+    if (instance >= hw_handles.tim_count || hw_handles.htim[instance] == NULL) return;
+    __HAL_TIM_SET_COMPARE(hw_handles.htim[instance], channel, us);
 }
 
 #else // !HAL_TIM_MODULE_ENABLED
 
 // Stub implementations when TIM not enabled
-static void PWM_start_impl(TIM_HandleTypeDef* htim, uint32_t channel) { (void)htim; (void)channel; lastError = PLT_NOT_SUPPORTED; }
-static void PWM_stop_impl(TIM_HandleTypeDef* htim, uint32_t channel) { (void)htim; (void)channel; lastError = PLT_NOT_SUPPORTED; }
-static void PWM_setFrequency_impl(TIM_HandleTypeDef* htim, uint32_t hz) { (void)htim; (void)hz; lastError = PLT_NOT_SUPPORTED; }
-static void PWM_setDutyCycle_impl(TIM_HandleTypeDef* htim, uint32_t channel, float percent) { (void)htim; (void)channel; (void)percent; lastError = PLT_NOT_SUPPORTED; }
-static void PWM_setPulseWidth_impl(TIM_HandleTypeDef* htim, uint32_t channel, uint32_t us) { (void)htim; (void)channel; (void)us; lastError = PLT_NOT_SUPPORTED; }
+static void PWM_start_impl(uint8_t instance, uint32_t channel) { (void)instance; (void)channel; lastError = PLT_NOT_SUPPORTED; }
+static void PWM_stop_impl(uint8_t instance, uint32_t channel) { (void)instance; (void)channel; lastError = PLT_NOT_SUPPORTED; }
+static void PWM_setFrequency_impl(uint8_t instance, uint32_t hz) { (void)instance; (void)hz; lastError = PLT_NOT_SUPPORTED; }
+static void PWM_setDutyCycle_impl(uint8_t instance, uint32_t channel, float percent) { (void)instance; (void)channel; (void)percent; lastError = PLT_NOT_SUPPORTED; }
+static void PWM_setPulseWidth_impl(uint8_t instance, uint32_t channel, uint32_t us) { (void)instance; (void)channel; (void)us; lastError = PLT_NOT_SUPPORTED; }
 
 #endif // HAL_TIM_MODULE_ENABLED
 
@@ -518,38 +540,59 @@ static Platform_t* Platform_begin_impl(PlatformHandles_t* handles) {
     
     lastError = PLT_OK;
     
-    // Store hardware handles (cast void* back to proper types internally)
+    // Store hardware handles counts and arrays
     #ifdef HAL_CAN_MODULE_ENABLED
-    hw_handles.hcan = (CAN_HandleTypeDef*)handles->hcan;
+    hw_handles.can_count = (handles->can_count > PLT_MAX_CAN_INSTANCES) ? PLT_MAX_CAN_INSTANCES : handles->can_count;
+    for (uint8_t i = 0; i < hw_handles.can_count; i++) {
+        hw_handles.hcan[i] = (CAN_HandleTypeDef*)handles->hcan[i];
+    }
     #endif
+    
     #ifdef HAL_UART_MODULE_ENABLED
-    hw_handles.huart = (UART_HandleTypeDef*)handles->huart;
+    hw_handles.uart_count = (handles->uart_count > PLT_MAX_UART_INSTANCES) ? PLT_MAX_UART_INSTANCES : handles->uart_count;
+    for (uint8_t i = 0; i < hw_handles.uart_count; i++) {
+        hw_handles.huart[i] = (UART_HandleTypeDef*)handles->huart[i];
+    }
     #endif
+    
     #ifdef HAL_SPI_MODULE_ENABLED
-    hw_handles.hspi = (SPI_HandleTypeDef*)handles->hspi;
+    hw_handles.spi_count = (handles->spi_count > PLT_MAX_SPI_INSTANCES) ? PLT_MAX_SPI_INSTANCES : handles->spi_count;
+    for (uint8_t i = 0; i < hw_handles.spi_count; i++) {
+        hw_handles.hspi[i] = (SPI_HandleTypeDef*)handles->hspi[i];
+    }
     #endif
+    
     #ifdef HAL_ADC_MODULE_ENABLED
-    hw_handles.hadc = (ADC_HandleTypeDef*)handles->hadc;
+    hw_handles.adc_count = (handles->adc_count > PLT_MAX_ADC_INSTANCES) ? PLT_MAX_ADC_INSTANCES : handles->adc_count;
+    for (uint8_t i = 0; i < hw_handles.adc_count; i++) {
+        hw_handles.hadc[i] = (ADC_HandleTypeDef*)handles->hadc[i];
+    }
     #endif
+    
     #ifdef HAL_TIM_MODULE_ENABLED
-    hw_handles.htim = (TIM_HandleTypeDef*)handles->htim;
+    hw_handles.tim_count = (handles->tim_count > PLT_MAX_TIM_INSTANCES) ? PLT_MAX_TIM_INSTANCES : handles->tim_count;
+    for (uint8_t i = 0; i < hw_handles.tim_count; i++) {
+        hw_handles.htim[i] = (TIM_HandleTypeDef*)handles->htim[i];
+    }
     #endif
     
     #ifdef HAL_CAN_MODULE_ENABLED
-    // Initialize CAN if enabled
-    if (hw_handles.hcan != NULL) {
+    // Initialize all CAN instances
+    for (uint8_t i = 0; i < hw_handles.can_count; i++) {
+        if (hw_handles.hcan[i] == NULL) continue;
+        
         // Initialize RX queue
-        if (Queue_Init(&can_state.rx_queue, sizeof(CANMessage_t), CAN_RX_QUEUE_SIZE) != PLT_OK) {
+        if (Queue_Init(&can_state[i].rx_queue, sizeof(CANMessage_t), CAN_RX_QUEUE_SIZE) != PLT_OK) {
             lastError = PLT_NO_MEMORY;
             return &Platform;
         }
         
-        // Initialize routing hashtable
-        if (hash_Init() != HASH_OK) {
+        // Initialize routing hashtable (shared across instances for now)
+        if (i == 0 && hash_Init() != HASH_OK) {
             lastError = PLT_HAL_ERROR;
             return &Platform;
         }
-        can_state.routing_initialized = true;
+        can_state[i].routing_initialized = true;
         
         // Configure CAN filter to accept all messages
         CAN_FilterTypeDef filter;
@@ -558,54 +601,74 @@ static Platform_t* Platform_begin_impl(PlatformHandles_t* handles) {
         filter.FilterMaskIdHigh = 0;
         filter.FilterMaskIdLow = 0;
         filter.FilterFIFOAssignment = CAN_RX_FIFO0;
-        filter.FilterBank = 0;
         filter.FilterMode = CAN_FILTERMODE_IDMASK;
         filter.FilterScale = CAN_FILTERSCALE_32BIT;
         filter.FilterActivation = ENABLE;
-        HAL_CAN_ConfigFilter(hw_handles.hcan, &filter);
+        
+        // Determine filter bank based on CAN instance
+        // CAN1 uses banks 0-13, CAN2 uses banks 14-27 (on dual CAN MCUs)
+        #if defined(CAN2)
+        if (hw_handles.hcan[i]->Instance == CAN1) {
+            filter.FilterBank = i;  // CAN1: banks 0-13
+            filter.SlaveStartFilterBank = 14;  // CAN2 starts at bank 14
+        } else if (hw_handles.hcan[i]->Instance == CAN2) {
+            filter.FilterBank = 14 + i;  // CAN2: banks 14-27
+        }
+        #else
+        // Single CAN controller
+        filter.FilterBank = i;
+        #endif
+        
+        HAL_CAN_ConfigFilter(hw_handles.hcan[i], &filter);
         
         // Start CAN
-        HAL_CAN_Start(hw_handles.hcan);
-        HAL_CAN_ActivateNotification(hw_handles.hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+        HAL_CAN_Start(hw_handles.hcan[i]);
+        HAL_CAN_ActivateNotification(hw_handles.hcan[i], CAN_IT_RX_FIFO0_MSG_PENDING);
         
-        can_state.tx_count = 0;
-        can_state.rx_count = 0;
-        can_state.error_count = 0;
+        can_state[i].tx_count = 0;
+        can_state[i].rx_count = 0;
+        can_state[i].error_count = 0;
     }
     #endif
     
     #ifdef HAL_UART_MODULE_ENABLED
-    // Initialize UART if enabled
-    if (hw_handles.huart != NULL) {
-        // Initialize queues
-        Queue_Init(&uart_state.rx_queue, sizeof(uint8_t), UART_RX_QUEUE_SIZE);
-        Queue_Init(&uart_state.tx_queue, sizeof(uint8_t), UART_TX_QUEUE_SIZE);
+    // Initialize all UART instances
+    for (uint8_t i = 0; i < hw_handles.uart_count; i++) {
+        if (hw_handles.huart[i] == NULL) continue;
         
-        uart_state.rx_index = 0;
-        uart_state.timeout_ms = 1000;
+        // Initialize queues
+        Queue_Init(&uart_state[i].rx_queue, sizeof(uint8_t), UART_RX_QUEUE_SIZE);
+        Queue_Init(&uart_state[i].tx_queue, sizeof(uint8_t), UART_TX_QUEUE_SIZE);
+        
+        uart_state[i].rx_index = 0;
+        uart_state[i].timeout_ms = 1000;
         
         // Start UART RX in interrupt mode
-        HAL_UART_Receive_IT(hw_handles.huart, &uart_state.rx_buffer[0], 1);
+        HAL_UART_Receive_IT(hw_handles.huart[i], &uart_state[i].rx_buffer[0], 1);
     }
     #endif
     
     #ifdef HAL_SPI_MODULE_ENABLED
-    // Initialize SPI if enabled
-    if (hw_handles.hspi != NULL) {
-        Queue_Init(&spi_state.rx_queue, sizeof(uint8_t), SPI_RX_QUEUE_SIZE);
-        spi_state.busy = false;
+    // Initialize all SPI instances
+    for (uint8_t i = 0; i < hw_handles.spi_count; i++) {
+        if (hw_handles.hspi[i] == NULL) continue;
+        
+        Queue_Init(&spi_state[i].rx_queue, sizeof(uint8_t), SPI_RX_QUEUE_SIZE);
+        spi_state[i].busy = false;
     }
     #endif
     
     #ifdef HAL_ADC_MODULE_ENABLED
-    // Initialize ADC if enabled
-    if (hw_handles.hadc != NULL) {
-        adc_state.vref = 3.3f; // Default VREF
-        adc_state.dma_buffer = NULL;
-        adc_state.buffer_size = 0;
+    // Initialize all ADC instances
+    for (uint8_t i = 0; i < hw_handles.adc_count; i++) {
+        if (hw_handles.hadc[i] == NULL) continue;
+        
+        adc_state[i].vref = 3.3f; // Default VREF
+        adc_state[i].dma_buffer = NULL;
+        adc_state[i].buffer_size = 0;
         
         // Calibrate ADC
-        ADC_calibrate_impl();
+        ADC_calibrate_impl(i);
     }
     #endif
     
@@ -614,7 +677,14 @@ static Platform_t* Platform_begin_impl(PlatformHandles_t* handles) {
 }
 
 static Platform_t* Platform_onCAN_impl(void (*callback)(CANMessage_t*)) {
-    can_state.default_handler = callback;
+    #ifdef HAL_CAN_MODULE_ENABLED
+    // Set default handler for all CAN instances
+    for (uint8_t i = 0; i < hw_handles.can_count; i++) {
+        can_state[i].default_handler = callback;
+    }
+    #else
+    (void)callback;
+    #endif
     return &Platform;
 }
 
@@ -629,7 +699,7 @@ static Platform_t* Platform_onSPI_impl(void (*callback)(SPIMessage_t*)) {
 }
 
 static const char* Platform_version_impl(void) {
-    return "2.0.0";
+    return "2.1.0";  // Multi-instance support
 }
 
 static plt_status_t Platform_getLastError_impl(void) {
@@ -650,7 +720,17 @@ static bool Platform_isHealthy_impl(void) {
  * @brief CAN RX FIFO0 callback - called by HAL when message received
  */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-    if (hcan != hw_handles.hcan) return;
+    #ifdef HAL_CAN_MODULE_ENABLED
+    // Find which instance triggered the callback
+    uint8_t instance = 0xFF;
+    for (uint8_t i = 0; i < hw_handles.can_count; i++) {
+        if (hcan == hw_handles.hcan[i]) {
+            instance = i;
+            break;
+        }
+    }
+    
+    if (instance == 0xFF) return;  // Not our instance
     
     CAN_RxHeaderTypeDef rx_header;
     CANMessage_t msg;
@@ -661,23 +741,39 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
         msg.timestamp = HAL_GetTick();
         
         // Push to queue (ISR-safe)
-        if (Queue_Push(&can_state.rx_queue, &msg) == PLT_OK) {
-            can_state.rx_count++;
+        if (Queue_Push(&can_state[instance].rx_queue, &msg) == PLT_OK) {
+            can_state[instance].rx_count++;
         }
     }
+    #else
+    (void)hcan;
+    #endif
 }
 
 /**
  * @brief UART RX complete callback - called when byte received
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    if (huart != hw_handles.huart) return;
+    #ifdef HAL_UART_MODULE_ENABLED
+    // Find which instance triggered the callback
+    uint8_t instance = 0xFF;
+    for (uint8_t i = 0; i < hw_handles.uart_count; i++) {
+        if (huart == hw_handles.huart[i]) {
+            instance = i;
+            break;
+        }
+    }
+    
+    if (instance == 0xFF) return;  // Not our instance
     
     // Push byte to queue
-    Queue_Push(&uart_state.rx_queue, &uart_state.rx_buffer[uart_state.rx_index]);
+    Queue_Push(&uart_state[instance].rx_queue, &uart_state[instance].rx_buffer[uart_state[instance].rx_index]);
     
     // Continue receiving
-    HAL_UART_Receive_IT(huart, &uart_state.rx_buffer[uart_state.rx_index], 1);
+    HAL_UART_Receive_IT(huart, &uart_state[instance].rx_buffer[uart_state[instance].rx_index], 1);
+    #else
+    (void)huart;
+    #endif
 }
 
 /* ==================== Global Singleton Definitions ==================== */

@@ -31,11 +31,11 @@ Extension automatically scans workspace for STM32 projects and initiates integra
 
 ## Configuration Parameters
 
-| Parameter                          | Function                                                | Default           |
-| ---------------------------------- | ------------------------------------------------------- | ----------------- |
-| `stm32platform.autoDetect`         | Enable automatic STM32 project detection               | `true`            |
-| `stm32platform.defaultPeripherals` | Default peripheral modules for integration              | `["CAN", "UART"]` |
-| `stm32platform.useNewAPI`          | Deploy v2.0.0 direct API                                | `true`            |
+| Parameter                          | Function                                   | Default           |
+| ---------------------------------- | ------------------------------------------ | ----------------- |
+| `stm32platform.autoDetect`         | Enable automatic STM32 project detection   | `true`            |
+| `stm32platform.defaultPeripherals` | Default peripheral modules for integration | `["CAN", "UART"]` |
+| `stm32platform.useNewAPI`          | Deploy v2.0.0 direct API                   | `true`            |
 
 ## Integration Components
 
@@ -104,6 +104,7 @@ void system_loop(void) {
 ## Supported STM32 Families
 
 All STM32 families supported by STM32CubeMX:
+
 - STM32F0/F1/F2/F3/F4/F7
 - STM32H7
 - STM32G0/G4

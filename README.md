@@ -20,24 +20,34 @@ Originated from Ben-Gurion Racing Formula Student team. Battle-tested in high-pe
 
 ## System Architecture
 
-**v2.0.0 Direct API** (P\_ namespace):
+**v2.1.0 Multi-Instance API** (P\_ namespace):
 
 ```c
-// Initialize with required peripherals only
+// Initialize with multiple peripheral instances
+void* cans[] = {&hcan1, &hcan2};
+void* uarts[] = {&huart1, &huart2, &huart3};
+void* tims[] = {&htim1};
+
 PlatformHandles_t handles = {
-    .hcan = &hcan,
-    .huart = &huart2,
-    .hspi = NULL,        // Disable if not required
-    .hadc = NULL,        // Disable if not required
-    .htim = &htim1
+    .hcan = cans,
+    .can_count = 2,
+    .huart = uarts,
+    .uart_count = 3,
+    .hspi = NULL,
+    .spi_count = 0,
+    .hadc = NULL,
+    .adc_count = 0,
+    .htim = tims,
+    .tim_count = 1
 };
 Platform.begin(&handles);
 
-// Execute operations
-P_CAN.send(0x123, data, 8);
-P_UART.printf("Speed: %d km/h\n", speed);
-P_ADC.readVoltage(ADC_CHANNEL_1);
-P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 50.0f);
+// Execute operations with instance index
+P_CAN.send(0, 0x123, data, 8);      // CAN1
+P_CAN.send(1, 0x456, data, 8);      // CAN2
+P_UART.printf(0, "ECU: %d\n", val); // UART1
+P_UART.printf(1, "DAQ: %d\n", val); // UART2
+P_PWM.setDutyCycle(0, TIM_CHANNEL_1, 50.0f);
 ```
 
 ---
@@ -47,6 +57,7 @@ P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 50.0f);
 ### Method 1: Manual Integration
 
 1. Copy platform files to STM32CubeMX project:
+
    - `Inc/*.h` → `YourProject/Core/Inc/`
    - `Src/*.c` → `YourProject/Core/Src/`
 
@@ -119,13 +130,13 @@ Complete technical specifications available in the **[Wiki](https://github.com/G
 
 ## Supported Peripherals
 
-| Peripheral | API Functions                                                | Capabilities                            |
-| ---------- | ------------------------------------------------------------ | --------------------------------------- |
-| **CAN**    | `P_CAN.send()`, `P_CAN.handleRxMessages()`, `P_CAN.route()` | Hashtable routing, thread-safe queues   |
-| **UART**   | `P_UART.println()`, `P_UART.printf()`                        | DMA support, printf redirection         |
-| **SPI**    | `P_SPI.transfer()`, `P_SPI.transferByte()`                   | Full-duplex, configurable CS            |
-| **ADC**    | `P_ADC.readRaw()`, `P_ADC.readVoltage()`                     | Multi-channel, voltage conversion       |
-| **PWM**    | `P_PWM.setDutyCycle()`, `P_PWM.setFrequency()`               | Dynamic frequency, start/stop control   |
+| Peripheral | API Functions                                               | Capabilities                          |
+| ---------- | ----------------------------------------------------------- | ------------------------------------- |
+| **CAN**    | `P_CAN.send()`, `P_CAN.handleRxMessages()`, `P_CAN.route()` | Hashtable routing, thread-safe queues |
+| **UART**   | `P_UART.println()`, `P_UART.printf()`                       | DMA support, printf redirection       |
+| **SPI**    | `P_SPI.transfer()`, `P_SPI.transferByte()`                  | Full-duplex, configurable CS          |
+| **ADC**    | `P_ADC.readRaw()`, `P_ADC.readVoltage()`                    | Multi-channel, voltage conversion     |
+| **PWM**    | `P_PWM.setDutyCycle()`, `P_PWM.setFrequency()`              | Dynamic frequency, start/stop control |
 
 ---
 

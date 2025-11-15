@@ -483,24 +483,29 @@ async function modifyMainC(
   }
 
   // Add include in USER CODE BEGIN Includes section (safe from CubeMX regeneration)
-  const includesPattern = /(\/\* USER CODE BEGIN Includes \*\/)([\s\S]*?)(\/\* USER CODE END Includes \*\/)/;
+  const includesPattern =
+    /(\/\* USER CODE BEGIN Includes \*\/)([\s\S]*?)(\/\* USER CODE END Includes \*\/)/;
   const includesMatch = content.match(includesPattern);
-  
+
   if (includesMatch) {
     const userIncludes = includesMatch[2];
     if (!userIncludes.includes("stm32_platform.h")) {
       const newInclude = '\n#include "stm32_platform.h"\n';
-      content = content.replace(includesPattern, `$1${userIncludes}${newInclude}$3`);
+      content = content.replace(
+        includesPattern,
+        `$1${userIncludes}${newInclude}$3`
+      );
     }
   }
 
   // Insert Platform.begin() in USER CODE BEGIN 2 section (after peripheral init, safe from CubeMX)
-  const userCode2Pattern = /(\/\* USER CODE BEGIN 2 \*\/)([\s\S]*?)(\/\* USER CODE END 2 \*\/)/;
+  const userCode2Pattern =
+    /(\/\* USER CODE BEGIN 2 \*\/)([\s\S]*?)(\/\* USER CODE END 2 \*\/)/;
   const userCode2Match = content.match(userCode2Pattern);
-  
+
   if (userCode2Match) {
     const userCode = userCode2Match[2];
-    
+
     // Only add if not already present
     if (!userCode.includes("Platform.begin")) {
       const peripherals = options.peripherals;
@@ -517,8 +522,11 @@ async function modifyMainC(
   };
   Platform.begin(&handles);
 `;
-      
-      content = content.replace(userCode2Pattern, `$1${userCode}${platformInit}\n$3`);
+
+      content = content.replace(
+        userCode2Pattern,
+        `$1${userCode}${platformInit}\n$3`
+      );
     }
   }
 

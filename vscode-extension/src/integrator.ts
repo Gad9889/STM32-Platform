@@ -51,48 +51,41 @@ export async function integratePlatform(
     const platformIncDir = path.join(platformRoot, "Inc");
     const platformSrcDir = path.join(platformRoot, "Src");
 
-    // Copy core platform files
+    // Copy core platform files (v2.0.0)
     const coreFiles = [
-      "platform.h",
+      "stm32_platform.h",
       "platform_status.h",
-      "platform_config.h",
       "utils.h",
+      "hashtable.h",
+      "database.h",
+      "DbSetFunctions.h",
     ];
 
-    const coreSrcFiles = ["platform.c", "platform_config.c", "utils.c"];
+    const coreSrcFiles = [
+      "stm32_platform.c",
+      "platform_status.c",
+      "utils.c",
+      "hashtable.c",
+      "database.c",
+      "DbSetFunctions.c",
+    ];
 
-    // Copy peripheral files based on selection
+    // v2.0.0: All peripherals are in stm32_platform.c
     const peripheralMap: {
       [key: string]: { headers: string[]; sources: string[] };
     } = {
-      CAN: {
-        headers: ["can.h", "database.h", "hashtable.h"],
-        sources: ["can.c", "database.c", "hashtable.c"],
-      },
-      UART: { headers: ["uart.h"], sources: ["uart.c"] },
-      SPI: { headers: ["spi.h"], sources: ["spi.c"] },
-      ADC: { headers: ["adc.h"], sources: ["adc.c"] },
-      TIM: { headers: ["tim.h"], sources: ["tim.c"] },
+      CAN: { headers: [], sources: [] },
+      UART: { headers: [], sources: [] },
+      SPI: { headers: [], sources: [] },
+      ADC: { headers: [], sources: [] },
+      TIM: { headers: [], sources: [] },
     };
 
+    // v2.0.0: Always copy all core files (no separate peripheral files)
     let filesToCopy = {
       headers: [...coreFiles],
       sources: [...coreSrcFiles],
     };
-
-    // Add new API if selected
-    if (options.useNewAPI) {
-      filesToCopy.headers.push("stm32_platform.h");
-      filesToCopy.sources.push("stm32_platform.c");
-    }
-
-    // Add peripheral-specific files
-    for (const peripheral of options.peripherals) {
-      if (peripheralMap[peripheral]) {
-        filesToCopy.headers.push(...peripheralMap[peripheral].headers);
-        filesToCopy.sources.push(...peripheralMap[peripheral].sources);
-      }
-    }
 
     // Copy header files
     for (const file of filesToCopy.headers) {

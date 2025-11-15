@@ -11,18 +11,32 @@
 
 /**
  * @brief Enter critical section (disable interrupts)
+ * @note For ARM Cortex-M: disables interrupts and returns PRIMASK state
+ *       For testing: no-op stub that returns 0
  */
 static inline uint32_t Queue_EnterCritical(void) {
+#if defined(__ARM_ARCH) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__) || defined(__ARMCC_VERSION)
     uint32_t primask = __get_PRIMASK();
     __disable_irq();
     return primask;
+#else
+    // Stub for unit testing on x86/x64
+    return 0;
+#endif
 }
 
 /**
  * @brief Exit critical section (restore interrupts)
+ * @note For ARM Cortex-M: restores PRIMASK state
+ *       For testing: no-op stub
  */
 static inline void Queue_ExitCritical(uint32_t primask) {
+#if defined(__ARM_ARCH) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__) || defined(__ARMCC_VERSION)
     __set_PRIMASK(primask);
+#else
+    // Stub for unit testing on x86/x64
+    (void)primask; // Suppress unused parameter warning
+#endif
 }
 
 plt_status_t Queue_Init(Queue_t* queue, size_t item_size, size_t capacity) {

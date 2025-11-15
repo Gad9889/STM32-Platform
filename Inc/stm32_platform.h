@@ -121,28 +121,19 @@
 
 #include "platform_status.h"
 
-/* ==================== HAL Type Forward Declarations ==================== */
-/* These ensure the types are available even if the peripheral isn't configured in CubeMX */
-
-#ifndef CAN_HandleTypeDef
-typedef struct __CAN_HandleTypeDef CAN_HandleTypeDef;
-#endif
-
-#ifndef UART_HandleTypeDef
-typedef struct __UART_HandleTypeDef UART_HandleTypeDef;
-#endif
-
-#ifndef SPI_HandleTypeDef
-typedef struct __SPI_HandleTypeDef SPI_HandleTypeDef;
-#endif
-
-#ifndef ADC_HandleTypeDef
-typedef struct __ADC_HandleTypeDef ADC_HandleTypeDef;
-#endif
-
-#ifndef TIM_HandleTypeDef
-typedef struct __TIM_HandleTypeDef TIM_HandleTypeDef;
-#endif
+/* ==================== HAL Type Declarations ==================== */
+/**
+ * @note HAL handle types are provided by the STM32 HAL headers included above.
+ * If a peripheral is not configured in CubeMX (e.g., no CAN), the corresponding
+ * HAL module will not be enabled, and its handle type will not be available.
+ * 
+ * Users must ensure peripherals are enabled in CubeMX before using them:
+ * - CAN_HandleTypeDef requires HAL_CAN_MODULE_ENABLED
+ * - UART_HandleTypeDef requires HAL_UART_MODULE_ENABLED
+ * - SPI_HandleTypeDef requires HAL_SPI_MODULE_ENABLED
+ * - ADC_HandleTypeDef requires HAL_ADC_MODULE_ENABLED
+ * - TIM_HandleTypeDef requires HAL_TIM_MODULE_ENABLED
+ */
 
 /* ==================== Message Types ==================== */
 

@@ -16,22 +16,20 @@ TIM_HandleTypeDef htim2;
 
 void example1_hello_world(void) {
     // Initialize platform with just UART
+    void* uarts[] = {&huart2};
     PlatformHandles_t handles = {
-        .hcan = NULL,
-        .huart = &huart2,
-        .hspi = NULL,
-        .hadc = NULL,
-        .htim = NULL
+        .huart = uarts,
+        .uart_count = 1
     };
     Platform.begin(&handles);
     
-    // Print to UART
-    P_UART.println("Hello World!");
-    P_UART.printf("System clock: %d MHz\n", SystemCoreClock / 1000000);
+    // Print to UART (instance 0)
+    P_UART.println(0, "Hello World!");
+    P_UART.printf(0, "System clock: %d MHz\n", SystemCoreClock / 1000000);
     
     while (1) {
-        // No process() needed in v2.0.0 - just handle messages
-        P_UART.println("Heartbeat");
+        // No process() needed in v2.1.0 - just handle messages
+        P_UART.println(0, "Heartbeat");
         HAL_Delay(1000);
     }
 }
@@ -40,55 +38,60 @@ void example1_hello_world(void) {
 
 void onCANReceived(CANMessage_t* msg) {
     // Echo back what we received
-    P_UART.printf("Received CAN 0x%03X: ", msg->id);
+    P_UART.printf(0, "Received CAN 0x%03X: ", msg->id);
     for (int i = 0; i < msg->length; i++) {
-        P_UART.printf("%02X ", msg->data[i]);
+        P_UART.printf(0, "%02X ", msg->data[i]);
     }
-    P_UART.println("");
+    P_UART.println(0, "");
     
-    // Echo back on CAN
-    P_CAN.send(msg->id + 1, msg->data, msg->length);
+    // Echo back on CAN (instance 0)
+    P_CAN.send(0, msg->id + 1, msg->data, msg->length);
 }
 
 void example2_can_echo(void) {
+    void* cans[] = {&hcan1};
+    void* uarts[] = {&huart2};
     PlatformHandles_t handles = {
-        .hcan = &hcan1,
-        .huart = &huart2,
-        .hspi = NULL,
-        .hadc = NULL,
-        .htim = NULL
+        .hcan = cans,
+        .can_count = 1,
+        .huart = uarts,
+        .uart_count = 1
     };
     Platform.begin(&handles);
     
-    // Register CAN handler for ID 0x100
-    P_CAN.route(0x100, onCANReceived);
+    // Register CAN handler for ID 0x100 (instance 0)
+    P_CAN.route(0, 0x100, onCANReceived);
     
-    P_UART.println("CAN Echo ready. Send message on 0x100, get echo on 0x101");
+    P_UART.println(0, "CAN Echo ready. Send message on 0x100, get echo on 0x101");
     
     while (1) {
-        P_CAN.handleRxMessages();  // Process incoming CAN messages
+        P_CAN.handleRxMessages(0);  // Process incoming CAN messages
     }
 }
 
 /* ==================== Example 3: ADC to CAN ==================== */
 
 void example3_adc_to_can(void) {
+    void* cans[] = {&hcan1};
+    void* uarts[] = {&huart2};
+    void* adcs[] = {&hadc1};
     PlatformHandles_t handles = {
-        .hcan = &hcan1,
-        .huart = &huart2,
-        .hspi = NULL,
-        .hadc = &hadc1,
-        .htim = NULL
+        .hcan = cans,
+        .can_count = 1,
+        .huart = uarts,
+        .uart_count = 1,
+        .hadc = adcs,
+        .adc_count = 1
     };
     Platform.begin(&handles);
     
-    P_UART.println("Sending ADC values via CAN");
+    P_UART.println(0, "Sending ADC values via CAN");
     
     while (1) {
-        // Read ADC voltages
-        float v1 = P_ADC.readVoltage(ADC_CHANNEL_1);
-        float v2 = P_ADC.readVoltage(ADC_CHANNEL_2);
-        float v3 = P_ADC.readVoltage(ADC_CHANNEL_3);
+        // Read ADC voltages (instance 0)
+        float v1 = P_ADC.readVoltage(0, ADC_CHANNEL_1);
+        float v2 = P_ADC.readVoltage(0, ADC_CHANNEL_2);
+        float v3 = P_ADC.readVoltage(0, ADC_CHANNEL_3);
         
         // Convert to 16-bit values for CAN (scale by 1000 for mV)
         uint16_t ch1 = (uint16_t)(v1 * 1000);

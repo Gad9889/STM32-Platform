@@ -36,8 +36,8 @@ VehicleState_t vehicle = {0};
 void onPedalMessage(CANMessage_t* msg) {
     vehicle.pedalPosition = msg->data[0];
     
-    // Log to UART
-    P_UART.printf("Pedal: %d%%\n", vehicle.pedalPosition);
+    // Log to UART (instance 0)
+    P_UART.printf(0, "Pedal: %d%%\n", vehicle.pedalPosition);
     
     // Update database
     Database.set("pedal.position", vehicle.pedalPosition);
@@ -48,29 +48,29 @@ void onMotorResponse(CANMessage_t* msg) {
     // Parse motor speed from CAN data
     vehicle.motorSpeed = (msg->data[0] << 8) | msg->data[1];
     
-    P_UART.printf("Motor RPM: %.0f\n", vehicle.motorSpeed);
+    P_UART.printf(0, "Motor RPM: %.0f\n", vehicle.motorSpeed);
     
-    // Adjust cooling fan based on speed
+    // Adjust cooling fan based on speed (instance 0)
     if (vehicle.motorSpeed > 5000) {
-        P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 100.0);  // Fan 100%
+        P_PWM.setDutyCycle(0, TIM_CHANNEL_1, 100.0);  // Fan 100%
     } else if (vehicle.motorSpeed > 3000) {
-        P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 60.0);   // Fan 60%
+        P_PWM.setDutyCycle(0, TIM_CHANNEL_1, 60.0);   // Fan 60%
     } else {
-        P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 30.0);   // Fan 30%
+        P_PWM.setDutyCycle(0, TIM_CHANNEL_1, 30.0);   // Fan 30%
     }
 }
 
 // Called when any unhandled CAN message arrives
 void onUnknownCANMessage(CANMessage_t* msg) {
-    P_UART.printf("Unknown CAN ID: 0x%03X\n", msg->id);
+    P_UART.printf(0, "Unknown CAN ID: 0x%03X\n", msg->id);
 }
 
 /* ==================== Application Functions ==================== */
 
 void sendMotorCommand(void) {
-    // Read throttle position from ADC
-    vehicle.throttleRaw = P_ADC.read(ADC_CHANNEL_1);
-    vehicle.throttleVoltage = P_ADC.readVoltage(ADC_CHANNEL_1);
+    // Read throttle position from ADC (instance 0)
+    vehicle.throttleRaw = P_ADC.readRaw(0, ADC_CHANNEL_1);
+    vehicle.throttleVoltage = P_ADC.readVoltage(0, ADC_CHANNEL_1);
     
     // Calculate motor command (0-100%)
     uint8_t motorCommand = (vehicle.throttleVoltage / 5.0) * 100;
@@ -80,7 +80,7 @@ void sendMotorCommand(void) {
         motorCommand = vehicle.pedalPosition;
     }
     
-    // Send motor command via CAN
+    // Send motor command via CAN (instance 0)
     uint8_t data[8] = {
         motorCommand,           // Byte 0: Throttle command
         0x01,                   // Byte 1: Enable motor
@@ -89,33 +89,31 @@ void sendMotorCommand(void) {
         0x00, 0x00, 0x00       // Bytes 5-7: Reserved
     };
     
-    if (!P_CAN.send(0x300, data, 8)) {
-        P_UART.println("ERROR: CAN send failed");
+    if (!P_CAN.send(0, 0x300, data, 8)) {
+        P_UART.println(0, "ERROR: CAN send failed");
         
         // Check error details
-        ErrorCode_t err = STM32.getLastError();
-        P_UART.printf("Error code: %d - %s\n", err, STM32.getErrorString(err));
+        plt_status_t err = Platform.getLastError();
+        P_UART.printf(0, "Error code: %d - %s\n", err, Platform.getErrorString(err));
     }
 }
 
 void systemHealthCheck(void) {
-    // Check CAN bus status
-    if (!CAN.isReady()) {
-        P_UART.println("WARNING: CAN bus not ready");
+    // Check CAN bus status (instance 0)
+    if (!P_CAN.isReady(0)) {
+        P_UART.println(0, "WARNING: CAN bus not ready");
         vehicle.systemReady = false;
         return;
     }
     
-    // Check if we've received recent pedal messages
-    if (CAN.getLastMessageTime(0x180) > 1000) {  // >1 second old
-        P_UART.println("WARNING: Pedal timeout");
-        vehicle.systemReady = false;
-        return;
+    // Check if we've received recent messages
+    if (P_CAN.availableMessages(0) == 0) {
+        // No messages for a while - could add timeout tracking
     }
     
     // Check ADC readings are valid
     if (vehicle.throttleVoltage > 5.1) {
-        P_UART.println("WARNING: Throttle sensor out of range");
+        P_UART.println(0, "WARNING: Throttle sensor out of range");
         vehicle.systemReady = false;
         return;
     }
@@ -124,15 +122,15 @@ void systemHealthCheck(void) {
 }
 
 void printSystemStatus(void) {
-    P_UART.println("========== System Status ==========");
-    P_UART.printf("Platform Version: %s\n", STM32.version());
-    P_UART.printf("System Ready: %s\n", vehicle.systemReady ? "YES" : "NO");
-    P_UART.printf("Pedal Position: %d%%\n", vehicle.pedalPosition);
-    P_UART.printf("Throttle ADC: %d (%.2fV)\n", vehicle.throttleRaw, vehicle.throttleVoltage);
-    P_UART.printf("Motor Speed: %.0f RPM\n", vehicle.motorSpeed);
-    P_UART.printf("CAN Messages: %d pending\n", P_CAN.available());
-    P_UART.printf("CAN Error Count: %d\n", P_CAN.getErrorCount());
-    P_UART.println("===================================\n");
+    P_UART.println(0, "========== System Status ==========");
+    P_UART.printf(0, "Platform Version: %s\n", Platform.version());
+    P_UART.printf(0, "System Ready: %s\n", vehicle.systemReady ? "YES" : "NO");
+    P_UART.printf(0, "Pedal Position: %d%%\n", vehicle.pedalPosition);
+    P_UART.printf(0, "Throttle ADC: %d (%.2fV)\n", vehicle.throttleRaw, vehicle.throttleVoltage);
+    P_UART.printf(0, "Motor Speed: %.0f RPM\n", vehicle.motorSpeed);
+    P_UART.printf(0, "CAN Messages: %d pending\n", P_CAN.availableMessages(0));
+    P_UART.printf(0, "CAN Error Count: %d\n", P_CAN.getErrorCount(0));
+    P_UART.println(0, "===================================\n");
 }
 
 /* ==================== Main Function ==================== */
@@ -150,9 +148,25 @@ int main(void) {
     
     /* ==================== Platform Initialization ==================== */
     
-    // Initialize platform with all peripherals
-    STM32.begin(&hcan1, &huart2, NULL, &hadc1, &htim2)
-         ->onCAN(onUnknownCANMessage);  // Default CAN handler
+    // Initialize platform with all peripherals (v2.1.0 array-based)
+    void* cans[] = {&hcan1};
+    void* uarts[] = {&huart2};
+    void* adcs[] = {&hadc1};
+    void* tims[] = {&htim2};
+    
+    PlatformHandles_t handles = {
+        .hcan = cans,
+        .can_count = 1,
+        .huart = uarts,
+        .uart_count = 1,
+        .hadc = adcs,
+        .adc_count = 1,
+        .htim = tims,
+        .tim_count = 1
+    };
+    
+    Platform.begin(&handles)
+            ->onCAN(onUnknownCANMessage);  // Default CAN handler
     
     // Wait for platform ready
     HAL_Delay(100);
@@ -160,29 +174,29 @@ int main(void) {
     /* ==================== Application Setup ==================== */
     
     // Configure UART for debugging
-    P_UART.println("\n\n===================================");
-    P_UART.println("Vehicle Control Unit v1.0.0");
-    P_UART.printf("Platform: %s\n", STM32.version());
-    P_UART.println("===================================\n");
+    P_UART.println(0, "\n\n===================================");
+    P_UART.println(0, "Vehicle Control Unit v1.0.0");
+    P_UART.printf(0, "Platform: %s\n", Platform.version());
+    P_UART.println(0, "===================================\n");
     
-    // Set up CAN message routing
-    CAN.route(0x180, onPedalMessage);           // Pedal position
-    CAN.routeRange(0x200, 0x20F, onMotorResponse);  // Motor responses
+    // Set up CAN message routing (instance 0)
+    P_CAN.route(0, 0x180, onPedalMessage);           // Pedal position
+    P_CAN.routeRange(0, 0x200, 0x20F, onMotorResponse);  // Motor responses
     
     // Configure CAN filters (optional - accept all by default)
-    CAN.setFilter(0x180, 0x7FF);  // Only accept pedal message
+    P_CAN.setFilter(0, 0x180, 0x7FF);  // Only accept pedal message
     
-    // Configure ADC
-    ADC.setResolution(12);        // 12-bit resolution
-    ADC.setReference(3.3);        // 3.3V reference
-    ADC.calibrate();              // Calibrate ADC
+    // Configure ADC (instance 0)
+    P_ADC.setResolution(0, 12);        // 12-bit resolution
+    P_ADC.setReference(0, 3.3);        // 3.3V reference
+    P_ADC.calibrate(0);                // Calibrate ADC
     
-    // Configure PWM for cooling fan
-    P_PWM.setFrequency(&htim2, 25000);  // 25 kHz for fan
-    PWM.start(&htim2, TIM_CHANNEL_1);
-    P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 30.0);  // Start at 30%
+    // Configure PWM for cooling fan (instance 0)
+    P_PWM.setFrequency(0, 25000);  // 25 kHz for fan
+    P_PWM.start(0, TIM_CHANNEL_1);
+    P_PWM.setDutyCycle(0, TIM_CHANNEL_1, 30.0);  // Start at 30%
     
-    P_UART.println("System initialized successfully\n");
+    P_UART.println(0, "System initialized successfully\n");
     
     /* ==================== Main Loop ==================== */
     
@@ -191,9 +205,8 @@ int main(void) {
     uint32_t lastHealthCheck = 0;
     
     while (1) {
-        // Process all platform messages (CAN, UART, etc.)
-        // This calls your registered callbacks automatically
-        STM32.process();
+        // Process all CAN messages (calls registered callbacks)
+        P_CAN.handleRxMessages(0);
         
         // Send motor command every 50ms
         if (HAL_GetTick() - lastCommandTime >= 50) {
@@ -204,7 +217,7 @@ int main(void) {
             } else {
                 // Safety: Send zero throttle if system not ready
                 uint8_t safeData[8] = {0};
-                P_CAN.send(0x300, safeData, 8);
+                P_CAN.send(0, 0x300, safeData, 8);
             }
         }
         

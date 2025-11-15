@@ -92,24 +92,32 @@ int main(void) {
     MX_UART2_Init();
 
     // Initialize platform with peripheral handles
+    void* cans[] = {&hcan1};
+    void* uarts[] = {&huart2};
+    
     PlatformHandles_t handles = {
-        .hcan = &hcan1,
-        .huart = &huart2,
+        .hcan = cans,
+        .can_count = 1,
+        .huart = uarts,
+        .uart_count = 1,
         .hspi = NULL,
+        .spi_count = 0,
         .hadc = NULL,
-        .htim = NULL
+        .adc_count = 0,
+        .htim = NULL,
+        .tim_count = 0
     };
     Platform.begin(&handles);
 
-    P_UART.println("Platform operational");
+    P_UART.println(0, "Platform operational");
 
     while (1) {
-        // Process received CAN messages
-        P_CAN.handleRxMessages();
+        // Process received CAN messages (instance 0)
+        P_CAN.handleRxMessages(0);
 
-        // Transmit message
+        // Transmit message on CAN instance 0
         uint8_t data[] = {0x01, 0x02, 0x03};
-        P_CAN.send(0x123, data, 3);
+        P_CAN.send(0, 0x123, data, 3);
 
         HAL_Delay(100);
     }
@@ -171,30 +179,39 @@ STM32-Platform/
 #include "stm32_platform.h"
 
 void can_message_handler(CANMessage_t* msg) {
-    P_UART.printf("CAN ID: 0x%03X\n", msg->id);
+    P_UART.printf(0, "CAN ID: 0x%03X\n", msg->id);
 }
 
 int main(void) {
     // HAL initialization, clock configuration, peripheral initialization
 
+    void* cans[] = {&hcan1};
+    void* uarts[] = {&huart2};
+    
     PlatformHandles_t handles = {
-        .hcan = &hcan1,
-        .huart = &huart2,
+        .hcan = cans,
+        .can_count = 1,
+        .huart = uarts,
+        .uart_count = 1,
         .hspi = NULL,
+        .spi_count = 0,
         .hadc = NULL,
-        .htim = NULL
+        .adc_count = 0,
+        .htim = NULL,
+        .tim_count = 0
     };
     Platform.begin(&handles);
 
-    // Register handler for specific CAN ID
-    P_CAN.route(0x100, can_message_handler);
+    // Register handler for specific CAN ID on instance 0
+    P_CAN.route(0, 0x100, can_message_handler);
 
     while (1) {
-        P_CAN.handleRxMessages();
+        // Process CAN instance 0 messages
+        P_CAN.handleRxMessages(0);
 
         if (button_pressed) {
             uint8_t data[] = {0xAA, 0xBB};
-            P_CAN.send(0x100, data, 2);
+            P_CAN.send(0, 0x100, data, 2);
         }
     }
 }

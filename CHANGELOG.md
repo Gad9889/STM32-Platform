@@ -7,29 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.1.0] - 2025-11-15
 
+### MISSION OBJECTIVE: Multi-Instance Support
+
+Deployed comprehensive multi-instance architecture. All peripheral APIs now support multiple hardware instances simultaneously.
+
 ### Added
 
-- **Multi-Instance Peripheral Support:** Platform now supports multiple instances of each peripheral type (CAN, UART, SPI, ADC, TIM)
-- **Instance Index API:** All peripheral functions now accept an instance parameter as the first argument
-- **Configurable Instance Limits:** `PLT_MAX_*_INSTANCES` defines for compile-time configuration
-- **Array-Based Initialization:** `PlatformHandles_t` now uses arrays with counts for each peripheral type
-- **Automatic Instance Detection:** HAL callbacks automatically detect which peripheral instance triggered the interrupt
+- **Multi-Instance Peripheral Support**: Parallel operation of identical peripheral types
+  - Support for multiple CAN controllers, UART ports, SPI buses, ADC units, and timers
+  - Instance-indexed API: First parameter specifies peripheral instance (0, 1, 2...)
+- **Array-Based Initialization**: `PlatformHandles_t` structure uses pointer arrays with count fields
+  - `void** hcan` + `uint8_t can_count`
+  - `void** huart` + `uint8_t uart_count`
+  - Identical pattern for SPI, ADC, TIM
+- **Automatic Instance Detection**: HAL interrupt callbacks identify triggering peripheral instance
+- **Configurable Instance Limits**: Compile-time defines for resource allocation
+  - `PLT_MAX_CAN_INSTANCES`, `PLT_MAX_UART_INSTANCES`, etc.
 
-### Changed
+### Changed - BREAKING
 
-- **Breaking API Change:** All peripheral functions now require instance index as first parameter
-  - Example: `P_CAN.send(0, id, data, length)` instead of `P_CAN.send(id, data, length)`
-- **PlatformHandles_t Structure:** Changed from single pointers to arrays:
-  - `void** hcan` with `uint8_t can_count`
-  - `void** huart` with `uint8_t uart_count`
-  - Similar for SPI, ADC, TIM
-- **CAN Filter Bank Assignment:** Properly handles dual CAN controllers (CAN1: banks 0-13, CAN2: banks 14-27)
-- **Internal State Management:** All peripheral state structures converted to per-instance arrays
+**All peripheral function signatures modified. Instance index now mandatory as first parameter.**
+
+**Before (v1.0.0):**
+```c
+P_CAN.send(0x123, data, 8);
+P_UART.printf("Status: %d\n", val);
+P_ADC.readVoltage(1);
+```
+
+**After (v2.1.0):**
+```c
+P_CAN.send(0, 0x123, data, 8);        // CAN instance 0
+P_UART.printf(0, "Status: %d\n", val); // UART instance 0  
+P_ADC.readVoltage(0, 1);              // ADC instance 0, channel 1
+```
+
+**Initialization structure modified:**
+- Old: Single peripheral pointers
+- New: Arrays of pointers with instance counts
+
+**CAN Filter Bank Management:**
+- Dual-CAN systems: CAN1 uses banks 0-13, CAN2 uses banks 14-27
+- Automatic `SlaveStartFilterBank` configuration on multi-CAN platforms
 
 ### Fixed
 
-- CAN filter bank assignment for STM32 MCUs with dual CAN controllers (e.g., F446RE)
-- Proper `SlaveStartFilterBank` configuration for CAN2 on dual CAN systems
+- CAN filter bank collision on dual-CAN STM32 variants (F446RE, F767ZI, etc.)
+- Interrupt handler instance detection for systems with multiple identical peripherals
 
 ## [1.0.0] - 2025-11-14
 

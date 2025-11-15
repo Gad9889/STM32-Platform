@@ -86,18 +86,26 @@ Code is already in user sections from template:
 
 ```c
 /* USER CODE BEGIN 2 */
-handler_set_t handlers = {
-    .hcan1 = &hcan1,
-    .huart2 = &huart2,
-    .hspi1 = &hspi1,
-    .hadc1 = &hadc1,
-    .htim2 = &htim2
+void* cans[] = {&hcan1};
+void* uarts[] = {&huart2};
+void* spis[] = {&hspi1};
+void* adcs[] = {&hadc1};
+void* tims[] = {&htim2};
+PlatformHandles_t handles = {
+    .hcan = cans,
+    .can_count = 1,
+    .huart = uarts,
+    .uart_count = 1,
+    .hspi = spis,
+    .spi_count = 1,
+    .hadc = adcs,
+    .adc_count = 1,
+    .htim = tims,
+    .tim_count = 1
 };
-
-plt_callbacks_t callbacks = {
-    .CAN_RxCallback = Can_MessageHandler,
-    .UART_RxCallback = Uart_MessageHandler
-};
+Platform.begin(&handles)
+        ->onCAN(0, Can_MessageHandler)
+        ->onUART(0, Uart_MessageHandler);
 
 plt_SetHandlers(&handlers);
 plt_SetCallbacks(&callbacks);

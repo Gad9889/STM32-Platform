@@ -51,24 +51,20 @@ See `main.c` for complete implementation.
 ### Sending CAN Messages
 
 ```c
-can_message_t tx_msg = {
-    .id = 0x123,
-    .data = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}
-};
-
-plt_status_t status = plt_CanSendMsg(Can1, &tx_msg);
-if (status != PLT_OK) {
-    printf("Error sending CAN message: %s\n", plt_StatusToString(status));
+uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+bool success = P_CAN.send(0, 0x123, data, 8);
+if (!success) {
+    P_UART.println(0, "CAN send failed");
 }
 ```
 
 ### Receiving CAN Messages
 
-Messages are received automatically via DMA and stored in a queue. Process them in your main loop:
+Messages are received automatically via interrupts and stored in a queue. Process them in your main loop:
 
 ```c
 while (1) {
-    plt_CanProcessRxMsgs();  // Calls your CanRxCallback
+    P_CAN.handleRxMessages(0);  // CAN instance 0 - calls your callback
     HAL_Delay(10);
 }
 ```
@@ -78,23 +74,23 @@ while (1) {
 Define your callback in `callbacks.c`:
 
 ```c
-void CanRxCallback(can_message_t *msg) {
+void CanRxCallback(CANMessage_t *msg) {
     // Handle received message
     switch (msg->id) {
         case 0x100:
             // Motor controller status
             uint16_t rpm = (msg->data[0] << 8) | msg->data[1];
-            printf("Motor RPM: %u\n", rpm);
+            P_UART.printf(0, "Motor RPM: %u\n", rpm);
             break;
 
         case 0x200:
             // Battery status
             uint16_t voltage = (msg->data[0] << 8) | msg->data[1];
-            printf("Battery: %u.%uV\n", voltage/10, voltage%10);
+            P_UART.printf(0, "Battery: %u.%uV\n", voltage/10, voltage%10);
             break;
 
         default:
-            printf("Unknown CAN ID: 0x%03lX\n", msg->id);
+            P_UART.printf(0, "Unknown CAN ID: 0x%03lX\n", msg->id);
             break;
     }
 }

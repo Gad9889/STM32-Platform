@@ -7,7 +7,7 @@ Automated integration tool for deploying BGU Racing STM32 Platform into STM32 CM
 - **Automated Integration**: Detects STM32 CMake projects and deploys platform components
 - **Project Detection**: Identifies CubeMX-generated projects and STM32 HAL configurations
 - **Peripheral Selection**: Configure specific peripherals (CAN, UART, SPI, ADC, TIM)
-- **Direct API**: Deploys v2.0.0 API with direct HAL integration
+- **Direct API**: Deploys v2.1.0 multi-instance API with direct HAL integration
 - **Code Generation**: Produces initialization templates for selected peripherals
 
 ## Operation
@@ -35,7 +35,7 @@ Extension automatically scans workspace for STM32 projects and initiates integra
 | ---------------------------------- | ------------------------------------------ | ----------------- |
 | `stm32platform.autoDetect`         | Enable automatic STM32 project detection   | `true`            |
 | `stm32platform.defaultPeripherals` | Default peripheral modules for integration | `["CAN", "UART"]` |
-| `stm32platform.useNewAPI`          | Deploy v2.0.0 direct API                   | `true`            |
+| `stm32platform.useNewAPI`          | Deploy v2.1.0 multi-instance API           | `true`            |
 
 ## Integration Components
 
@@ -64,33 +64,41 @@ Platform integration deploys:
    - Test template structure
    - CI/CD workflow template
 
-## Implementation Example: v2.0.0 API
+## Implementation Example: v2.1.0 API
 
 ```c
 #include "stm32_platform.h"
 
 void system_initialize(void) {
+    void* cans[] = {&hcan1};
+    void* uarts[] = {&huart2};
+    void* spis[] = {&hspi1};
     PlatformHandles_t handles = {
-        .hcan = &hcan1,
-        .huart = &huart2,
-        .hspi = &hspi1,
+        .hcan = cans,
+        .can_count = 1,
+        .huart = uarts,
+        .uart_count = 1,
+        .hspi = spis,
+        .spi_count = 1,
         .hadc = NULL,
-        .htim = NULL
+        .adc_count = 0,
+        .htim = NULL,
+        .tim_count = 0
     };
     Platform.begin(&handles);
 
-    P_CAN.route(0x100, can_message_handler);
-    P_UART.println("Platform operational");
+    P_CAN.route(0, 0x100, can_message_handler);
+    P_UART.println(0, "Platform operational");
 }
 
 void system_loop(void) {
-    P_CAN.handleRxMessages();
+    P_CAN.handleRxMessages(0);  // Process CAN instance 0
 
     uint8_t data[] = {0x01, 0x02, 0x03};
-    P_CAN.send(0x123, data, 3);
+    P_CAN.send(0, 0x123, data, 3);
 
-    float voltage = P_ADC.readVoltage(ADC_CHANNEL_1);
-    P_UART.printf("Voltage: %.2fV\n", voltage);
+    float voltage = P_ADC.readVoltage(0, 1);  // ADC instance 0, channel 1
+    P_UART.printf(0, "Voltage: %.2fV\n", voltage);
 }
 ```
 

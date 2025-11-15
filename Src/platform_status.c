@@ -41,3 +41,8 @@ const char* plt_StatusToString(plt_status_t status) {
             return "Unknown error";
     }
 }
+
+// Alias for compatibility with new API
+const char* plt_GetStatusString(plt_status_t status) {
+    return plt_StatusToString(status);
+}

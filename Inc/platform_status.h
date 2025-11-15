@@ -58,6 +58,11 @@ typedef enum {
 const char* plt_StatusToString(plt_status_t status);
 
 /**
+ * @brief Alias for plt_StatusToString (for compatibility with new API)
+ */
+const char* plt_GetStatusString(plt_status_t status);
+
+/**
  * @brief Check if status indicates success
  * 
  * @param[in] status Status code to check

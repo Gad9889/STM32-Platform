@@ -23,7 +23,7 @@ static bool platform_initialized = false;
 
 static bool CAN_send_impl(uint16_t id, const uint8_t* data, uint8_t length) {
     if (data == NULL || length > 8) {
-        lastError = PLT_ERROR_INVALID_PARAM;
+        lastError = PLT_INVALID_PARAM;
         return false;
     }
     
@@ -32,14 +32,14 @@ static bool CAN_send_impl(uint16_t id, const uint8_t* data, uint8_t length) {
     memcpy(msg.data, data, length);
     
     HAL_StatusTypeDef status = plt_CanSendMsg(Can1, &msg);
-    lastError = (status == HAL_OK) ? PLT_OK : PLT_ERROR_HAL;
+    lastError = (status == HAL_OK) ? PLT_OK : PLT_HAL_ERROR;
     
     return (status == HAL_OK);
 }
 
 static bool CAN_sendMessage_impl(const CANMessage_t* msg) {
     if (msg == NULL) {
-        lastError = PLT_ERROR_NULL_POINTER;
+        lastError = PLT_NULL_POINTER;
         return false;
     }
     
@@ -136,7 +136,7 @@ static void UART_printf_impl(const char* fmt, ...) {
 
 static bool UART_write_impl(const uint8_t* data, uint16_t length) {
     if (data == NULL || length == 0) {
-        lastError = PLT_ERROR_INVALID_PARAM;
+        lastError = PLT_INVALID_PARAM;
         return false;
     }
     
@@ -147,7 +147,7 @@ static bool UART_write_impl(const uint8_t* data, uint16_t length) {
     
     memcpy(msg.data, data, length);
     HAL_StatusTypeDef status = plt_UartSendMsg(Uart1, &msg);
-    lastError = (status == HAL_OK) ? PLT_OK : PLT_ERROR_HAL;
+    lastError = (status == HAL_OK) ? PLT_OK : PLT_HAL_ERROR;
     
     return (status == HAL_OK);
 }
@@ -300,21 +300,22 @@ static void PWM_setPulseWidth_impl(TIM_HandleTypeDef* htim, uint32_t channel, ui
 
 /* ==================== Platform Implementation ==================== */
 
+// Static handler set to avoid dangling pointer (Issue #10)
+static handler_set_t platform_handlers = {0};
+
 static Platform_t* Platform_begin_impl(CAN_HandleTypeDef* hcan,
                                        UART_HandleTypeDef* huart,
                                        SPI_HandleTypeDef* hspi,
                                        ADC_HandleTypeDef* hadc,
                                        TIM_HandleTypeDef* htim) {
-    // Set up handler set
-    handler_set_t handlers = {
-        .hcan1 = hcan,
-        .huart2 = huart,
-        .hspi1 = hspi,
-        .hadc1 = hadc,
-        .htim2 = htim
-    };
+    // Set up handler set (persistent storage)
+    platform_handlers.hcan1 = hcan;
+    platform_handlers.huart2 = huart;
+    platform_handlers.hspi1 = hspi;
+    platform_handlers.hadc1 = hadc;
+    platform_handlers.htim2 = htim;
     
-    plt_SetHandlers(&handlers);
+    plt_SetHandlers(&platform_handlers);
     
     // Initialize enabled peripherals
     if (hcan != NULL) {

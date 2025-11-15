@@ -210,9 +210,9 @@ ${sourcesList}
 
     // Add platform sources to target_sources or add_executable
     if (content.includes("target_sources")) {
-      // Add to target_sources section
+      // Add to target_sources section - match comment on same or next line
       content = content.replace(
-        /(target_sources\s*\(\s*\$\{[^}]+\}\s+PRIVATE\s*\n\s*# Add user sources here)/,
+        /(target_sources\s*\(\s*\$\{[^}]+\}\s+PRIVATE\s*\n\s*#\s*Add user sources here)/,
         `$1\n    \${PLATFORM_SOURCES}`
       );
     } else {
@@ -282,7 +282,7 @@ async function createExampleFile(
   if (peripherals.includes("ADC"))
     exampleCode += `extern ADC_HandleTypeDef hadc1;\n`;
   if (peripherals.includes("TIM"))
-    exampleCode += `extern TIM_HandleTypeDef htim2;\n`;
+    exampleCode += `extern TIM_HandleTypeDef htim1; // Update to match your project's timer\n`;
 
   if (useNewAPI) {
     exampleCode += `
@@ -293,7 +293,7 @@ void platform_example_init(void) {
         .huart = ${peripherals.includes("UART") ? "&huart2" : "NULL"},
         .hspi = ${peripherals.includes("SPI") ? "&hspi1" : "NULL"},
         .hadc = ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
-        .htim = ${peripherals.includes("TIM") ? "&htim2" : "NULL"}
+        .htim = ${peripherals.includes("TIM") ? "&htim1" : "NULL"} // Update to match your timer handle
     };
     Platform.begin(&handles);
     
@@ -325,9 +325,9 @@ void platform_example_init(void) {
     handler_set_t handlers = {
         ${peripherals.includes("CAN") ? ".hcan1 = &hcan1," : ""}
         ${peripherals.includes("UART") ? ".huart2 = &huart2," : ""}
-        ${peripherals.includes("SPI") ? ".hspi1 = &hspi1," : ""}
-        ${peripherals.includes("ADC") ? ".hadc1 = &hadc1," : ""}
-        ${peripherals.includes("TIM") ? ".htim2 = &htim2" : ""}
+        ${peripherals.includes("SPI") ? ".hspi = &hspi1" : ""}
+        ${peripherals.includes("ADC") ? ".hadc = &hadc1" : ""}
+        ${peripherals.includes("TIM") ? ".htim = &htim1" : ""} // Update to match your timer handle
     };
     plt_SetHandlers(&handlers);
     
@@ -534,7 +534,7 @@ async function modifyMainC(
       .huart = ${peripherals.includes("UART") ? "&huart2" : "NULL"},
       .hspi = ${peripherals.includes("SPI") ? "&hspi1" : "NULL"},
       .hadc = ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
-      .htim = ${peripherals.includes("TIM") ? "&htim2" : "NULL"}
+      .htim = ${peripherals.includes("TIM") ? "&htim1" : "NULL"} // Update to match your timer handle
   };
   Platform.begin(&handles);
 `;

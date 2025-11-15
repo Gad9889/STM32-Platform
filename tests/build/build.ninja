@@ -56,8 +56,6 @@ build CMakeFiles/unity_framework.dir/unity/src/unity.c.obj: C_COMPILER__unity_fr
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks"
   OBJECT_DIR = CMakeFiles\unity_framework.dir
   OBJECT_FILE_DIR = CMakeFiles\unity_framework.dir\unity\src
-  TARGET_COMPILE_PDB = CMakeFiles\unity_framework.dir\unity_framework.pdb
-  TARGET_PDB = libunity_framework.pdb
 
 
 # =============================================================================
@@ -73,9 +71,8 @@ build libunity_framework.a: C_STATIC_LIBRARY_LINKER__unity_framework_Debug CMake
   OBJECT_DIR = CMakeFiles\unity_framework.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_COMPILE_PDB = CMakeFiles\unity_framework.dir\unity_framework.pdb
   TARGET_FILE = libunity_framework.a
-  TARGET_PDB = libunity_framework.pdb
+  TARGET_PDB = unity_framework.a.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target test_utils
@@ -93,8 +90,6 @@ build CMakeFiles/test_utils.dir/test_utils.c.obj: C_COMPILER__test_utils_unscann
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_utils.dir
   OBJECT_FILE_DIR = CMakeFiles\test_utils.dir
-  TARGET_COMPILE_PDB = CMakeFiles\test_utils.dir\
-  TARGET_PDB = test_utils.pdb
 
 build CMakeFiles/test_utils.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/utils.c.obj: C_COMPILER__test_utils_unscanned_Debug C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/Src/utils.c || cmake_object_order_depends_target_test_utils
   CONFIG = Debug
@@ -103,8 +98,6 @@ build CMakeFiles/test_utils.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Sr
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_utils.dir
   OBJECT_FILE_DIR = CMakeFiles\test_utils.dir\C_\Users\ramga\Desktop\bgu\BGR\STM32_Platform\Src
-  TARGET_COMPILE_PDB = CMakeFiles\test_utils.dir\
-  TARGET_PDB = test_utils.pdb
 
 build CMakeFiles/test_utils.dir/mocks/stm32_hal_mocks.c.obj: C_COMPILER__test_utils_unscanned_Debug C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/mocks/stm32_hal_mocks.c || cmake_object_order_depends_target_test_utils
   CONFIG = Debug
@@ -113,8 +106,6 @@ build CMakeFiles/test_utils.dir/mocks/stm32_hal_mocks.c.obj: C_COMPILER__test_ut
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_utils.dir
   OBJECT_FILE_DIR = CMakeFiles\test_utils.dir\mocks
-  TARGET_COMPILE_PDB = CMakeFiles\test_utils.dir\
-  TARGET_PDB = test_utils.pdb
 
 
 # =============================================================================
@@ -131,10 +122,9 @@ build test_utils.exe: C_EXECUTABLE_LINKER__test_utils_Debug CMakeFiles/test_util
   OBJECT_DIR = CMakeFiles\test_utils.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_COMPILE_PDB = CMakeFiles\test_utils.dir\
   TARGET_FILE = test_utils.exe
   TARGET_IMPLIB = libtest_utils.dll.a
-  TARGET_PDB = test_utils.pdb
+  TARGET_PDB = test_utils.exe.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target test_database
@@ -152,8 +142,6 @@ build CMakeFiles/test_database.dir/test_database.c.obj: C_COMPILER__test_databas
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_database.dir
   OBJECT_FILE_DIR = CMakeFiles\test_database.dir
-  TARGET_COMPILE_PDB = CMakeFiles\test_database.dir\
-  TARGET_PDB = test_database.pdb
 
 build CMakeFiles/test_database.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/database.c.obj: C_COMPILER__test_database_unscanned_Debug C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/Src/database.c || cmake_object_order_depends_target_test_database
   CONFIG = Debug
@@ -162,8 +150,6 @@ build CMakeFiles/test_database.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_database.dir
   OBJECT_FILE_DIR = CMakeFiles\test_database.dir\C_\Users\ramga\Desktop\bgu\BGR\STM32_Platform\Src
-  TARGET_COMPILE_PDB = CMakeFiles\test_database.dir\
-  TARGET_PDB = test_database.pdb
 
 build CMakeFiles/test_database.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/DbSetFunctions.c.obj: C_COMPILER__test_database_unscanned_Debug C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/Src/DbSetFunctions.c || cmake_object_order_depends_target_test_database
   CONFIG = Debug
@@ -172,8 +158,6 @@ build CMakeFiles/test_database.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_database.dir
   OBJECT_FILE_DIR = CMakeFiles\test_database.dir\C_\Users\ramga\Desktop\bgu\BGR\STM32_Platform\Src
-  TARGET_COMPILE_PDB = CMakeFiles\test_database.dir\
-  TARGET_PDB = test_database.pdb
 
 build CMakeFiles/test_database.dir/mocks/stm32_hal_mocks.c.obj: C_COMPILER__test_database_unscanned_Debug C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/mocks/stm32_hal_mocks.c || cmake_object_order_depends_target_test_database
   CONFIG = Debug
@@ -182,8 +166,6 @@ build CMakeFiles/test_database.dir/mocks/stm32_hal_mocks.c.obj: C_COMPILER__test
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_database.dir
   OBJECT_FILE_DIR = CMakeFiles\test_database.dir\mocks
-  TARGET_COMPILE_PDB = CMakeFiles\test_database.dir\
-  TARGET_PDB = test_database.pdb
 
 
 # =============================================================================
@@ -200,10 +182,9 @@ build test_database.exe: C_EXECUTABLE_LINKER__test_database_Debug CMakeFiles/tes
   OBJECT_DIR = CMakeFiles\test_database.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_COMPILE_PDB = CMakeFiles\test_database.dir\
   TARGET_FILE = test_database.exe
   TARGET_IMPLIB = libtest_database.dll.a
-  TARGET_PDB = test_database.pdb
+  TARGET_PDB = test_database.exe.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target test_hashtable
@@ -221,8 +202,6 @@ build CMakeFiles/test_hashtable.dir/test_hashtable.c.obj: C_COMPILER__test_hasht
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_hashtable.dir
   OBJECT_FILE_DIR = CMakeFiles\test_hashtable.dir
-  TARGET_COMPILE_PDB = CMakeFiles\test_hashtable.dir\
-  TARGET_PDB = test_hashtable.pdb
 
 build CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/hashtable.c.obj: C_COMPILER__test_hashtable_unscanned_Debug C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/Src/hashtable.c || cmake_object_order_depends_target_test_hashtable
   CONFIG = Debug
@@ -231,8 +210,6 @@ build CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platfor
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_hashtable.dir
   OBJECT_FILE_DIR = CMakeFiles\test_hashtable.dir\C_\Users\ramga\Desktop\bgu\BGR\STM32_Platform\Src
-  TARGET_COMPILE_PDB = CMakeFiles\test_hashtable.dir\
-  TARGET_PDB = test_hashtable.pdb
 
 build CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/DbSetFunctions.c.obj: C_COMPILER__test_hashtable_unscanned_Debug C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/Src/DbSetFunctions.c || cmake_object_order_depends_target_test_hashtable
   CONFIG = Debug
@@ -241,8 +218,6 @@ build CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platfor
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_hashtable.dir
   OBJECT_FILE_DIR = CMakeFiles\test_hashtable.dir\C_\Users\ramga\Desktop\bgu\BGR\STM32_Platform\Src
-  TARGET_COMPILE_PDB = CMakeFiles\test_hashtable.dir\
-  TARGET_PDB = test_hashtable.pdb
 
 build CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platform/Src/database.c.obj: C_COMPILER__test_hashtable_unscanned_Debug C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/Src/database.c || cmake_object_order_depends_target_test_hashtable
   CONFIG = Debug
@@ -251,8 +226,6 @@ build CMakeFiles/test_hashtable.dir/C_/Users/ramga/Desktop/bgu/BGR/STM32_Platfor
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_hashtable.dir
   OBJECT_FILE_DIR = CMakeFiles\test_hashtable.dir\C_\Users\ramga\Desktop\bgu\BGR\STM32_Platform\Src
-  TARGET_COMPILE_PDB = CMakeFiles\test_hashtable.dir\
-  TARGET_PDB = test_hashtable.pdb
 
 build CMakeFiles/test_hashtable.dir/mocks/stm32_hal_mocks.c.obj: C_COMPILER__test_hashtable_unscanned_Debug C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/mocks/stm32_hal_mocks.c || cmake_object_order_depends_target_test_hashtable
   CONFIG = Debug
@@ -261,8 +234,6 @@ build CMakeFiles/test_hashtable.dir/mocks/stm32_hal_mocks.c.obj: C_COMPILER__tes
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/../Inc" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/mocks" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src"
   OBJECT_DIR = CMakeFiles\test_hashtable.dir
   OBJECT_FILE_DIR = CMakeFiles\test_hashtable.dir\mocks
-  TARGET_COMPILE_PDB = CMakeFiles\test_hashtable.dir\
-  TARGET_PDB = test_hashtable.pdb
 
 
 # =============================================================================
@@ -279,10 +250,9 @@ build test_hashtable.exe: C_EXECUTABLE_LINKER__test_hashtable_Debug CMakeFiles/t
   OBJECT_DIR = CMakeFiles\test_hashtable.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_COMPILE_PDB = CMakeFiles\test_hashtable.dir\
   TARGET_FILE = test_hashtable.exe
   TARGET_IMPLIB = libtest_hashtable.dll.a
-  TARGET_PDB = test_hashtable.pdb
+  TARGET_PDB = test_hashtable.exe.dbg
 
 
 #############################################
@@ -382,8 +352,6 @@ build _deps/unity-build/CMakeFiles/unity.dir/src/unity.c.obj: C_COMPILER__unity_
   INCLUDES = -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/unity/src" -I"C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-build"
   OBJECT_DIR = _deps\unity-build\CMakeFiles\unity.dir
   OBJECT_FILE_DIR = _deps\unity-build\CMakeFiles\unity.dir\src
-  TARGET_COMPILE_PDB = _deps\unity-build\CMakeFiles\unity.dir\unity.pdb
-  TARGET_PDB = _deps\unity-build\libunity.pdb
 
 
 # =============================================================================
@@ -399,9 +367,8 @@ build _deps/unity-build/libunity.a: C_STATIC_LIBRARY_LINKER__unity_Debug _deps/u
   OBJECT_DIR = _deps\unity-build\CMakeFiles\unity.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_COMPILE_PDB = _deps\unity-build\CMakeFiles\unity.dir\unity.pdb
   TARGET_FILE = _deps\unity-build\libunity.a
-  TARGET_PDB = _deps\unity-build\libunity.pdb
+  TARGET_PDB = unity.a.dbg
 
 
 #############################################
@@ -519,14 +486,14 @@ build _deps/unity-build/all: phony _deps/unity-build/libunity.a
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/build/cmake_install.cmake C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/build/_deps/unity-build/cmake_install.cmake C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/build/CTestTestfile.cmake C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/build/_deps/unity-build/CTestTestfile.cmake: RERUN_CMAKE | C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/CMakeLists.txt C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/unity/CMakeLists.txt C$:/msys64/mingw64/share/cmake/Modules/BasicConfigVersion-SameMajorVersion.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeCCompiler.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeCCompilerABI.c C$:/msys64/mingw64/share/cmake/Modules/CMakeCInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeCommonLanguageInclude.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeCompilerIdDetection.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCompilerId.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCompilerSupport.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineRCCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineSystem.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeFindBinUtils.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeGenericSystem.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeInitializeConfigs.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeLanguageInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeNinjaFindMake.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakePackageConfigHelpers.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeParseImplicitIncludeInfo.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeParseImplicitLinkInfo.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeParseLibraryArchitecture.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeRCCompiler.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeRCInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeSystem.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeSystemSpecificInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeTestCCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeTestCompilerCommon.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeTestRCCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/ADSP-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/ARMCC-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/ARMClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/AppleClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Borland-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Bruce-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Clang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Clang-DetermineCompilerInternal.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Compaq-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Cray-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/CrayClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Embarcadero-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Fujitsu-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/FujitsuClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GHS-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU-FindBinUtils.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/HP-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/IAR-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/IBMClang-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Intel-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/IntelLLVM-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/LCC-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/MSVC-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/NVHPC-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/NVIDIA-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/OrangeC-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/PGI-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/PathScale-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/SCO-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/SDCC-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/SunPro-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/TI-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/TIClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Tasking-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/TinyCC-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/VisualAge-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Watcom-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/XL-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/XLClang-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/zOS-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/ExternalProject/shared_internal_commands.cmake C$:/msys64/mingw64/share/cmake/Modules/FetchContent.cmake C$:/msys64/mingw64/share/cmake/Modules/FetchContent/CMakeLists.cmake.in C$:/msys64/mingw64/share/cmake/Modules/FindGit.cmake C$:/msys64/mingw64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake C$:/msys64/mingw64/share/cmake/Modules/FindPackageMessage.cmake C$:/msys64/mingw64/share/cmake/Modules/GNUInstallDirs.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeInspectCLinker.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/FeatureTesting.cmake C$:/msys64/mingw64/share/cmake/Modules/Linker/GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Linker/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/Windows-GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/Windows-GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-Initialize.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-windres.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/WindowsPaths.cmake C$:/msys64/mingw64/share/cmake/Modules/WriteBasicConfigVersionFile.cmake CMakeCache.txt CMakeFiles/4.0.2/CMakeCCompiler.cmake CMakeFiles/4.0.2/CMakeRCCompiler.cmake CMakeFiles/4.0.2/CMakeSystem.cmake
+build build.ninja C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/build/cmake_install.cmake C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/build/_deps/unity-build/cmake_install.cmake C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/build/CTestTestfile.cmake C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/build/_deps/unity-build/CTestTestfile.cmake: RERUN_CMAKE | C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/CMakeLists.txt C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/unity/CMakeLists.txt C$:/msys64/mingw64/share/cmake/Modules/BasicConfigVersion-SameMajorVersion.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeCInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeCommonLanguageInclude.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeGenericSystem.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeInitializeConfigs.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeLanguageInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakePackageConfigHelpers.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeRCInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeSystemSpecificInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/ExternalProject/shared_internal_commands.cmake C$:/msys64/mingw64/share/cmake/Modules/FetchContent.cmake C$:/msys64/mingw64/share/cmake/Modules/FetchContent/CMakeLists.cmake.in C$:/msys64/mingw64/share/cmake/Modules/FindGit.cmake C$:/msys64/mingw64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake C$:/msys64/mingw64/share/cmake/Modules/FindPackageMessage.cmake C$:/msys64/mingw64/share/cmake/Modules/GNUInstallDirs.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/Linker/GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Linker/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/Windows-GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/Windows-GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-Initialize.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-windres.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/WindowsPaths.cmake C$:/msys64/mingw64/share/cmake/Modules/WriteBasicConfigVersionFile.cmake CMakeCache.txt CMakeFiles/4.0.2/CMakeCCompiler.cmake CMakeFiles/4.0.2/CMakeRCCompiler.cmake CMakeFiles/4.0.2/CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/CMakeLists.txt C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/unity/CMakeLists.txt C$:/msys64/mingw64/share/cmake/Modules/BasicConfigVersion-SameMajorVersion.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeCCompiler.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeCCompilerABI.c C$:/msys64/mingw64/share/cmake/Modules/CMakeCInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeCommonLanguageInclude.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeCompilerIdDetection.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCompilerId.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineCompilerSupport.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineRCCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeDetermineSystem.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeFindBinUtils.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeGenericSystem.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeInitializeConfigs.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeLanguageInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeNinjaFindMake.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakePackageConfigHelpers.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeParseImplicitIncludeInfo.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeParseImplicitLinkInfo.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeParseLibraryArchitecture.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeRCCompiler.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeRCInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeSystem.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeSystemSpecificInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeTestCCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeTestCompilerCommon.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeTestRCCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/ADSP-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/ARMCC-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/ARMClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/AppleClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Borland-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Bruce-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Clang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Clang-DetermineCompilerInternal.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Compaq-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Cray-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/CrayClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Embarcadero-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Fujitsu-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/FujitsuClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GHS-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU-FindBinUtils.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/HP-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/IAR-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/IBMClang-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Intel-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/IntelLLVM-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/LCC-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/MSVC-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/NVHPC-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/NVIDIA-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/OrangeC-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/PGI-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/PathScale-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/SCO-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/SDCC-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/SunPro-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/TI-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/TIClang-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Tasking-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/TinyCC-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/VisualAge-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/Watcom-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/XL-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/XLClang-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/zOS-C-DetermineCompiler.cmake C$:/msys64/mingw64/share/cmake/Modules/ExternalProject/shared_internal_commands.cmake C$:/msys64/mingw64/share/cmake/Modules/FetchContent.cmake C$:/msys64/mingw64/share/cmake/Modules/FetchContent/CMakeLists.cmake.in C$:/msys64/mingw64/share/cmake/Modules/FindGit.cmake C$:/msys64/mingw64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake C$:/msys64/mingw64/share/cmake/Modules/FindPackageMessage.cmake C$:/msys64/mingw64/share/cmake/Modules/GNUInstallDirs.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeInspectCLinker.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/FeatureTesting.cmake C$:/msys64/mingw64/share/cmake/Modules/Linker/GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Linker/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/Windows-GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/Windows-GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-Initialize.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-windres.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/WindowsPaths.cmake C$:/msys64/mingw64/share/cmake/Modules/WriteBasicConfigVersionFile.cmake CMakeCache.txt CMakeFiles/4.0.2/CMakeCCompiler.cmake CMakeFiles/4.0.2/CMakeRCCompiler.cmake CMakeFiles/4.0.2/CMakeSystem.cmake: phony
+build C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/CMakeLists.txt C$:/Users/ramga/Desktop/bgu/BGR/STM32$ Platform/tests/unity/CMakeLists.txt C$:/msys64/mingw64/share/cmake/Modules/BasicConfigVersion-SameMajorVersion.cmake.in C$:/msys64/mingw64/share/cmake/Modules/CMakeCInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeCommonLanguageInclude.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeGenericSystem.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeInitializeConfigs.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeLanguageInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakePackageConfigHelpers.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeRCInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeSystemSpecificInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Compiler/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/ExternalProject/shared_internal_commands.cmake C$:/msys64/mingw64/share/cmake/Modules/FetchContent.cmake C$:/msys64/mingw64/share/cmake/Modules/FetchContent/CMakeLists.cmake.in C$:/msys64/mingw64/share/cmake/Modules/FindGit.cmake C$:/msys64/mingw64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake C$:/msys64/mingw64/share/cmake/Modules/FindPackageMessage.cmake C$:/msys64/mingw64/share/cmake/Modules/GNUInstallDirs.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake C$:/msys64/mingw64/share/cmake/Modules/Linker/GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Linker/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/Windows-GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Linker/Windows-GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU-C.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-GNU.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-Initialize.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows-windres.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/Windows.cmake C$:/msys64/mingw64/share/cmake/Modules/Platform/WindowsPaths.cmake C$:/msys64/mingw64/share/cmake/Modules/WriteBasicConfigVersionFile.cmake CMakeCache.txt CMakeFiles/4.0.2/CMakeCCompiler.cmake CMakeFiles/4.0.2/CMakeRCCompiler.cmake CMakeFiles/4.0.2/CMakeSystem.cmake: phony
 
 
 #############################################

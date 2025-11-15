@@ -84,18 +84,18 @@ export async function detectSTM32Project(
     }
   }
 
-  // Find Inc and Src directories
+  // Find Inc and Src directories (CubeMX always uses Core/Inc and Core/Src)
   const incDir = findDirectory(workspacePath, [
+    "Core/Inc",
     "Inc",
     "inc",
     "include",
-    "Core/Inc",
   ]);
   const srcDir = findDirectory(workspacePath, [
+    "Core/Src",
     "Src",
     "src",
     "source",
-    "Core/Src",
   ]);
 
   if (incDir) info.incDir = incDir;

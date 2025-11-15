@@ -1,21 +1,37 @@
 # ninja log v6
-1	66	7848550239151502	unity-populate-prefix/src/unity-populate-stamp/unity-populate-mkdir	f3d9b551fc1f8d05
+3842	3917	7848550277659859	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-build	c688c9de798e691b
+4064	4181	7848550280243789	CMakeFiles/unity-populate-complete	d8a8cebc39edddb0
+3842	3917	7848550277659859	unity-populate-prefix/src/unity-populate-stamp/unity-populate-build	c688c9de798e691b
+3917	3986	7848550278353513	unity-populate-prefix/src/unity-populate-stamp/unity-populate-install	b1a4d6fd81423f42
+3778	3842	7848550276911400	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-configure	50151a19074a762a
+3986	4064	7848550279105677	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-test	287a701ea42c55f3
+4064	4181	7848550280243789	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-done	d8a8cebc39edddb0
+3986	4064	7848550279105677	unity-populate-prefix/src/unity-populate-stamp/unity-populate-test	287a701ea42c55f3
+4064	4181	7848550280243789	unity-populate-prefix/src/unity-populate-stamp/unity-populate-done	d8a8cebc39edddb0
 1	66	7848550239151502	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-mkdir	f3d9b551fc1f8d05
 66	3593	7848550274408329	unity-populate-prefix/src/unity-populate-stamp/unity-populate-download	20cbdd747f6c8419
+1	66	7848550239151502	unity-populate-prefix/src/unity-populate-stamp/unity-populate-mkdir	f3d9b551fc1f8d05
+4064	4181	7848550280243789	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/CMakeFiles/unity-populate-complete	d8a8cebc39edddb0
 66	3593	7848550274408329	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-download	20cbdd747f6c8419
 3593	3706	7848550274473549	unity-populate-prefix/src/unity-populate-stamp/unity-populate-update	be264a2075d8dc67
+3917	3986	7848550278353513	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-install	b1a4d6fd81423f42
 3593	3706	7848550274473549	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-update	be264a2075d8dc67
 3708	3778	7848550276262636	unity-populate-prefix/src/unity-populate-stamp/unity-populate-patch	89e2a0f50cc65c67
-3708	3778	7848550276262636	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-patch	89e2a0f50cc65c67
 3778	3842	7848550276911400	unity-populate-prefix/src/unity-populate-stamp/unity-populate-configure	50151a19074a762a
-3778	3842	7848550276911400	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-configure	50151a19074a762a
-3842	3917	7848550277659859	unity-populate-prefix/src/unity-populate-stamp/unity-populate-build	c688c9de798e691b
-3842	3917	7848550277659859	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-build	c688c9de798e691b
-3917	3986	7848550278353513	unity-populate-prefix/src/unity-populate-stamp/unity-populate-install	b1a4d6fd81423f42
-3917	3986	7848550278353513	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-install	b1a4d6fd81423f42
-3986	4064	7848550279105677	unity-populate-prefix/src/unity-populate-stamp/unity-populate-test	287a701ea42c55f3
-3986	4064	7848550279105677	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-test	287a701ea42c55f3
-4064	4181	7848550280243789	CMakeFiles/unity-populate-complete	d8a8cebc39edddb0
-4064	4181	7848550280243789	unity-populate-prefix/src/unity-populate-stamp/unity-populate-done	d8a8cebc39edddb0
-4064	4181	7848550280243789	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/CMakeFiles/unity-populate-complete	d8a8cebc39edddb0
-4064	4181	7848550280243789	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-done	d8a8cebc39edddb0
+3708	3778	7848550276262636	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-patch	89e2a0f50cc65c67
+12	111	7849135926699841	unity-populate-prefix/src/unity-populate-stamp/unity-populate-update	be264a2075d8dc67
+12	111	7849135926699841	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-update	be264a2075d8dc67
+112	167	7849135928202917	unity-populate-prefix/src/unity-populate-stamp/unity-populate-patch	89e2a0f50cc65c67
+112	167	7849135928202917	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-patch	89e2a0f50cc65c67
+167	218	7849135928718019	unity-populate-prefix/src/unity-populate-stamp/unity-populate-configure	50151a19074a762a
+167	218	7849135928718019	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-configure	50151a19074a762a
+218	275	7849135929278877	unity-populate-prefix/src/unity-populate-stamp/unity-populate-build	c688c9de798e691b
+218	275	7849135929278877	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-build	c688c9de798e691b
+275	338	7849135929918879	unity-populate-prefix/src/unity-populate-stamp/unity-populate-install	b1a4d6fd81423f42
+275	338	7849135929918879	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-install	b1a4d6fd81423f42
+338	399	7849135930519923	unity-populate-prefix/src/unity-populate-stamp/unity-populate-test	287a701ea42c55f3
+338	399	7849135930519923	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-test	287a701ea42c55f3
+399	474	7849135931260211	CMakeFiles/unity-populate-complete	d8a8cebc39edddb0
+399	474	7849135931260211	unity-populate-prefix/src/unity-populate-stamp/unity-populate-done	d8a8cebc39edddb0
+399	474	7849135931260211	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/CMakeFiles/unity-populate-complete	d8a8cebc39edddb0
+399	474	7849135931260211	C:/Users/ramga/Desktop/bgu/BGR/STM32 Platform/tests/build/_deps/unity-subbuild/unity-populate-prefix/src/unity-populate-stamp/unity-populate-done	d8a8cebc39edddb0

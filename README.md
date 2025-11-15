@@ -11,50 +11,52 @@ Born from Ben-Gurion Racing's Formula Student team, now redesigned for developer
 ## ✨ Features
 
 - **🎯 Consumer-Grade API**: Arduino-style interface - `P_CAN.send()`, `P_UART.println()`, `P_ADC.readVoltage()`
-- **⚡ One-Click Integration**: VS Code extension automatically adds platform to your STM32 CMake project
-- **🤖 Auto-Detection**: Automatically detects STM32 family (F0/F1/F3/F4/F7/H7/L/G/WB/WL) and includes correct HAL
-- **🔧 Explicit Control**: No magic - you decide when to process messages with `.handleRxMessages()`
-- **🛡️ Production-Ready**: Used in Formula Student racing, standardized error handling with plt_status_t
-- **🧪 Well-Tested**: 49 unit tests, 40%+ coverage, CI/CD with GitHub Actions
-- **📦 Testing Starter Kit**: Optional Unity test framework setup for testing your application logic
+- **⚡ Type-Agnostic Integration**: Works with any HAL module combination - disable peripherals you don't need
+- **🔧 Direct HAL Integration**: No middleware layer - 700+ lines of optimized code directly calls STM32 HAL
+- **🛡️ Production-Ready**: Used in Formula Student racing, standardized error handling
+- **🧪 Well-Tested**: 43 unit tests, 100% pass rate, CI/CD with GitHub Actions
+- **📦 Thread-Safe**: ISR-safe queues with critical sections for reliable message handling
+- **🚀 Zero Magic**: Explicit control - you decide when to process messages with `.handleRxMessages()`
 
-## 🚀 Two APIs, Your Choice
+## 🚀 API Overview
 
-**New API** (Recommended - Arduino-style with P_ prefix to avoid HAL conflicts):
+**v2.0.0 Consumer-Grade API** (Arduino-style with P_ prefix):
 
 ```c
-Platform.begin(&hcan1, &huart2, &hspi1, NULL, NULL);
+// Initialize with only the peripherals you need
+PlatformHandles_t handles = {
+    .hcan = &hcan,
+    .huart = &huart2,
+    .hspi = NULL,        // Not using SPI? Set NULL
+    .hadc = NULL,        // Not using ADC? Set NULL
+    .htim = &htim1
+};
+Platform.begin(&handles);
+
+// Use intuitive API
 P_CAN.send(0x123, data, 8);
 P_UART.printf("Speed: %d km/h\n", speed);
-P_ADC.readVoltage(0);
+P_ADC.readVoltage(ADC_CHANNEL_1);
 P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 50.0f);
-```
-
-**Legacy API** (Still supported - plt_ prefix functions):
-
-```c
-plt_SetHandlers(&handlers);
-plt_status_t status = plt_CanInit(32);
-if (status != PLT_OK) { /* handle error */ }
-plt_CanSendMsg(Can1, &msg);
-plt_CanProcessRxMsgs();
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1: VS Code Extension (Easiest)
+### Option 1: Manual Integration (Recommended)
 
-1. Download [latest `.vsix` from Releases](https://github.com/Gad9889/STM32-Platform/releases)
-2. Install: Extensions → `...` → **Install from VSIX...**
-3. Open your STM32 CMake project
-4. Run command: **STM32 Platform: Integrate into Project**
-5. Select peripherals → Done!
+**📖 See [CUBEMX_INTEGRATION.md](CUBEMX_INTEGRATION.md) for complete step-by-step guide**
 
-See [Installation Guide](https://github.com/Gad9889/STM32-Platform/wiki/Installation) for details.
+1. Copy platform files to your STM32CubeMX project:
+   - `Inc/*.h` → `YourProject/Core/Inc/`
+   - `Src/*.c` → `YourProject/Core/Src/`
 
-### Option 2: Manual Integration
+2. Configure peripherals in CubeMX (enable only what you need)
+
+3. Initialize in main.c (see example below)
+
+### Option 2: Clone Repository
 
 ```bash
 # 1. Clone
@@ -80,8 +82,15 @@ int main(void) {
     MX_CAN1_Init();  // CubeMX generated
     MX_UART2_Init();
 
-    // Initialize platform
-    Platform.begin(&hcan1, &huart2, NULL, NULL, NULL);
+    // Initialize platform with peripheral handles
+    PlatformHandles_t handles = {
+        .hcan = &hcan1,
+        .huart = &huart2,
+        .hspi = NULL,   // Not using SPI
+        .hadc = NULL,   // Not using ADC
+        .htim = NULL    // Not using PWM
+    };
+    Platform.begin(&handles);
 
     P_UART.println("Platform ready!");
 
@@ -115,13 +124,13 @@ All documentation is now in the **[Wiki](https://github.com/Gad9889/STM32-Platfo
 
 ## 🎯 Supported Peripherals
 
-| Peripheral | New API                                        | Legacy API          | Features                          |
-| ---------- | ---------------------------------------------- | ------------------- | --------------------------------- |
-| **CAN**    | `P_CAN.send()`, `P_CAN.handleRxMessages()`     | `plt_CanSendMsg()`  | Multi-channel, filtering, routing |
-| **UART**   | `P_UART.println()`, `P_UART.printf()`          | `plt_UartSendMsg()` | DMA, printf redirection           |
-| **SPI**    | `P_SPI.transfer()`, `P_SPI.transferByte()`     | `plt_SpiSendMsg()`  | Full-duplex DMA                   |
-| **ADC**    | `P_ADC.readRaw()`, `P_ADC.readVoltage()`       | `plt_AdcInit()`     | Multi-channel, circular DMA       |
-| **PWM**    | `P_PWM.setDutyCycle()`, `P_PWM.setFrequency()` | `plt_TimInit()`     | Dynamic frequency calculation     |
+| Peripheral | API Examples                                   | Features                          |
+| ---------- | ---------------------------------------------- | --------------------------------- |
+| **CAN**    | `P_CAN.send()`, `P_CAN.handleRxMessages()`, `P_CAN.route()` | Hashtable routing, thread-safe queues |
+| **UART**   | `P_UART.println()`, `P_UART.printf()`          | DMA, printf redirection, byte reception |
+| **SPI**    | `P_SPI.transfer()`, `P_SPI.transferByte()`     | Full-duplex, configurable CS      |
+| **ADC**    | `P_ADC.readRaw()`, `P_ADC.readVoltage()`       | Multi-channel, voltage conversion |
+| **PWM**    | `P_PWM.setDutyCycle()`, `P_PWM.setFrequency()` | Dynamic frequency, start/stop     |
 
 ---
 
@@ -130,17 +139,23 @@ All documentation is now in the **[Wiki](https://github.com/Gad9889/STM32-Platfo
 ```
 STM32-Platform/
 ├── Inc/                        # Headers
-│   ├── stm32_platform.h       # ⭐ New consumer-grade API (P_* objects)
-│   ├── platform.h             # Legacy API (plt_* functions)
-│   ├── platform_status.h      # Error codes and status types
-│   └── [can|uart|spi|adc|tim].h
-├── Src/                        # Implementation
-│   ├── stm32_platform.c       # ⭐ New API implementation
-│   └── [peripheral].c         # Core drivers
-├── vscode-extension/          # VS Code integration
-├── test-kit/                  # Application testing starter kit
-├── tests/                     # Platform unit tests (Unity)
-└── .github/workflows/         # CI/CD automation
+│   ├── stm32_platform.h       # ⭐ Consumer-grade API (Platform, P_CAN, P_UART, etc.)
+│   ├── platform_status.h      # Status codes and error handling
+│   ├── hashtable.h            # CAN message routing (O(1) lookup)
+│   ├── database.h             # Signal storage and management
+│   ├── utils.h                # Queue implementation
+│   └── DbSetFunctions.h       # Database setter functions
+├── Src/                        # Implementation (700+ lines)
+│   ├── stm32_platform.c       # ⭐ Direct HAL integration, thread-safe queues
+│   ├── platform_status.c      # Status code utilities
+│   ├── hashtable.c            # CAN routing implementation
+│   ├── database.c             # Database implementation
+│   ├── utils.c                # Queue + critical sections
+│   └── DbSetFunctions.c       # Generated database setters
+├── tests/                     # Unity unit tests (100% pass - 43 tests)
+├── .github/workflows/         # CI/CD automation
+├── CUBEMX_INTEGRATION.md      # Step-by-step integration guide
+└── PLATFORM_INTEGRATION_ISSUES.md  # Real-world testing results
 ```
 
 ## 🎓 Code Examples
@@ -155,8 +170,19 @@ void can_handler(CANMessage_t* msg) {
 }
 
 int main(void) {
-    Platform.begin(&hcan1, &huart2, NULL, NULL, NULL)
-            ->onCAN(can_handler);
+    // HAL init, clock config, peripheral init...
+    
+    PlatformHandles_t handles = {
+        .hcan = &hcan1,
+        .huart = &huart2,
+        .hspi = NULL,
+        .hadc = NULL,
+        .htim = NULL
+    };
+    Platform.begin(&handles);
+    
+    // Register handler for specific CAN ID
+    P_CAN.route(0x100, can_handler);
 
     while (1) {
         P_CAN.handleRxMessages();
@@ -168,114 +194,123 @@ int main(void) {
     }
 }
 
-        // Store in database
-        pMainDB->vcu_node->inverters[0].actual_speed = rpm;
-        pMainDB->vcu_node->inverters[0].torque = torque;
+
+### UART Debug Logging
+
+```c
+#include "stm32_platform.h"
+
+int main(void) {
+    // HAL init, clock config, peripheral init...
+    
+    PlatformHandles_t handles = {
+        .hcan = NULL,
+        .huart = &huart2,  // Debug UART
+        .hspi = NULL,
+        .hadc = NULL,
+        .htim = NULL
+    };
+    Platform.begin(&handles);
+
+    // Now printf works automatically!
+    P_UART.printf("System initialized! Voltage: %d.%dV\r\n", voltage/10, voltage%10);
+    P_UART.println("Sensor readings OK");
+}
+```
+
+### ADC Sampling
+
+```c
+#include "stm32_platform.h"
+
+int main(void) {
+    // HAL init, clock config, peripheral init...
+    
+    PlatformHandles_t handles = {
+        .hcan = NULL,
+        .huart = &huart2,
+        .hspi = NULL,
+        .hadc = &hadc1,  // ADC with channels configured
+        .htim = NULL
+    };
+    Platform.begin(&handles);
+
+    while (1) {
+        // Read ADC voltages
+        float voltage = P_ADC.readVoltage(ADC_CHANNEL_1);
+        P_UART.printf("Voltage: %.2fV\r\n", voltage);
+        HAL_Delay(100);
     }
 }
+```
 
-// Send CAN message
-can_message_t tx_msg = {
-    .id = 0x456,
-    .data = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}
-};
-plt_CanSendMsg(Can1, &tx_msg);
+### PWM Control
 
-// In main loop
-while(1) {
-    plt_CanProcessRxMsgs();  // Process incoming messages
-    HAL_Delay(10);
+```c
+#include "stm32_platform.h"
+
+int main(void) {
+    // HAL init, clock config, peripheral init...
+    
+    PlatformHandles_t handles = {
+        .hcan = NULL,
+        .huart = NULL,
+        .hspi = NULL,
+        .hadc = NULL,
+        .htim = &htim2   // PWM timer
+    };
+    Platform.begin(&handles);
+
+    // Start PWM at 1kHz, 50% duty cycle
+    P_PWM.start(&htim2, TIM_CHANNEL_1);
+    P_PWM.setFrequency(&htim2, TIM_CHANNEL_1, 1000);  // 1kHz
+    P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 50.0f); // 50%
+
+    // Change duty cycle dynamically
+    P_PWM.setDutyCycle(&htim2, TIM_CHANNEL_1, 75.0f);
+
+    // Stop PWM
+    P_PWM.stop(&htim2, TIM_CHANNEL_1);
 }
 ```
 
-### Example 2: UART Debug Logging
-
-```c
-#include "callbacks.h"
-
-// Initialize UART for printf
-handler_set_t handlers = {
-    .huart2 = &huart2  // Debug UART
-};
-PlatformInit(&handlers, 32);
-
-// Now printf works automatically!
-printf("System initialized! Voltage: %d.%dV\r\n", voltage/10, voltage%10);
-
-// Send custom debug messages
-uint8_t debug_data[] = "Sensor readings OK";
-plt_DebugSendMSG(debug_data, strlen((char*)debug_data));
-```
-
-### Example 3: ADC Sampling
-
-```c
-// ADC automatically samples in background via DMA
-// Averaged values stored in database
-
-// Configure 3 channels in CubeMX
-handler_set_t handlers = {
-    .hadc1 = &hadc1  // ADC with 3 channels
-};
-PlatformInit(&handlers, 32);
-
-// Access averaged ADC values
-void ReadSensors(void) {
-    // ADC data automatically published to CAN queue
-    // Process via CanRxCallback with Internal_ADC message ID
-}
-```
-
-### Example 4: PWM Control
-
-```c
-#include "tim.h"
-
-// Configure timer in CubeMX
-handler_set_t handlers = {
-    .htim2 = &htim2
-};
-PlatformInit(&handlers, 32);
-
-// Generate 1kHz PWM at 50% duty cycle
-plt_StartPWM(Tim2, TIM_CHANNEL_1, 1000, 50.0f);
-
-// Change duty cycle dynamically
-plt_StartPWM(Tim2, TIM_CHANNEL_1, 1000, 75.0f);
-
-// Stop PWM
-plt_StopPWM(Tim2, TIM_CHANNEL_1);
-```
-
-See [examples/](examples/) directory for complete projects.
+**\ud83d\udcd6 See [examples/](examples/) directory for complete projects and [CUBEMX_INTEGRATION.md](CUBEMX_INTEGRATION.md) for integration guide.**
 
 ---
 
 ## ⚙️ Configuration
 
-### Compile-Time Configuration
+### Peripheral Configuration
 
-The platform uses conditional compilation for optional features:
+Configure peripherals in STM32CubeMX, then pass handles to the platform:
 
 ```c
-// In your project's preprocessor defines or stm32xxxx_hal_conf.h
-#define HAL_CAN_MODULE_ENABLED      // Enable CAN support
-#define HAL_UART_MODULE_ENABLED     // Enable UART support
-#define HAL_SPI_MODULE_ENABLED      // Enable SPI support
-#define HAL_ADC_MODULE_ENABLED      // Enable ADC support
-#define HAL_TIM_MODULE_ENABLED      // Enable Timer support
+PlatformHandles_t handles = {
+    .hcan = &hcan,        // NULL if not using CAN
+    .huart = &huart2,     // NULL if not using UART
+    .hspi = &hspi1,       // NULL if not using SPI
+    .hadc = &hadc1,       // NULL if not using ADC
+    .htim = &htim2        // NULL if not using PWM
+};
+Platform.begin(&handles);
 ```
 
-### Runtime Configuration
+**Key Feature:** Only peripherals you enable in CubeMX will be compiled. Set unused handles to NULL.
+
+### Queue Sizes
+
+Adjust in `Inc/utils.h` based on your message rate:
 
 ```c
-// Adjust queue sizes based on your message rate
-#define RX_QUEUE_SIZE 64  // Larger for high CAN traffic
-#define TX_QUEUE_SIZE 32  // Smaller if you send less
+#define QUEUE_SIZE 64  // Larger for high CAN traffic
+```
 
-// ADC configuration in adc.h
-#define ADC1_NUM_SENSORS 3
-#define ADC1_SAMPLES_PER_SENSOR 50  // Averaging factor
+### ADC Reference Voltage
+
+Default is 3.3V. Modify in `stm32_platform.c` if different:
+
+```c
+adc_state.vref = 3.3f;  // Your VREF voltage
 ```
 
 ---
@@ -284,24 +319,27 @@ The platform uses conditional compilation for optional features:
 
 ### Unit Tests
 
-Tests are written using the [Unity Test Framework](http://www.throwtheswitch.org/unity).
+Platform includes comprehensive unit tests using the [Unity Test Framework](http://www.throwtheswitch.org/unity).
+
+**Test Results:** ✅ 100% pass rate (43 tests)
 
 ```bash
 # Build and run tests
 cd tests
 mkdir build && cd build
 cmake ..
-make
-ctest
+cmake --build .
+ctest --output-on-failure
 ```
+
+**Test Suites:**
+- `test_utils.c` - Queue operations (14 tests)
+- `test_database.c` - Signal storage (13 tests)
+- `test_hashtable.c` - CAN routing (16 tests)
 
 ### Integration Tests
 
-Run on actual hardware:
-
-1. Flash example applications
-2. Connect peripherals (CAN transceiver, UART adapter, etc.)
-3. Monitor via debugger or serial terminal
+Real-world integration testing performed with STM32F303 demo project. See `PLATFORM_INTEGRATION_ISSUES.md` for results.
 
 ---
 

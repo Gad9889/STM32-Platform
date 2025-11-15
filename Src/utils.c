@@ -1,168 +1,179 @@
-#include "utils.h"
-/*================================== Queue implementation ===============================*/
 /**
-  * @brief  Initializes the queue with the specified item size and capacity.
-  * @param  Q    Pointer to the queue structure
-  * @param  item Pointer to the queue item structure
-  * @param  size Capacity of the queue
-  *
-  * @note   Allocates memory for the queue items and initializes the head, tail,
-  *         capacity, and status of the queue.
-  * 
-  */
-void Queue_Init(Queue_t* Q, QueueItem_t* item, size_t size){
-    // NULL pointer checks
-    if (Q == NULL || item == NULL) {
-        return;
-    }
-    
-    // Bounds checks
-    if (size == 0 || size > 256) {
-        return;
-    }
-    
-    if (item->sizeof_data == 0 || item->sizeof_data > 1024) {
-        return;
-    }
-    
-    Q->buffer = (QueueItem_t *)malloc(size * sizeof(QueueItem_t));
-    if (Q->buffer == NULL) {
-        return; // Allocation failed
-    }
-    
-    for (size_t i = 0; i < size; i++) {
-        Q->buffer[i].data = calloc(1,item->sizeof_data);
-        if (Q->buffer[i].data == NULL) {
-            // Cleanup on allocation failure
-            for (size_t j = 0; j < i; j++) {
-                free(Q->buffer[j].data);
-            }
-            free(Q->buffer);
-            return;
-        }
-        Q->buffer[i].sizeof_data = item->sizeof_data;
-    }
-    Q->head = 0;
-    Q->tail = 0;
-    Q->capacity = size;
-    Q->status = QUEUE_EMPTY;
-    return;
-}
-
-/**
-  * @brief  Pushes data into the queue.
-  * @param  Q    Pointer to the queue structure
-  * @param  data Pointer to the data to be pushed
-  * @retval Pointer to the data pushed
-  * 
-  * @note   Copies the data into the queue at the head index and updates the
-  *         head index. If the queue is full, the tail index is updated to maintain
-  *         a circular buffer behavior. Updates the status of the queue.
-  */
-void* Queue_Push(Queue_t* Q, void* data){
-    // NULL pointer checks
-    if (Q == NULL || data == NULL || Q->buffer == NULL) {
-        return NULL;
-    }
-    
-    void* pointer = Q->buffer[Q->head].data;
-    if (pointer == NULL) {
-        return NULL;
-    }
-    
-    memcpy(pointer, data, Q->buffer->sizeof_data);
-    Q->head = (Q->head + 1) % Q->capacity;
-    
-    if(Q->status == QUEUE_FULL){
-        Q->tail = (Q->tail + 1) % Q->capacity;
-    }
-
-   /**/
-   if(Q->head == Q->tail)
-    {
-     Q->status = QUEUE_FULL ;
-    }
-    else
-    {
-        Q->status = QUEUE_OK ;
-    }
-
-    
-    
-    return pointer;
-}
-
-
-/**
-  * @brief  Pops data from the queue.
-  * @param  Q    Pointer to the queue structure
-  * @param  data Pointer to the data where popped data will be stored
-  *
-  * @note   Copies the data from the queue at the tail index and updates the
-  *         tail index. Updates the status of the queue.
-  */
-void Queue_Pop(Queue_t* Q, void* data){
-    // NULL pointer checks
-    if (Q == NULL || Q->buffer == NULL) {
-        return;
-    }
-    
-    if(Q->status == QUEUE_EMPTY){
-        return;
-    }
-    if(data != NULL){
-        memcpy(data, Q->buffer[Q->tail].data, Q->buffer->sizeof_data);
-    }
-    Q->tail = (Q->tail + 1) % Q->capacity;
-    Q->status = (Q->head == Q->tail) ? QUEUE_EMPTY : QUEUE_OK;
-    return;
-}
-
-/**
-  * @brief  Peeks at the data in the queue.
-  * @param  Q Pointer to the queue structure
-  * @retval Pointer to the data at the tail index, or NULL if queue is empty or invalid
-  * 
-  * @note   Returns the data pointer at the tail index without popping it.
-  */
-void* Queue_Peek(Queue_t* Q){
-    // NULL pointer checks
-    if (Q == NULL || Q->buffer == NULL) {
-        return NULL;
-    }
-    
-    // Check if queue is empty
-    if (Q->status == QUEUE_EMPTY) {
-        return NULL;
-    }
-    
-    return Q->buffer[Q->tail].data;
-}
-
-
-/**
- * @brief  Frees the memory allocated for the queue items.
- * @param  Q Pointer to the queue structure
- * 
- * @note   Frees the memory allocated for each queue item and the buffer itself.
+ * @file utils.c
+ * @brief Utility functions - Thread-safe queue implementation
  */
-void Queue_free(Queue_t* Q){
-    // NULL pointer check
-    if (Q == NULL || Q->buffer == NULL) {
+
+#include "utils.h"
+#include <stdlib.h>
+#include <string.h>
+
+/*================================== Queue implementation ===============================*/
+
+/**
+ * @brief Enter critical section (disable interrupts)
+ */
+static inline uint32_t Queue_EnterCritical(void) {
+    uint32_t primask = __get_PRIMASK();
+    __disable_irq();
+    return primask;
+}
+
+/**
+ * @brief Exit critical section (restore interrupts)
+ */
+static inline void Queue_ExitCritical(uint32_t primask) {
+    __set_PRIMASK(primask);
+}
+
+plt_status_t Queue_Init(Queue_t* queue, size_t item_size, size_t capacity) {
+    if (queue == NULL) {
+        return PLT_NULL_POINTER;
+    }
+    
+    if (item_size == 0 || capacity == 0) {
+        return PLT_INVALID_PARAM;
+    }
+    
+    // Limit capacity to reasonable size
+    if (capacity > 1024) {
+        return PLT_INVALID_PARAM;
+    }
+    
+    // Allocate contiguous buffer for all items
+    queue->buffer = calloc(capacity, item_size);
+    if (queue->buffer == NULL) {
+        return PLT_NO_MEMORY;
+    }
+    
+    queue->item_size = item_size;
+    queue->capacity = capacity;
+    queue->head = 0;
+    queue->tail = 0;
+    queue->count = 0;
+    
+    return PLT_OK;
+}
+
+plt_status_t Queue_Push(Queue_t* queue, const void* data) {
+    if (queue == NULL || data == NULL) {
+        return PLT_NULL_POINTER;
+    }
+    
+    if (queue->buffer == NULL) {
+        return PLT_NOT_INITIALIZED;
+    }
+    
+    // Enter critical section
+    uint32_t primask = Queue_EnterCritical();
+    
+    // Check if full
+    if (queue->count >= queue->capacity) {
+        Queue_ExitCritical(primask);
+        return PLT_QUEUE_FULL;
+    }
+    
+    // Copy data to buffer
+    void* dest = (uint8_t*)queue->buffer + (queue->head * queue->item_size);
+    memcpy(dest, data, queue->item_size);
+    
+    // Update head and count
+    queue->head = (queue->head + 1) % queue->capacity;
+    queue->count++;
+    
+    Queue_ExitCritical(primask);
+    return PLT_OK;
+}
+
+plt_status_t Queue_Pop(Queue_t* queue, void* data) {
+    if (queue == NULL) {
+        return PLT_NULL_POINTER;
+    }
+    
+    if (queue->buffer == NULL) {
+        return PLT_NOT_INITIALIZED;
+    }
+    
+    // Enter critical section
+    uint32_t primask = Queue_EnterCritical();
+    
+    // Check if empty
+    if (queue->count == 0) {
+        Queue_ExitCritical(primask);
+        return PLT_QUEUE_EMPTY;
+    }
+    
+    // Copy data from buffer (if destination provided)
+    if (data != NULL) {
+        void* src = (uint8_t*)queue->buffer + (queue->tail * queue->item_size);
+        memcpy(data, src, queue->item_size);
+    }
+    
+    // Update tail and count
+    queue->tail = (queue->tail + 1) % queue->capacity;
+    queue->count--;
+    
+    Queue_ExitCritical(primask);
+    return PLT_OK;
+}
+
+plt_status_t Queue_Peek(Queue_t* queue, void* data) {
+    if (queue == NULL || data == NULL) {
+        return PLT_NULL_POINTER;
+    }
+    
+    if (queue->buffer == NULL) {
+        return PLT_NOT_INITIALIZED;
+    }
+    
+    // Enter critical section (quick read)
+    uint32_t primask = Queue_EnterCritical();
+    
+    // Check if empty
+    if (queue->count == 0) {
+        Queue_ExitCritical(primask);
+        return PLT_QUEUE_EMPTY;
+    }
+    
+    // Copy data without removing
+    void* src = (uint8_t*)queue->buffer + (queue->tail * queue->item_size);
+    memcpy(data, src, queue->item_size);
+    
+    Queue_ExitCritical(primask);
+    return PLT_OK;
+}
+
+size_t Queue_Count(Queue_t* queue) {
+    if (queue == NULL) {
+        return 0;
+    }
+    
+    // Atomic read of volatile variable
+    return queue->count;
+}
+
+bool Queue_IsEmpty(Queue_t* queue) {
+    return Queue_Count(queue) == 0;
+}
+
+bool Queue_IsFull(Queue_t* queue) {
+    if (queue == NULL) {
+        return false;
+    }
+    return queue->count >= queue->capacity;
+}
+
+void Queue_Free(Queue_t* queue) {
+    if (queue == NULL) {
         return;
     }
     
-    for (size_t i = 0; i < Q->capacity; i++) {
-        if (Q->buffer[i].data != NULL) {
-            free(Q->buffer[i].data);
-            Q->buffer[i].data = NULL;
-        }
+    if (queue->buffer != NULL) {
+        free(queue->buffer);
+        queue->buffer = NULL;
     }
-    free(Q->buffer);
-    Q->buffer = NULL;
-    Q->capacity = 0;
-    Q->head = 0;
-    Q->tail = 0;
-    Q->status = QUEUE_EMPTY;
-    return;
+    
+    queue->head = 0;
+    queue->tail = 0;
+    queue->count = 0;
+    queue->capacity = 0;
 }

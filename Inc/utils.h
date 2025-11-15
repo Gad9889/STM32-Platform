@@ -3,49 +3,84 @@
 #define UTILS_H
 /* =============================== Includes ======================================= */
 #include "hashtable.h"
+#include "platform_status.h"
+#include <stdbool.h>
+
 /*========================= Queue related definitions =========================*/
 
 /**
- * @brief Queue status
- * @note This enum is used to define the status of the queue
- */
-typedef enum{
-    QUEUE_OK,
-    QUEUE_FULL,
-    QUEUE_EMPTY,
-    QUEUE_ERROR
-} QueueStatus_t;
-
-
-/**
- * @brief Queue item
- * @note This struct is used to define an item in the queue
+ * @brief Thread-safe circular queue for ISR-safe message passing
+ * 
+ * This queue uses atomic operations (interrupt disable/enable) to ensure
+ * thread safety between ISRs and main loop.
  */
 typedef struct{
-    void* data;
-    size_t sizeof_data;    
-} QueueItem_t; 
-
-/**
- * @brief Queue
- * @note This struct defines the queue
- */
-typedef struct{
-    QueueItem_t* buffer;
-    size_t head;
-    size_t tail;
-    size_t capacity;
-    QueueStatus_t status;
+    void* buffer;           ///< Contiguous buffer for all items
+    size_t item_size;       ///< Size of each item in bytes
+    volatile size_t head;   ///< Write index (producer)
+    volatile size_t tail;   ///< Read index (consumer)
+    size_t capacity;        ///< Maximum number of items
+    volatile size_t count;  ///< Current number of items
 } Queue_t;
 
 
 /*========================= Queue related function prototypes =========================*/
 
-void Queue_Init(Queue_t* Q, QueueItem_t* item, size_t size);
-void* Queue_Push(Queue_t* Q, void* data);
-void Queue_Pop(Queue_t* Q, void* data);
-void Queue_free(Queue_t* Q);
-void* Queue_Peek(Queue_t* Q);
+/**
+ * @brief Initialize a queue with fixed-size items
+ * @param queue Pointer to queue structure
+ * @param item_size Size of each item in bytes
+ * @param capacity Maximum number of items
+ * @return PLT_OK on success, error code otherwise
+ */
+plt_status_t Queue_Init(Queue_t* queue, size_t item_size, size_t capacity);
+
+/**
+ * @brief Push an item into the queue (thread-safe)
+ * @param queue Pointer to queue structure
+ * @param data Pointer to data to push
+ * @return PLT_OK on success, PLT_QUEUE_FULL if full
+ */
+plt_status_t Queue_Push(Queue_t* queue, const void* data);
+
+/**
+ * @brief Pop an item from the queue (thread-safe)
+ * @param queue Pointer to queue structure  
+ * @param data Pointer to buffer for popped data
+ * @return PLT_OK on success, PLT_QUEUE_EMPTY if empty
+ */
+plt_status_t Queue_Pop(Queue_t* queue, void* data);
+
+/**
+ * @brief Peek at front item without removing (thread-safe)
+ * @param queue Pointer to queue structure
+ * @param data Pointer to buffer for peeked data
+ * @return PLT_OK on success, PLT_QUEUE_EMPTY if empty
+ */
+plt_status_t Queue_Peek(Queue_t* queue, void* data);
+
+/**
+ * @brief Get current number of items in queue
+ * @param queue Pointer to queue structure
+ * @return Number of items (thread-safe read)
+ */
+size_t Queue_Count(Queue_t* queue);
+
+/**
+ * @brief Check if queue is empty
+ */
+bool Queue_IsEmpty(Queue_t* queue);
+
+/**
+ * @brief Check if queue is full
+ */
+bool Queue_IsFull(Queue_t* queue);
+
+/**
+ * @brief Free queue memory
+ * @param queue Pointer to queue structure
+ */
+void Queue_Free(Queue_t* queue);
 
 
 

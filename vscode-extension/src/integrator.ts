@@ -139,6 +139,13 @@ export async function integratePlatform(
       result.filesAdded++;
     }
 
+    // Modify main.c to add platform integration
+    const mainCPath = findMainC(workspacePath);
+    if (mainCPath && options.useNewAPI) {
+      await modifyMainC(mainCPath, options);
+      result.modifiedFiles.push(mainCPath);
+    }
+
     // Copy test kit if requested
     if (options.includeTestKit) {
       const extensionDir = __dirname;
@@ -429,4 +436,102 @@ async function copyTestKit(srcDir: string, destDir: string): Promise<void> {
       fs.copyFileSync(src, dest);
     }
   }
+}
+
+function findMainC(workspacePath: string): string | null {
+  // Common locations for main.c in STM32 projects
+  const possiblePaths = [
+    path.join(workspacePath, "Core", "Src", "main.c"),
+    path.join(workspacePath, "Src", "main.c"),
+    path.join(workspacePath, "src", "main.c"),
+    path.join(workspacePath, "source", "main.c"),
+  ];
+
+  for (const mainPath of possiblePaths) {
+    if (fs.existsSync(mainPath)) {
+      return mainPath;
+    }
+  }
+
+  return null;
+}
+
+async function modifyMainC(
+  mainCPath: string,
+  options: IntegrationOptions
+): Promise<void> {
+  let content = fs.readFileSync(mainCPath, "utf8");
+
+  // Check if already integrated
+  if (content.includes("stm32_platform.h") || content.includes("Platform.begin")) {
+    return; // Already integrated
+  }
+
+  // Add include after other includes (after main.h)
+  const mainIncludeMatch = content.match(/#include\s+"main\.h"/);
+  if (mainIncludeMatch) {
+    const insertPos = mainIncludeMatch.index! + mainIncludeMatch[0].length;
+    content =
+      content.slice(0, insertPos) +
+      '\n#include "stm32_platform.h"  // STM32 Platform API' +
+      content.slice(insertPos);
+  }
+
+  // Find main() function and add Platform.begin() after HAL_Init() or SystemClock_Config()
+  const mainFunctionMatch = content.match(
+    /int\s+main\s*\(\s*void\s*\)\s*\{([^}]*)\}/s
+  );
+  if (mainFunctionMatch) {
+    const mainBody = mainFunctionMatch[1];
+
+    // Find a good insertion point (after HAL_Init, SystemClock_Config, and MX_* init calls)
+    const patterns = [
+      /SystemClock_Config\s*\(\s*\)\s*;/,
+      /HAL_Init\s*\(\s*\)\s*;/,
+    ];
+
+    let insertionPoint = -1;
+    for (const pattern of patterns) {
+      const match = mainBody.match(pattern);
+      if (match) {
+        insertionPoint =
+          mainFunctionMatch.index! +
+          mainFunctionMatch[0].indexOf(mainBody) +
+          match.index! +
+          match[0].length;
+        break;
+      }
+    }
+
+    if (insertionPoint > 0) {
+      // Find all MX_* init calls after insertion point
+      const afterInit = content.slice(insertionPoint);
+      const mxInitMatches = afterInit.matchAll(/MX_\w+_Init\s*\(\s*\)\s*;/g);
+      let lastMxInit = insertionPoint;
+
+      for (const match of mxInitMatches) {
+        const pos = insertionPoint + match.index! + match[0].length;
+        if (pos > lastMxInit) {
+          lastMxInit = pos;
+        }
+      }
+
+      // Build Platform.begin() call
+      const peripherals = options.peripherals;
+      const platformInit = `
+  
+  /* STM32 Platform Integration */
+  Platform.begin(${peripherals.includes("CAN") ? "&hcan" : "NULL"},
+                 ${peripherals.includes("UART") ? "&huart2" : "NULL"},
+                 ${peripherals.includes("SPI") ? "&hspi1" : "NULL"},
+                 ${peripherals.includes("ADC") ? "&hadc1" : "NULL"},
+                 ${peripherals.includes("TIM") ? "&htim2" : "NULL"});
+`;
+
+      content =
+        content.slice(0, lastMxInit) + platformInit + content.slice(lastMxInit);
+    }
+  }
+
+  fs.writeFileSync(mainCPath, content, "utf8");
 }

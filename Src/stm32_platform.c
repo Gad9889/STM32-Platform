@@ -10,7 +10,7 @@
 #include "utils.h"
 #include "hashtable.h"
 #include "database.h"
-#include "callbacks.h"
+// Note: callbacks.h is a legacy stub - not required for v2.0.0
 #include <stdio.h>
 #include <string.h>
 
@@ -430,19 +430,20 @@ static void PWM_setPulseWidth_impl(TIM_HandleTypeDef* htim, uint32_t channel, ui
 
 /* ==================== Platform Implementation ==================== */
 
-static Platform_t* Platform_begin_impl(CAN_HandleTypeDef* hcan,
-                                       UART_HandleTypeDef* huart,
-                                       SPI_HandleTypeDef* hspi,
-                                       ADC_HandleTypeDef* hadc,
-                                       TIM_HandleTypeDef* htim) {
+static Platform_t* Platform_begin_impl(PlatformHandles_t* handles) {
+    if (handles == NULL) {
+        lastError = PLT_NULL_POINTER;
+        return &Platform;
+    }
+    
     lastError = PLT_OK;
     
-    // Store hardware handles
-    hw_handles.hcan = hcan;
-    hw_handles.huart = huart;
-    hw_handles.hspi = hspi;
-    hw_handles.hadc = hadc;
-    hw_handles.htim = htim;
+    // Store hardware handles (cast void* back to proper types internally)
+    hw_handles.hcan = (CAN_HandleTypeDef*)handles->hcan;
+    hw_handles.huart = (UART_HandleTypeDef*)handles->huart;
+    hw_handles.hspi = (SPI_HandleTypeDef*)handles->hspi;
+    hw_handles.hadc = (ADC_HandleTypeDef*)handles->hadc;
+    hw_handles.htim = (TIM_HandleTypeDef*)handles->htim;
     
     // Initialize CAN if enabled
     if (hcan != NULL) {

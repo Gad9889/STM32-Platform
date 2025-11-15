@@ -164,6 +164,33 @@ typedef struct {
     uint16_t length;       /*!< Actual data length */
 } SPIMessage_t;
 
+/* ==================== Peripheral Handles Structure ==================== */
+
+/**
+ * @brief Peripheral handles for platform initialization
+ * 
+ * Pass peripheral handles to Platform.begin() using this structure.
+ * Set unused peripherals to NULL. This avoids type dependencies when
+ * HAL modules are not enabled in CubeMX.
+ * 
+ * @example
+ * PlatformHandles_t handles = {
+ *     .hcan = &hcan,
+ *     .huart = &huart2,
+ *     .hspi = NULL,     // Not using SPI
+ *     .hadc = NULL,     // Not using ADC
+ *     .htim = &htim1
+ * };
+ * Platform.begin(&handles);
+ */
+typedef struct {
+    void* hcan;   /*!< CAN_HandleTypeDef* - CAN peripheral handle */
+    void* huart;  /*!< UART_HandleTypeDef* - UART peripheral handle */
+    void* hspi;   /*!< SPI_HandleTypeDef* - SPI peripheral handle */
+    void* hadc;   /*!< ADC_HandleTypeDef* - ADC peripheral handle */
+    void* htim;   /*!< TIM_HandleTypeDef* - Timer peripheral handle */
+} PlatformHandles_t;
+
 /* ==================== Forward Declarations ==================== */
 
 typedef struct Platform_t Platform_t;
@@ -502,18 +529,20 @@ struct PWM_t {
 struct Platform_t {
     /**
      * @brief Initialize platform with peripheral handles
-     * @param hcan CAN handle (NULL if not used)
-     * @param huart UART handle (NULL if not used)
-     * @param hspi SPI handle (NULL if not used)
-     * @param hadc ADC handle (NULL if not used)
-     * @param htim Timer handle (NULL if not used)
+     * @param handles Pointer to PlatformHandles_t structure containing peripheral handles
      * @return Pointer to Platform for method chaining
+     * 
+     * @example
+     * PlatformHandles_t handles = {
+     *     .hcan = &hcan,
+     *     .huart = &huart2,
+     *     .hspi = NULL,   // Not configured
+     *     .hadc = NULL,   // Not configured  
+     *     .htim = &htim1
+     * };
+     * Platform.begin(&handles);
      */
-    Platform_t* (*begin)(CAN_HandleTypeDef* hcan,
-                         UART_HandleTypeDef* huart,
-                         SPI_HandleTypeDef* hspi,
-                         ADC_HandleTypeDef* hadc,
-                         TIM_HandleTypeDef* htim);
+    Platform_t* (*begin)(PlatformHandles_t* handles);
     
     /**
      * @brief Register default CAN message handler

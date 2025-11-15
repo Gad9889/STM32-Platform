@@ -16,14 +16,21 @@ TIM_HandleTypeDef htim2;
 
 void example1_hello_world(void) {
     // Initialize platform with just UART
-    STM32.begin(NULL, &huart2, NULL);
+    PlatformHandles_t handles = {
+        .hcan = NULL,
+        .huart = &huart2,
+        .hspi = NULL,
+        .hadc = NULL,
+        .htim = NULL
+    };
+    Platform.begin(&handles);
     
     // Print to UART
     P_UART.println("Hello World!");
     P_UART.printf("System clock: %d MHz\n", SystemCoreClock / 1000000);
     
     while (1) {
-        STM32.process();
+        // No process() needed in v2.0.0 - just handle messages
         P_UART.println("Heartbeat");
         HAL_Delay(1000);
     }
@@ -44,33 +51,49 @@ void onCANReceived(CANMessage_t* msg) {
 }
 
 void example2_can_echo(void) {
-    STM32.begin(&hcan1, &huart2, NULL)
-         ->onCAN(onCANReceived);
+    PlatformHandles_t handles = {
+        .hcan = &hcan1,
+        .huart = &huart2,
+        .hspi = NULL,
+        .hadc = NULL,
+        .htim = NULL
+    };
+    Platform.begin(&handles);
+    
+    // Register CAN handler for ID 0x100
+    P_CAN.route(0x100, onCANReceived);
     
     P_UART.println("CAN Echo ready. Send message on 0x100, get echo on 0x101");
     
     while (1) {
-        STM32.process();  // Calls onCANReceived automatically
+        P_CAN.handleRxMessages();  // Process incoming CAN messages
     }
 }
 
 /* ==================== Example 3: ADC to CAN ==================== */
 
 void example3_adc_to_can(void) {
-    STM32.begin(&hcan1, &huart2, NULL, &hadc1, NULL);
-    
-    ADC.setResolution(12);
-    ADC.calibrate();
+    PlatformHandles_t handles = {
+        .hcan = &hcan1,
+        .huart = &huart2,
+        .hspi = NULL,
+        .hadc = &hadc1,
+        .htim = NULL
+    };
+    Platform.begin(&handles);
     
     P_UART.println("Sending ADC values via CAN");
     
     while (1) {
-        STM32.process();
+        // Read ADC voltages
+        float v1 = P_ADC.readVoltage(ADC_CHANNEL_1);
+        float v2 = P_ADC.readVoltage(ADC_CHANNEL_2);
+        float v3 = P_ADC.readVoltage(ADC_CHANNEL_3);
         
-        // Read ADC channels
-        uint16_t ch1 = P_ADC.read(ADC_CHANNEL_1);
-        uint16_t ch2 = P_ADC.read(ADC_CHANNEL_2);
-        uint16_t ch3 = P_ADC.read(ADC_CHANNEL_3);
+        // Convert to 16-bit values for CAN (scale by 1000 for mV)
+        uint16_t ch1 = (uint16_t)(v1 * 1000);
+        uint16_t ch2 = (uint16_t)(v2 * 1000);
+        uint16_t ch3 = (uint16_t)(v3 * 1000);
         
         // Pack into CAN message
         uint8_t data[8] = {
@@ -82,7 +105,7 @@ void example3_adc_to_can(void) {
         
         P_CAN.send(0x200, data, 8);
         
-        P_UART.printf("ADC: %d, %d, %d\n", ch1, ch2, ch3);
+        P_UART.printf("ADC: %.2fV, %.2fV, %.2fV\n", v1, v2, v3);
         
         HAL_Delay(100);
     }
@@ -91,10 +114,17 @@ void example3_adc_to_can(void) {
 /* ==================== Example 4: PWM LED Breathing ==================== */
 
 void example4_pwm_breathing(void) {
-    STM32.begin(NULL, &huart2, NULL, NULL, &htim2);
+    PlatformHandles_t handles = {
+        .hcan = NULL,
+        .huart = &huart2,
+        .hspi = NULL,
+        .hadc = NULL,
+        .htim = &htim2
+    };
+    Platform.begin(&handles);
     
-    P_PWM.setFrequency(&htim2, 1000);  // 1 kHz PWM
-    PWM.start(&htim2, TIM_CHANNEL_1);
+    P_PWM.start(&htim2, TIM_CHANNEL_1);
+    P_PWM.setFrequency(&htim2, TIM_CHANNEL_1, 1000);  // 1 kHz PWM
     
     P_UART.println("PWM breathing effect on TIM2 CH1");
     
@@ -102,9 +132,7 @@ void example4_pwm_breathing(void) {
     float direction = 1.0;
     
     while (1) {
-        STM32.process();
-        
-        // Breathing effect
+        // Breathing effect - no process() needed in v2.0.0
         dutyCycle += direction * 0.5;
         
         if (dutyCycle >= 100.0) {
